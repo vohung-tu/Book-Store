@@ -1,0 +1,46 @@
+<div class="container" >
+  <div class="signin-container">
+    <h2>Đăng Nhập</h2>
+  
+    <form [formGroup]="signinForm" (ngSubmit)="onSubmit()">
+      <div class="email-input">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="Nhập Email của bạn">
+          <mat-error *ngIf="signinForm.get('email')?.invalid && signinForm.get('email')?.touched">
+            Vui lòng nhập email hợp lệ
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="password-input">
+        <mat-form-field appearance="outline">
+          <mat-label>Mật khẩu</mat-label>
+          <input matInput type="password" [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Nhập mật khẩu của bạn"> 
+          <button class="btn-visibility" mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          
+          <mat-error *ngIf="signinForm.get('password')?.invalid && signinForm.get('password')?.touched">
+            Mật khẩu phải có ít nhất 6 ký tự
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="forgot-password">
+        <mat-checkbox style="display: flex;" formControlName="rememberMe">Ghi nhớ mật khẩu?</mat-checkbox>
+        <a>Quên mật khẩu</a>
+      </div>
+      <button mat-raised-button type="submit" [disabled]="signinForm.invalid || (isLoading$ | async)">
+        Đăng Nhập
+      </button>
+  
+      <ng-container>hoặc đăng nhập với</ng-container>
+      <div class="social-login">
+        <button mat-button class="face-lgin"><mat-icon class="mdi mdi-facebook"></mat-icon>Facebook</button> 
+        <button mat-button class="google-lgin"><mat-icon class="mdi mdi-google-plus"></mat-icon>Google</button>
+      </div>
+  
+      <p>Bạn chưa có tài khoản? <a routerLink="/signup">Đăng Ký</a></p>
+    </form>
+  </div>
+  
+</div>

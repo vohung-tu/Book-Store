@@ -1,0 +1,87 @@
+.container {
+  background-color: #A1E3F9;
+  background-size: cover;
+  // height: 703px;
+
+  .signin-container {
+    background-color: #fff;
+    width: 500px;
+    margin: auto;
+    text-align: center;
+    padding-top: 10px;
+
+  }
+}
+
+.forgot-password {
+  display: flex;
+  mat-checkbox {
+    padding-right: 20px;
+  }
+  a {
+    padding-left: 20px;
+  }
+}
+  
+form {
+  display: flex;
+  flex-direction: column;
+  line-height: 5rem;
+  align-items: center;
+  height: 620px;
+  
+}
+.password-input {
+  padding-bottom: 20px;
+}
+mat-form-field {
+  height: 50px;
+  width: 300px;
+}
+::ng-deep .mat-mdc-form-field-infix {
+  display: flex;
+}
+
+::ng-deep .mat-mdc-form-field-error-wrapper {
+  padding: 0 !important;
+}
+
+button {
+  padding: 10px;
+  font-weight: bold;
+  background-color: #6769e8 !important;
+  color: white !important;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  width: 300px;
+  
+}
+.btn-visibility {
+  background: none !important;
+  width: 50px !important;
+  color: #000 !important;
+}
+.social-login {
+  display: flex;
+  .face-lgin{
+    width: 150px;
+    margin: 10px;
+    background: transparent !important;
+    border: 2px solid #3b5998 !important;
+    color: #3b5998 !important;
+  }
+
+  .google-lgin{
+    width: 150px;
+    margin: 10px;
+    background: transparent !important;
+    border: 2px solid #ea4335 !important;
+    color: #ea4335 !important;
+  }
+}
+button:disabled {
+  background-color: gray !important;
+  color: #fff;
+}
+

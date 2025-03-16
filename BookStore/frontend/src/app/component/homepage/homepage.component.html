@@ -1,0 +1,56 @@
+<ng-container class="container-ads">
+  <div class="content-ads-1">
+    <img class="img-ads" src="assets/images/ads_1.jpg" alt="">
+    <div class="content-ads-2" >
+      <a href="">
+        <img src="assets/images/ads_2.png" alt="">
+      </a>
+      <a href="">
+        <img class="img-ads" src="assets/images/ads_3.jpg" alt="">
+      </a>
+    </div>
+  </div>
+
+  <div class="container-flashsale">
+    <div class="flash-sale-countdown">
+      <h2>Flash Sale</h2><p>kết thúc sau: </p> 
+      <div class="countdown-timer">
+        <span class="time">
+          {{ days }}
+          <small>Days</small>
+        </span>
+        <span class="time">
+          {{ hours }}
+          <small>Hours</small>
+        </span>
+        <span class="time">
+          {{ minutes }}
+          <small>Minutes</small>
+        </span>
+        <span class="time">
+          {{ seconds }}
+          <small>Seconds</small>
+        </span>
+      </div>
+    </div>
+    
+    <div class="flashsale-col">
+      <div class="flashsale-col-1">
+        <div *ngFor="let book of books" class="book-item">
+          <a [routerLink]="['/details', book.id]">
+            <img [src]="book.coverImage" alt="{{ book.title }}" />
+            <h3>{{ book.title }}</h3>
+            <p>Tác giả: {{ book.author }}</p>
+            <h4>Giá: {{ book.flashsale_price | number:'1.3-3' }} đ</h4>
+            <div class="discount"  style="display: flex;">
+              <h5> {{ book.price | number:'1.3-3' }} đ </h5> 
+              <div class="discount-badge">-{{ book.discount_percent }}%</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+

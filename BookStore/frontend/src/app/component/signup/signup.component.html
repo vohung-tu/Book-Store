@@ -1,0 +1,107 @@
+<div class="container" >
+  <div class="signup-container">
+    <h2>Đăng Ký</h2>
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+  
+      <!-- Họ tên -->
+      <mat-form-field appearance="outline">
+        <mat-label>Họ tên</mat-label>
+        <input matInput formControlName="full_name" placeholder="Nhập họ tên">
+        <mat-error *ngIf="signupForm.get('full_name')
+        ?.invalid && signupForm.get('full_name')?.touched">
+          Vui lòng nhập họ tên
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Tên đăng nhập -->
+      <mat-form-field appearance="outline">
+        <mat-label>Tên đăng nhập</mat-label>
+        <input matInput formControlName="username" placeholder="Tên đăng nhập">
+        <mat-error *ngIf="signupForm.get('username')?.invalid && signupForm.get('username')?.touched">
+          Tên đăng nhập phải có ít nhất 4 ký tự
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Mật khẩu -->
+      <mat-form-field appearance="outline">
+        <mat-label>Mật khẩu</mat-label>
+        <input matInput
+               [type]="hidePassword ? 'password' : 'text'"
+               formControlName="password">
+        <button mat-icon-button matSuffix type="button"
+                (click)="hidePassword = !hidePassword">
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched">
+          Mật khẩu phải có ít nhất 6 ký tự
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Xác nhận mật khẩu -->
+      <mat-form-field appearance="outline">
+        <mat-label>Nhập lại mật khẩu</mat-label>
+        <input matInput
+               [type]="hideConfirmPassword ? 'password' : 'text'"
+               formControlName="re_password">
+        <button mat-icon-button matSuffix type="button"
+                (click)="hideConfirmPassword = !hideConfirmPassword">
+          <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="signupForm.hasError('passwordMismatch') && signupForm.get('re_password')?.touched">
+          Mật khẩu không khớp
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Ngày sinh -->
+      <mat-form-field appearance="outline">
+        <mat-label>Ngày sinh</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="birth" placeholder="Chọn ngày sinh">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="signupForm.get('birth')?.invalid && signupForm.get('birth')?.touched">
+          Vui lòng chọn ngày sinh
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Địa chỉ -->
+      <mat-form-field appearance="outline">
+        <mat-label>Địa chỉ</mat-label>
+        <textarea matInput rows="2" formControlName="address"></textarea>
+      </mat-form-field>
+  
+      <!-- Email -->
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" placeholder="example@gmail.com">
+        <mat-error *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
+          Vui lòng nhập đúng định dạng email
+        </mat-error>
+      </mat-form-field>
+  
+      <!-- Điện thoại -->
+      <mat-form-field appearance="outline">
+        <mat-label>Điện thoại</mat-label>
+        <input matInput type="tel" formControlName="phone_number" placeholder="Nhập số điện thoại">
+        <mat-error *ngIf="signupForm.get('phone_number')?.invalid && signupForm.get('phone_number')?.touched">
+          Vui lòng nhập số điện thoại
+        </mat-error>
+      </mat-form-field>
+      <p>
+        Quý khách vui lòng điền thông tin chính xác. Chúng tôi sẽ sử dụng những thông tin này để giải quyết các khiếu nại trong trường hợp bị mất tài khoản.
+      </p>
+      <p>
+        Khi Quý khách đăng ký đồng nghĩa với việc Quý khách đã đồng ý với các Điều khoản thỏa thuận sử dụng dịch vụ của <a href="/">Pam Tech</a>
+      </p>
+
+      <div class="agree-checkbox" style="text-align: left;">
+        <mat-checkbox> Tôi đã đọc và đồng ý với các điều khoản trên của Nhà xuất bản Tổng hợp TP.HCM</mat-checkbox>
+      </div>
+  
+      <!-- Nút Đăng Ký -->
+      <button mat-raised-button color="primary" type="submit" [disabled]="signupForm.invalid">
+        Đăng Ký
+      </button>
+      <p>Bạn chưa có tài khoản? <a routerLink="/signin">Đăng Nhập</a></p>
+    </form>
+  </div>
+</div>

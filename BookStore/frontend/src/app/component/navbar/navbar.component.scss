@@ -1,0 +1,94 @@
+.logIn, .signUp{
+  text-decoration: none;
+  font-weight: bold;
+  color: #000 !important;
+  border: 1px solid #000;
+  border-radius: 10px;
+  width: 120px;
+  text-align: center;
+  background: transparent;
+  margin-left: 10px;
+}
+.signUp:hover{
+  background-color: #f7e187;
+}
+.logIn:hover{
+  background-color: #f7e187;
+}
+.header__top {
+  background: #F9E79E;
+}
+mat-icon {
+  color: #000;
+}
+.sign_up {
+  display: inline-block;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  height: 90px;
+}
+
+.header__top__left {
+  .logo {
+    display: flex;
+    margin-left: 100px;
+  }
+  .category-btn {
+    margin: auto;
+
+    .btn-change-category {
+      font-size: 14px;
+      display: inline-flex;
+      color: #1c1c1c;
+    }
+  } 
+  .search-field {
+    margin-left: 30px;
+    justify-content: center;
+    margin-top: 20px;
+    border-radius: 15px !important;
+    width: fit-content;
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      flex: none !important;
+    }
+
+    ::ng-deep .mat-mdc-form-field {
+      border: 1px solid #000;
+      border-radius: 15px !important;
+    }
+  }
+}
+
+.header__top__right {
+  margin-right: 70px;
+  padding: 10px 0 15px;
+
+  .header__top__right__cart {
+    display: inline-block;
+    margin-right: 35px;
+    padding-top: 15px;
+  }
+  
+  .header__top__right__cart a {
+    font-size: 14px;
+    display: inline-flex;
+    color: #1c1c1c;
+    margin-right: 20px;
+  
+  }
+  
+  .header__top__right__language {
+    display: inline-block;
+    margin-right: 40px;
+    cursor: pointer;
+  
+    .btn-change-language {
+      color: #000;
+    }
+  }
+}
+

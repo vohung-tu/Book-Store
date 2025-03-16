@@ -1,0 +1,61 @@
+.cart-container {
+  width: 80%;
+  margin: auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+  }
+
+  .product-img {
+    width: 50px;
+    height: auto;
+    margin-right: 10px;
+  }
+
+  .discount-price {
+    color: red;
+    font-weight: bold;
+  }
+
+  .original-price {
+    text-decoration: line-through;
+    color: gray;
+    margin-left: 5px;
+  }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    color: #000;
+    cursor: pointer;
+  }
+}
+
+.cart-summary {
+  text-align: right;
+  margin-top: 20px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .checkout-btn {
+    background: red;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+  }
+}

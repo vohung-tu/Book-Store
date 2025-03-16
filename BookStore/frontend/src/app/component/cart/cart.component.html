@@ -1,0 +1,42 @@
+<div class="cart-container">
+  <h2>GIỎ HÀNG</h2>
+
+  <table class="cart-table">
+    <tr>
+      <th>Chọn</th>
+      <th>Sản phẩm</th>
+      <th>Giá</th>
+      <th>Số lượng</th>
+      <th>Thành tiền</th>
+      <th>Xóa</th>
+    </tr>
+    <tr *ngFor="let book of cart$ | async">
+      <td><input type="checkbox" checked /></td>
+      <td>
+        <img [src]="book.coverImage" alt="product" class="product-img" />
+        {{ book.title }}ssss
+      </td>
+      <td>
+        <span class="discount-price">{{ book.flashsale_price || book.price | number:'1.3-3' }} đ</span>
+      </td>
+      <td>
+        <button mat-button (click)="decreaseQuantity(book)">-</button>
+        <span>{{ book.quatity || 1 }}</span>
+        <button mat-button (click)="increaseQuantity(book)">+</button>
+      </td>
+      <td class="total-price">
+        {{ (book.flashsale_price || book.price) * (book.quatity || 1) | number:'1.3-3' }} đ
+      </td>
+      <td>
+        <button class="delete-btn" (click)="removeItem(book._id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </tr>
+  </table>
+
+  <div class="cart-summary">
+    <h3>Thành tiền: {{ totalPrice | number:'1.3-3' }} đ</h3>
+    <button class="checkout-btn" mat-button>THANH TOÁN</button>
+  </div>
+</div>
