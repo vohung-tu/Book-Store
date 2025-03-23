@@ -1,15 +1,18 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../service/auth.service';
 import { CommonModule, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { CartService } from '../../service/cart.service';
+import { BookDetails } from '../../model/books-details.model';
+import { BadgeModule } from 'primeng/badge';
+import { OverlayBadgeModule } from 'primeng/overlaybadge';
 
 @Component({
   selector: 'app-navbar',
@@ -24,17 +27,25 @@ import { takeUntil } from 'rxjs/operators';
     MatInputModule,
     MatProgressSpinnerModule,
     CommonModule, 
-    RouterModule
+    RouterModule,
+    BadgeModule,
+    OverlayBadgeModule
   ],
-  styleUrl: './navbar.component.scss'
+  styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn$!: Observable<boolean>;
   isLoading$!: Observable<boolean>;
   username$!: Observable<string | null>;
+  cartItemCount: number = 0;
   private destroy$ = new Subject<void>();
+  cart$: Observable<BookDetails[]>;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService,
+    private cartService: CartService
+  ) {
+    this.cart$ = this.cartService.getCart();
+  }
 
   ngOnInit(): void {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
@@ -43,6 +54,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     // Kiểm tra và lấy thông tin user khi reload
     this.authService.getUserInfo().subscribe();
+    this.cart$.subscribe(cart => {
+      this.cartItemCount = cart ? cart.length : 0;
+    });
   }
 
   signout(): void {

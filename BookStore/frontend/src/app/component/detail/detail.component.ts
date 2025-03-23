@@ -7,9 +7,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from '@angular/common';
-import { MatDialog } from '@angular/material/dialog';
 import { CartService } from '../../service/cart.service';
-import { CartDialogComponent } from '../cart/cart-dialog/cart-dialog.component';
+import { ToastModule } from 'primeng/toast';
+import { ButtonModule } from 'primeng/button';
+import { RippleModule } from 'primeng/ripple';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-detail',
@@ -20,10 +22,14 @@ import { CartDialogComponent } from '../cart/cart-dialog/cart-dialog.component';
     MatFormFieldModule, 
     MatIconModule,
     MatInputModule, 
-    RouterModule
+    RouterModule,
+    ButtonModule,
+    ToastModule,
+    RippleModule
   ],
   templateUrl: './detail.component.html',
-  styleUrls: ['./detail.component.scss']
+  styleUrls: ['./detail.component.scss'],
+  providers: [MessageService]
 })
 
 export class DetailComponent implements OnInit{
@@ -38,7 +44,7 @@ export class DetailComponent implements OnInit{
     private route: ActivatedRoute,
     private bookService: BooksService,
     private cartService: CartService,
-    private dialog: MatDialog
+    private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
@@ -77,16 +83,7 @@ export class DetailComponent implements OnInit{
       console.error('Book data is undefined');
       return;
     }
-    this.cartService.addToCart({ ...this.book, quatity: this.quantity });
-
-    // Mở dialog từ template trong HTML
-    this.dialog.open(CartDialogComponent, {
-      width: '500px',
-      height: '200px',
-      data: { message: 'Sản phẩm đã được thêm vào giỏ hàng!' }
-    });
-
-    // Tự động đóng sau 2 giây
-    setTimeout(() => this.dialog.closeAll(),20000);
+    this.cartService.addToCart({ ...this.book, quantity: this.quantity });
+    this.messageService.add({ severity: 'success', summary: 'Thêm thành công', detail: 'Đã thêm vào giỏ hàng thành công!', key: 'tr', life: 3000 });
   }
 }

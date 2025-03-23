@@ -38,12 +38,14 @@
 		
     <!-- Nút mua sách -->
     <div class="purchase-buttons">
-      <button mat-button class="add-to-cart" (click)="addToCart()">Thêm vào giỏ hàng</button>
-      <button mat-button class="click-buy">Mua ngay</button>
+      <p-toast position="top-right" key="tr" />
+      <p-button pRipple [rounded]="true" (click)="addToCart()" label="Thêm vào giỏ hàng" severity="success"/>
+      <p-button pRipple [rounded]="true" variant="outlined" (click)="addToCart()" label="Mua ngay" severity="success"/>
     </div>
 
   </div>
 </div>
+
 
 <!-- Nếu chưa tải xong -->
 <ng-template #loading>

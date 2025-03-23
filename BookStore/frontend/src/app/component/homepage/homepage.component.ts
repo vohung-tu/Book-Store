@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 import { BookDetails } from '../../model/books-details.model';
 import { BooksService } from '../../service/books.service';
 import { CommonModule } from '@angular/common';
+import { TabsModule } from 'primeng/tabs';
 
 @Component({
   selector: 'app-homepage',
@@ -17,7 +18,8 @@ import { CommonModule } from '@angular/common';
     MatDatepickerModule,
     MatNativeDateModule,
     MatMomentDateModule, 
-    RouterModule
+    RouterModule,
+    TabsModule
   ],
   styleUrls: ['./homepage.component.scss'],
 })

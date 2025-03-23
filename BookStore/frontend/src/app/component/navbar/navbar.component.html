@@ -31,6 +31,7 @@
         <div class="header__top__right__cart">
           <a routerLink="/cart" class="cart-btn" mat-button>
             <mat-icon>shopping_cart</mat-icon>
+            <p-badge *ngIf="cartItemCount > 0" [value]="cartItemCount" severity="danger"></p-badge>
           </a>
         </div>
 

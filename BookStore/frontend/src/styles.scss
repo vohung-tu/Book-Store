@@ -19,5 +19,7 @@ html {
 html, body { 
   height: 100%;
   overflow-x: hidden; /* Ẩn thanh cuộn ngang */
-  width: 100%; }
+  width: 100%; 
+  background-color: #fff !important;
+}
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

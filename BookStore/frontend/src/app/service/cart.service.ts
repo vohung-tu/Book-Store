@@ -32,9 +32,9 @@ export class CartService {
   addToCart(book: BookDetails): void {
     const existingBook = this.cart.find(item => item._id === book._id);
     if (existingBook) {
-      existingBook.quatity = (existingBook.quatity || 1) + 1;
+      existingBook.quantity = (existingBook.quantity || 1) + 1;
     } else {
-      this.cart.push({ ...book, quatity: 1 });
+      this.cart.push({ ...book, quantity: 1 });
     }
     this.updateCart();
   }
@@ -42,7 +42,7 @@ export class CartService {
   updateQuantity(bookId: string, change: number): void {
     const book = this.cart.find(item => item._id === bookId);
     if (book) {
-      book.quatity = Math.max(1, (book.quatity || 1) + change);
+      book.quantity = Math.max(1, (book.quantity || 1) + change);
       this.updateCart();
     }
   }
