@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 import { BookDetails } from '../model/books-details.model';
 
 @Injectable({
@@ -26,7 +26,9 @@ export class CartService {
   }
 
   getCart(): Observable<BookDetails[]> {
-    return this.cartSubject.asObservable();
+    return this.cartSubject.asObservable().pipe(
+      map(items => items || [])
+    );
   }
 
   addToCart(book: BookDetails): void {

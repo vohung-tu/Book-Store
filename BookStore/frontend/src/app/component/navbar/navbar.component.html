@@ -38,14 +38,6 @@
           </p-button>
         </div>
 
-        <div class="header__top__right__language">
-          <button class="btn-change-language" mat-button [matMenuTriggerFor]="languageMenu">🇻🇳 Vietnam</button>
-          <mat-menu #languageMenu="matMenu">
-            <button mat-menu-item (click)="changeLanguage('vi')">🇻🇳 Vietnam</button>
-            <button mat-menu-item (click)="changeLanguage('en')">🇬🇧 English</button>
-          </mat-menu>
-        </div>
-
         <div class="sign_up">
           <ng-container *ngIf="isLoading$ | async; else loadedState">
             <mat-spinner diameter="24"></mat-spinner> <!-- Spinner khi loading -->
@@ -72,6 +64,15 @@
             <button class="signUp" mat-button routerLink="/signup">ĐĂNG KÝ</button>
             </ng-template>
           </ng-template>
+        </div>
+        <a routerLink="/contact" mat-button style="color:black">Liên Hệ</a>
+
+        <div class="header__top__right__language">
+          <button class="btn-change-language" mat-button [matMenuTriggerFor]="languageMenu">🇻🇳 Vietnam</button>
+          <mat-menu #languageMenu="matMenu">
+            <button mat-menu-item (click)="changeLanguage('vi')">🇻🇳 Vietnam</button>
+            <button mat-menu-item (click)="changeLanguage('en')">🇬🇧 English</button>
+          </mat-menu>
         </div>
 
       </div>

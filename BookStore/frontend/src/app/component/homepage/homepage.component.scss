@@ -37,7 +37,7 @@
 }
 
 .container-flashsale {
-  background-color: pink; 
+  background-color: #BE5985; 
   width: 100%; 
   padding-top: 20px; 
   margin-top: 20px;
@@ -182,7 +182,7 @@
   margin: 20px 150px 20px 150px;
   padding: 10px;
   border-radius: 10px;
-  background: pink;
+  background: #BE5985;
 }
 p-tabs {
   background-color: white !important; 
@@ -194,8 +194,93 @@ p-tabs {
   }
 }
 p-tab {
-  background-color: #f7e187;
+  background-color: #BE5985;
+  color: #fff;
 }
 p-tab:hover {
   color: #333;
+}
+
+.blog-section {
+  margin: 30px 0;
+  padding: 0 150px;
+  
+  .blog-header {
+    background: #BE5985;
+    color: white;
+    padding: 10px 20px;
+    display: inline-block;
+  }
+
+  .blog-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+
+    .blog-card {
+      background: #ddd;
+      padding: 15px;
+      border-radius: 8px;
+      color: #000;
+      width: 300px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease-in-out;
+
+      &:hover {
+        transform: translateY(-5px);
+      }
+
+      .blog-meta {
+        font-size: 14px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .blog-title {
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .blog-summary {
+        font-size: 14px;
+        color: #444;
+      }
+    }
+  }
+}
+
+.benefits-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #BE5985;
+  padding: 40px;
+  color: white;
+  text-align: center;
+
+  .benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+      font-size: 32px;
+      transition: transform 0.5s ease-in-out;
+      &:hover {
+        transform: rotate(360deg); // Xoay 360 độ khi hover
+      }
+    }
+
+    h4 {
+      font-weight: bold;
+      margin: 0;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
+  }
 }

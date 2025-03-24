@@ -90,6 +90,59 @@
       </p-tabpanels>
     </p-tabs>
   </div>
+  <!-- blog -->
+  <div class="blog-section">
+    <div class="blog-header">
+      <h2>BLOG</h2>
+    </div>
+  
+    <div class="blog-container">
+      <div class="blog-card" *ngFor="let post of blogPosts">
+        <div class="blog-meta">
+          <i class="pi pi-calendar"></i>: {{ post.date }}  
+          <span>Đăng bởi: <b>{{ post.author }}</b></span>
+        </div>
+        <h3 class="blog-title">{{ post.title }}</h3>
+        <p class="blog-summary">{{ post.summary }}</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- benefit -->
+  <div class="benefits-container">
+    <div class="benefit-item">
+      <i class="pi pi-truck"></i>
+      <div>
+        <h4>MIỄN PHÍ VẬN CHUYỂN</h4>
+        <p>Đơn hàng từ 500,000VND</p>
+      </div>
+    </div>
+  
+    <div class="benefit-item">
+      <i class="pi pi-refresh"></i>
+      <div>
+        <h4>DỄ DÀNG TIỆN LỢI</h4>
+        <p>Đặt sách theo yêu cầu</p>
+      </div>
+    </div>
+  
+    <div class="benefit-item">
+      <i class="pi pi-gift"></i>
+      <div>
+        <h4>TÍCH ĐIỂM ĐỔI QUÀ</h4>
+        <p>Nhận nhiều ưu đãi</p>
+      </div>
+    </div>
+  
+    <div class="benefit-item">
+      <i class="pi pi-star"></i>
+      <div>
+        <h4>DỊCH VỤ 5 SAO</h4>
+        <p>150+ ratings từ Facebook</p>
+      </div>
+    </div>
+  </div>
+  
 </ng-container>
 
 

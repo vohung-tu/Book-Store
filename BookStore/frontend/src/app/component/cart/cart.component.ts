@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { BookDetails } from '../../model/books-details.model';
 import { CartService } from '../../service/cart.service';
 import { CommonModule } from '@angular/common';
@@ -38,7 +38,9 @@ export class CartComponent implements OnInit {
   constructor(
     private cartService: CartService
   ) {
-    this.cart$ = this.cartService.getCart();
+    this.cart$ = this.cartService.getCart().pipe(
+      map(cart => cart || [])
+    );
   }
 
   ngOnInit(): void {

@@ -1,4 +1,5 @@
-<div class="product-container">
+<h1 style="text-align: center; color: black; align-items: center;">Sản phẩm yêu thích</h1>
+<div class="product-container" *ngIf="favoriteBooks.length > 0; else noFavorites">
   <div class="product-item" *ngFor="let book of favoriteBooks">
     <!-- Hình ảnh sản phẩm -->
     <div class="product-image">
@@ -33,3 +34,9 @@
     </div>
   </div>
 </div>
+<!-- Thông báo khi không có sản phẩm yêu thích -->
+<ng-template #noFavorites>
+  <div class="no-favorites">
+    <p>Không có sản phẩm nào được thêm vào danh sách yêu thích. <a href="/">Về trang chủ</a></p>
+  </div>
+</ng-template>

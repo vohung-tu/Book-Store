@@ -36,6 +36,34 @@ export class HomepageComponent implements OnInit, OnDestroy {
   hours: number = 0;
   minutes: number = 0;
   seconds: number = 0;
+
+  blogPosts = [
+    {
+      date: '23/03/2025',
+      author: 'Pam Blog',
+      title: 'Yuval Noah Harari: Chúng ta cần giáo dục con trẻ như thế nào để thành công vào năm 2050?',
+      summary: 'Yuval Noah Harari là tác giả người Israel được biết đến nhiều qua các cuốn sách...',
+    },
+    {
+      date: '21/04/2024',
+      author: 'Pam Blog',
+      title: '6 tựa sách hay về Trung Quốc đương đại khuyến đọc bởi tạp chí SupChina',
+      summary: 'Trung Quốc đã đi một chặng đường dài kể từ những ngày đen tối của cách mạng văn hóa...',
+    },
+    {
+      date: '15/02/2025',
+      author: 'Pam Blog',
+      title: 'Một số thuật ngữ sách ngoại văn bạn nên biết',
+      summary: '1. Movie tie-in edition là thuật ngữ dùng để chỉ một cuốn sách mà thì...',
+    },
+    {
+      date: '15/02/2025',
+      author: 'Pam Blog',
+      title: 'Một số thuật ngữ sách ngoại văn bạn nên biết',
+      summary: '1. Movie tie-in edition là thuật ngữ dùng để chỉ một cuốn sách mà thì...',
+    },
+  ];
+  
   
   private timerSubscription!: Subscription;
 

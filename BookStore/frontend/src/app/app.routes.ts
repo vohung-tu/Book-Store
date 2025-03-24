@@ -6,6 +6,7 @@ import { DetailComponent } from './component/detail/detail.component';
 import { CartComponent } from './component/cart/cart.component';
 import { UserInfoComponent } from './component/user-info/user-info.component';
 import { FavoritePageComponent } from './component/favorite-page/favorite-page.component';
+import { ContactComponent } from './component/contact/contact.component';
 
 const routes: Routes = [
   { 
@@ -46,6 +47,11 @@ const routes: Routes = [
     path: 'wishlist',
     component: FavoritePageComponent,
     title: 'Sản phẩm yêu thích'
+  },
+  {
+    path: 'contact',
+    component: ContactComponent,
+    title: 'Liên hệ chúng tôi'
   }
 ];
 
