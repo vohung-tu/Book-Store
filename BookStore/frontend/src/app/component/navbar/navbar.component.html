@@ -30,9 +30,12 @@
       <div class="header__top__right">
         <div class="header__top__right__cart">
           <a routerLink="/cart" class="cart-btn" mat-button>
-            <mat-icon>shopping_cart</mat-icon>
+            <i class="pi pi-shopping-cart"></i>
             <p-badge *ngIf="cartItemCount > 0" [value]="cartItemCount" severity="danger"></p-badge>
           </a>
+          <p-button routerLink="/wishlist" variant="text"   styleClass="m-0">
+            <i class="pi pi-heart-fill" style="color: black"></i>
+          </p-button>
         </div>
 
         <div class="header__top__right__language">
@@ -51,7 +54,7 @@
           <ng-template #loadedState>
             <ng-container *ngIf="isLoggedIn$ | async; else notLoggedIn">
               <button mat-button [matMenuTriggerFor]="userMenu">
-                <mat-icon>account_circle</mat-icon>
+                <i class="pi pi-user" style="color: black"></i>
               </button>
         
               <mat-menu #userMenu="matMenu">

@@ -13,6 +13,7 @@ import { CartService } from '../../service/cart.service';
 import { BookDetails } from '../../model/books-details.model';
 import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-navbar',
@@ -29,7 +30,8 @@ import { OverlayBadgeModule } from 'primeng/overlaybadge';
     CommonModule, 
     RouterModule,
     BadgeModule,
-    OverlayBadgeModule
+    OverlayBadgeModule,
+    ButtonModule
   ],
   styleUrls: ['./navbar.component.scss']
 })

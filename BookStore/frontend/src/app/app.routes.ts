@@ -5,6 +5,7 @@ import { SigninComponent } from './component/signin/signin.component';
 import { DetailComponent } from './component/detail/detail.component';
 import { CartComponent } from './component/cart/cart.component';
 import { UserInfoComponent } from './component/user-info/user-info.component';
+import { FavoritePageComponent } from './component/favorite-page/favorite-page.component';
 
 const routes: Routes = [
   { 
@@ -40,6 +41,11 @@ const routes: Routes = [
     path: 'userInfo',
     component: UserInfoComponent,
     title: 'User Detail'
+  },
+  {
+    path: 'wishlist',
+    component: FavoritePageComponent,
+    title: 'Sản phẩm yêu thích'
   }
 ];
 

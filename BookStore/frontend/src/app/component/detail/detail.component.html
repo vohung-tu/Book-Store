@@ -40,7 +40,13 @@
     <div class="purchase-buttons">
       <p-toast position="top-right" key="tr" />
       <p-button pRipple [rounded]="true" (click)="addToCart()" label="Thêm vào giỏ hàng" severity="success"/>
-      <p-button pRipple [rounded]="true" variant="outlined" (click)="addToCart()" label="Mua ngay" severity="success"/>
+      <p-button 
+      [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
+      (click)="toggleFavorite()" 
+      [rounded]="true" 
+      [text]="true" 
+      [raised]="true" 
+      severity="success" />
     </div>
 
   </div>

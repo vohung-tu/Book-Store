@@ -12,6 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
+import { FavoritePageService } from '../../service/favorite-page.service';
 
 @Component({
   selector: 'app-detail',
@@ -34,16 +35,17 @@ import { MessageService } from 'primeng/api';
 
 export class DetailComponent implements OnInit{
   @Input() book!: BookDetails;
+  isFavorite = false; // Trạng thái yêu thích
   books: BookDetails | undefined;
   quantity: number = 1;
   showDialog = false;
-  // readonly dialog = inject(MatDialog);
   @ViewChild('cartDialog') cartDialog!: TemplateRef<any>; // Trỏ đến dialog template trong HTML
 
   constructor(
     private route: ActivatedRoute,
     private bookService: BooksService,
     private cartService: CartService,
+    private favoriteService: FavoritePageService,
     private messageService: MessageService
   ) {}
 
@@ -85,5 +87,29 @@ export class DetailComponent implements OnInit{
     }
     this.cartService.addToCart({ ...this.book, quantity: this.quantity });
     this.messageService.add({ severity: 'success', summary: 'Thêm thành công', detail: 'Đã thêm vào giỏ hàng thành công!', key: 'tr', life: 3000 });
+  }
+
+  toggleFavorite() {
+    console.log(this.favoriteService); 
+    this.isFavorite = !this.isFavorite;
+    if (this.isFavorite) {
+      this.favoriteService.addToFavorites(this.book);
+      this.messageService.add({ 
+        severity: 'success', 
+        summary: 'Thành công', 
+        detail: 'Đã thêm vào trang yêu thích',
+        key: 'tr',
+        life: 2000
+      });
+    } else {
+      this.favoriteService.removeFromFavorites(this.book._id);
+      this.messageService.add({ 
+        severity: 'warn', 
+        summary: 'Thông báo', 
+        detail: 'Đã xóa khỏi trang yêu thích',
+        key: 'tr',
+        life: 2000
+       });
+    }
   }
 }
