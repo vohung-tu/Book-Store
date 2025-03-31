@@ -6,8 +6,10 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { RouterModule } from '@angular/router';
 import { BookDetails } from '../../model/books-details.model';
 import { BooksService } from '../../service/books.service';
+import { CarouselModule } from 'primeng/carousel';
 import { CommonModule } from '@angular/common';
 import { TabsModule } from 'primeng/tabs';
+import { ProductItemComponent } from '../product-item/product-item.component';
 
 @Component({
   selector: 'app-homepage',
@@ -19,7 +21,9 @@ import { TabsModule } from 'primeng/tabs';
     MatNativeDateModule,
     MatMomentDateModule, 
     RouterModule,
-    TabsModule
+    TabsModule,
+    CarouselModule,
+    ProductItemComponent
   ],
   styleUrls: ['./homepage.component.scss'],
 })
@@ -29,6 +33,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
   ) {}
   books: BookDetails[] = [];
   selectedBook?: BookDetails;
+  sachThamKhao: BookDetails[] = [];
+  sachTrongNuoc: BookDetails[] = [];
   // Đặt thời gian kết thúc flash sale (ví dụ: 30 00:00:00)
   flashSaleEnd: Date = new Date('2025-03-10T00:00:00');
 
@@ -63,7 +69,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
       summary: '1. Movie tie-in edition là thuật ngữ dùng để chỉ một cuốn sách mà thì...',
     },
   ];
-  
+  responsiveOptions: any[] | undefined;
+
   
   private timerSubscription!: Subscription;
 
@@ -73,9 +80,35 @@ export class HomepageComponent implements OnInit, OnDestroy {
       this.updateCountdown();
     });
     this.updateCountdown();
+    this.responsiveOptions = [
+      {
+          breakpoint: '1400px',
+          numVisible: 2,
+          numScroll: 1
+      },
+      {
+          breakpoint: '1199px',
+          numVisible: 3,
+          numScroll: 1
+      },
+      {
+          breakpoint: '767px',
+          numVisible: 2,
+          numScroll: 1
+      },
+      {
+          breakpoint: '575px',
+          numVisible: 1,
+          numScroll: 1
+      }
+  ]
 
     this.bookService.getBooks().subscribe((data) => {
       this.books = data;
+      this.sachThamKhao = this.books.filter(book => book.categoryName === 'sach-tham-khao');
+      this.sachTrongNuoc = this.books.filter(book => book.categoryName === 'sach-trong-nuoc');
+
+
     });
   }
 

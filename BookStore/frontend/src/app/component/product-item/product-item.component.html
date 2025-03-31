@@ -1,0 +1,12 @@
+<div class="book-item">
+  <a [routerLink]="['/details', book.id]">
+    <img [src]="book.coverImage" alt="{{ book.title }}" />
+    <h3>{{ book.title }}</h3>
+    <p>Tác giả: {{ book.author }}</p>
+    <h4>Giá: {{ book.flashsale_price | number:'1.3-3' }} đ</h4>
+    <div class="discount">
+      <h5> {{ book.price | number:'1.3-3' }} đ </h5> 
+      <div class="discount-badge">-{{ book.discount_percent }}%</div>
+    </div>
+  </a>
+</div>
