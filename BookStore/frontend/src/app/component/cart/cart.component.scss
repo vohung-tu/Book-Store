@@ -73,6 +73,12 @@
 .cart-summary {
   text-align: right;
   margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
+  h3 {
+    padding-right: 20px;
+  }
 }
 .no-selected {
   text-align: center;

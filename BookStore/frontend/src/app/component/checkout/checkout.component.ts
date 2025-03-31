@@ -47,7 +47,7 @@ export class CheckoutComponent implements OnInit{
     const savedTotal = localStorage.getItem('totalAmount');
 
     this.selectedBooks = savedCart ? JSON.parse(savedCart) : [];
-    this.totalAmount = savedTotal ? JSON.parse(savedTotal) : 0;
+    this.totalAmount = this.selectedBooks.reduce((sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1), 0);;
 
     // lấy giỏ hàng từ Navigation state
     this.authService.getUserInfo().subscribe(user => {
@@ -62,16 +62,13 @@ export class CheckoutComponent implements OnInit{
       }
     });
   }
+
   submitOrder() {
     console.log('🛒 Sản phẩm trong giỏ:', this.selectedBooks);
     if (!this.orderInfo.name || !this.orderInfo.email || !this.orderInfo.address || !this.orderInfo.phone) {
       alert('Vui lòng nhập đủ thông tin!');
       return;
     }
-    // if (!this.selectedBooks || this.selectedBooks.length === 0) {
-    //   alert('Không có sản phẩm nào trong giỏ hàng!');
-    //   return;
-    // }
 
     const orderData = {
       userId: this.user?.id,
