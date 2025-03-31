@@ -1,0 +1,21 @@
+<h2>Sản phẩm thuộc danh mục: {{ categoryName | categoryFormat }}</h2>
+
+<div class="product-container" *ngIf="products.length > 0; else noProducts">
+  <div *ngFor="let product of products" class="product-item">
+    <a [routerLink]="['/details', product.id]">
+      <img [src]="product.coverImage" alt="{{ product.title }}">
+      <h3>{{ product.title }}</h3>
+      <p>Tác giả: {{ product.author }}</p>
+      <h4>Giá: {{ product.flashsale_price | number:'1.3-3' }} đ</h4>
+      <div class="discount"  style="display: flex;">
+        <h5> {{ product.price | number:'1.3-3' }} đ </h5> 
+        <div class="discount-badge">-{{ product.discount_percent }}%</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Hiển thị thông báo nếu không có sản phẩm -->
+<ng-template #noProducts>
+  <p class="no-products">Không có sản phẩm nào trong danh mục này.</p>
+</ng-template>

@@ -10,6 +10,7 @@ import { TableModule } from 'primeng/table';
 import { PaginatorModule } from 'primeng/paginator';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-cart',
@@ -36,12 +37,13 @@ export class CartComponent implements OnInit {
   selectedBooks: BookDetails[] = [];
 
   constructor(
-    private cartService: CartService
+    private cartService: CartService,
+    private router: Router
   ) {
     this.cart$ = this.cartService.getCart().pipe(
       map(cart => cart || [])
     );
-  }
+  } 
 
   ngOnInit(): void {
     this.cart$.subscribe(cart => {
@@ -81,5 +83,24 @@ export class CartComponent implements OnInit {
   
   deselectAll(): void {
     this.selectedBooks = [];
+  }
+
+  goToCheckout() {
+    console.log('🔄 Chuyển sang trang thanh toán với giỏ hàng:', this.selectedBooks);
+    if (this.selectedBooks.length === 0) {
+      alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
+      return;
+    }
+    localStorage.setItem('cart', JSON.stringify(this.selectedBooks));
+    localStorage.setItem('totalAmount', JSON.stringify(this.totalPrice));
+  
+    this.router.navigate(['/checkout'], { 
+      state: { cart: this.selectedBooks, total: this.calculateTotalSelectedPrice() } 
+    });
+  }
+  
+  // Tính tổng tiền chỉ cho các sách đã chọn
+  calculateTotalSelectedPrice(): number {
+    return this.selectedBooks.reduce((sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1), 0);
   }
 }

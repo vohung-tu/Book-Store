@@ -7,6 +7,8 @@ import { CartComponent } from './component/cart/cart.component';
 import { UserInfoComponent } from './component/user-info/user-info.component';
 import { FavoritePageComponent } from './component/favorite-page/favorite-page.component';
 import { ContactComponent } from './component/contact/contact.component';
+import { CategoryComponent } from './component/category/category.component';
+import { CheckoutComponent } from './component/checkout/checkout.component';
 
 const routes: Routes = [
   { 
@@ -52,6 +54,15 @@ const routes: Routes = [
     path: 'contact',
     component: ContactComponent,
     title: 'Liên hệ chúng tôi'
+  },
+  { path: 'category/:categoryName', 
+    component: CategoryComponent,
+    title: 'Danh mục' 
+  },
+  {
+    path: 'checkout',
+    component: CheckoutComponent,
+    title: 'Thanh Toán'
   }
 ];
 

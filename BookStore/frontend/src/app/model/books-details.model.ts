@@ -9,5 +9,6 @@ export interface BookDetails {
   discount_percent: number,
   coverImage: string, //link
   publishedDate: Date,
-  quantity?: number 
+  quantity?: number,
+  categoryName: string 
 }

@@ -24,7 +24,6 @@
 
   .contact-info {
     justify-content: space-around;
-    margin: 20px 0;
     text-align: center;
 
     .info {
@@ -32,11 +31,11 @@
       align-items: center;
       gap: 10px;
       font-size: 18px;
-      color: #333;
+      color: #fff;
 
       i {
         font-size: 24px;
-        color: #4c7b6e;
+        color: #fff;
       }
     }
   }
@@ -69,6 +68,7 @@
     h2 {
       font-size: 24px;
       margin-bottom: 10px;
+      color: #fff;
     }
 
     form {

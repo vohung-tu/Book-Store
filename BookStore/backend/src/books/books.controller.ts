@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Book } from './book.schema';
 
@@ -31,4 +31,14 @@ export class BooksController {
   async delete(@Param('id') id: string): Promise<void> {
     return this.booksService.delete(id);
   }
+
+  @Get('category/:categoryName')
+  async getProductsByCategory(@Param('categoryName') categoryName: string): Promise<Book[] | null> {
+    if (!categoryName) {
+      throw new BadRequestException('Category name is required');
+    }
+
+    return this.booksService.findByCategory(categoryName);
+  }
+
 }

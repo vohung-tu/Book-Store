@@ -28,6 +28,9 @@ export class Book {
 
   @Prop({ type: Date })
   publishedDate: Date;
+
+  @Prop({ required: true })
+  categoryName: string;
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);

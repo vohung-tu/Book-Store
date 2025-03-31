@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../service/auth.service';
 import { CommonModule, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -44,7 +44,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   cart$: Observable<BookDetails[]>;
 
   constructor(private authService: AuthService,
-    private cartService: CartService
+    private cartService: CartService,
+    private router: Router
   ) {
     this.cart$ = this.cartService.getCart();
   }
@@ -72,5 +73,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  navigateToCategory(category: string) {
+    if (!category) {
+    }
+    this.router.navigate(['/category', category]);
   }
 }

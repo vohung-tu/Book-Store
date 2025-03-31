@@ -23,7 +23,6 @@ export class ContactComponent {
 
   submitForm() {
     if (this.contactForm.valid) {
-      console.log('Thông tin liên hệ:', this.contactForm.value);
       alert('Gửi liên hệ thành công!');
       this.contactForm.reset();
     }

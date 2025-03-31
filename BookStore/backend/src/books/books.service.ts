@@ -31,4 +31,8 @@ export class BooksService {
     async delete(id: string): Promise<void> {
         await this.bookModel.findByIdAndDelete(id).exec();
     }
+
+    async findByCategory(categoryName: string): Promise<Book[]> {
+        return this.bookModel.find({ categoryName: categoryName }).exec();
+    }
 }

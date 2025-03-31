@@ -32,4 +32,10 @@ export class BooksService {
       }))
     );
   }
-}
+
+  // lấy books by category
+  getProductsByCategory(categoryName: string): Observable<BookDetails[]> {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/category/${categoryName}`);
+  }
+
+}   

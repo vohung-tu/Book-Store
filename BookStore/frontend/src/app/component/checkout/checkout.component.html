@@ -1,0 +1,57 @@
+<h1 style="text-align: center; color: black;">THANH TOÁN</h1>
+
+<!-- Hiển thị danh sách sản phẩm được chọn -->
+<div class="checkout-container" *ngIf="selectedBooks.length > 0">
+  <p-table [value]="selectedBooks" [paginator]="true" [rows]="5">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Sản phẩm</th>
+        <th>Giá</th>
+        <th>Số lượng</th>
+        <th>Thành tiền</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-book>
+      <tr>
+        <td>
+          <img [src]="book.coverImage" alt="product" class="product-img" />
+          {{ book.title }}
+        </td>
+        <td>
+          {{ book.flashsale_price || book.price | number:'1.3-3' }} đ
+        </td>
+        <td>{{ book.quantity || 1 }}</td>
+        <td class="total-price">
+          {{ (book.flashsale_price || book.price) * (book.quantity || 1) | number:'1.3-3' }} đ
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Form nhập thông tin giao hàng -->
+  <div class="shipping-info">
+    <h3>Thông tin giao hàng</h3>
+    <form (ngSubmit)="submitOrder()">
+      <label for="name">Họ và tên:</label>
+      <input id="name" type="text" [(ngModel)]="orderInfo.name" name="name" required>
+      
+      <label for="email">Email:</label>
+      <input id="email" type="email" [(ngModel)]="orderInfo.email" name="email" required>
+
+      <label for="address">Địa chỉ:</label>
+      <input id="address" type="text" [(ngModel)]="orderInfo.address" name="address" required>
+      
+      <label for="phone">Số điện thoại:</label>
+      <input id="phone" type="text" [(ngModel)]="orderInfo.phone" name="phone" required>
+      
+      <h3>Tổng tiền: {{ totalAmount | number:'1.3-3' }} đ</h3>
+      <button type="submit" class="pay-btn">Xác nhận thanh toán</button>
+    </form>
+  </div>
+</div>
+
+<!-- Nếu không có sản phẩm nào -->
+<div *ngIf="selectedBooks.length === 0" class="no-items">
+  <p>Không có sản phẩm nào để thanh toán. Quay lại <a routerLink="/cart">giỏ hàng</a>.</p>
+</div>

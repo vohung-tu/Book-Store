@@ -90,7 +90,6 @@ export class DetailComponent implements OnInit{
   }
 
   toggleFavorite() {
-    console.log(this.favoriteService); 
     this.isFavorite = !this.isFavorite;
     if (this.isFavorite) {
       this.favoriteService.addToFavorites(this.book);
