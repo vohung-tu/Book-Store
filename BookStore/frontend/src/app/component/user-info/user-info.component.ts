@@ -32,7 +32,7 @@ export class UserInfoComponent implements OnInit{
 
   ngOnInit(): void {
     // this.authService.getUserInfo().subscribe((data) => {
-    //   this.dataSource = data;
+    //   this.dataSource = data?.birth;
     // })
   }
 

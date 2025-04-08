@@ -1,4 +1,4 @@
-<h1 style="text-align: center; color: black;">THANH TOÁN</h1>
+<h1 class="text-center text-black">THANH TOÁN</h1>
 
 <!-- Hiển thị danh sách sản phẩm được chọn -->
 <div class="checkout-container" *ngIf="selectedBooks.length > 0">
@@ -18,9 +18,7 @@
           <img [src]="book.coverImage" alt="product" class="product-img" />
           {{ book.title }}
         </td>
-        <td>
-          {{ book.flashsale_price || book.price | number:'1.3-3' }} đ
-        </td>
+        <td>{{ book.flashsale_price || book.price | number:'1.3-3' }} đ</td>
         <td>{{ book.quantity || 1 }}</td>
         <td class="total-price">
           {{ (book.flashsale_price || book.price) * (book.quantity || 1) | number:'1.3-3' }} đ
@@ -30,25 +28,124 @@
   </p-table>
 
   <!-- Form nhập thông tin giao hàng -->
-  <div class="shipping-info">
-    <h3>Thông tin giao hàng</h3>
-    <form (ngSubmit)="submitOrder()">
-      <label for="name">Họ và tên:</label>
-      <input id="name" type="text" [(ngModel)]="orderInfo.name" name="name" required>
+  <div class="payment-info">
+    <div class="shipping-info">
+      <h3>Thông tin nhận hàng</h3>
+      <form (ngSubmit)="submitOrder()" class="checkout-form">
+        <!-- Họ và tên -->
+        <label for="name">Họ và tên:</label>
+        <input id="name" type="text" [(ngModel)]="orderInfo.name" name="name" />
       
-      <label for="email">Email:</label>
-      <input id="email" type="email" [(ngModel)]="orderInfo.email" name="email" required>
+        <label for="email">Email:</label>
+        <input id="email" type="email" [(ngModel)]="orderInfo.email" name="email" required />
+      
+        <label for="phone">Số điện thoại:</label>
+        <input id="phone" type="tel" [(ngModel)]="orderInfo.phone" name="phone" required />
+      
+        <label for="address">Địa chỉ:</label>
+        <input id="address" type="text" [(ngModel)]="orderInfo.address" name="address" required />
+      
+        <label for="note">Ghi chú (tùy chọn):</label>
+        <textarea id="note" rows="5" [(ngModel)]="orderInfo.note" name="note"></textarea>
+      </form>
+    </div>
 
-      <label for="address">Địa chỉ:</label>
-      <input id="address" type="text" [(ngModel)]="orderInfo.address" name="address" required>
+
+    <!-- Phương thức thanh toán -->
+    <div class="payment-method">
+      <h3>Vận chuyển</h3>
+      <div class="shipping-option">
+        <p-radiobutton 
+          name="shipping" 
+          value="other_provinces" 
+          [(ngModel)]="shipping.selected" 
+          inputId="otherProvinces">
+        </p-radiobutton>
       
-      <label for="phone">Số điện thoại:</label>
-      <input id="phone" type="text" [(ngModel)]="orderInfo.phone" name="phone" required>
+        <label for="otherProvinces" class="shipping-label">
+          Các tỉnh thành (2-4 ngày)
+        </label>
       
-      <h3>Tổng tiền: {{ totalAmount | number:'1.3-3' }} đ</h3>
-      <button type="submit" class="pay-btn">Xác nhận thanh toán</button>
-    </form>
+        <span class="shipping-price">25.000 VND</span>
+      </div>
+      
+      <h3>Thanh toán</h3>
+      <div class="flex-1 flex-wrap gap-4">
+        <div class="flex items-center" style="display: flex;">
+          <p-radiobutton name="payment-ck" value="payment" [(ngModel)]="orderInfo.payment" inputId="ingredient1"  />
+          <label for="ingredient1" class="ml-2">Chuyển khoản qua ngân hàng</label>
+        </div>
+
+        <div *ngIf="orderInfo.payment === 'payment'" class="ml-6">
+          <p><strong>Thông tin chuyển khoản:</strong></p>
+          <p>Ngân hàng: Vietcombank</p>
+          <p>Số tài khoản: 123456789</p>
+          <p>Chủ tài khoản: Nguyễn Văn A</p>
+          <p>Nội dung chuyển khoản: [Mã đơn hàng]</p>
+        </div>
+
+        <div class="flex-1 items-center" style="display: flex;">
+          <p-radiobutton name="payment-vnp" value="payment" [(ngModel)]="orderInfo.payment" inputId="ingredient2" [disabled]="true" />
+          <label for="ingredient2" class="ml-2">Thanh toán qua VNPAY-QR</label>
+        </div>
+
+        <div class="flex-1 items-center" style="display: flex;">
+          <p-radiobutton name="payment-zl" value="payment" [(ngModel)]="orderInfo.payment" inputId="ingredient3" [disabled]="true" />
+          <label for="ingredient3" class="ml-2">Thanh toán qua ZaloPay</label>
+        </div>
+
+        <div class="flex-1 items-center" style="display: flex;">
+          <p-radiobutton name="payment-code" value="Onion" [(ngModel)]="orderInfo.payment" inputId="ingredient4" />
+          <label for="ingredient4" class="ml-2">Thanh toán khi nhận hàng (COD)</label>
+        </div>
+      </div>
+
+      <div class="mt-4 " style="display: flex;">
+        <input type="text" pInputText [(ngModel)]="discountCode" placeholder="Nhập mã giảm giá" name="discountCode" />
+        <button pButton type="button" label="Áp dụng" icon="pi pi-check" class="custom-apply-btn" (click)="applyDiscountCode()"></button>
+      </div>
+      <div 
+      *ngIf="discountMessage"
+      [ngStyle]="{
+        color: isDiscountValid ? '#2e7d32' : '#d32f2f',
+        'font-size': '12px',
+        'margin-top': '5px'
+      }">
+      {{ discountMessage }}
+    </div>
+
+      <!-- Hiển thị các mã giảm giá có sẵn -->
+      <div class="available-coupons mt-4">
+        <h3>Mã giảm giá có sẵn</h3>
+        <ul class="coupon-list">
+          <li *ngFor="let coupon of availableCoupons" 
+            (click)="selectCoupon(coupon.code)"
+            [ngClass]="{ 'selected': discountCode === coupon.code }" 
+            class="coupon-item">
+            <strong style="color: #d32f2f;">{{ coupon.code }}</strong> - {{ coupon.description }}
+          </li>
+        </ul>
+      </div>
+      <div class="price-summary">
+        <div class="line">
+          <strong>Tạm tính:</strong>
+          <p>{{ discountedAmount | number:'1.3-3' }} đ</p>
+        </div>
+        <div class="line">
+          <strong>Phí vận chuyển:</strong>
+          <p>{{ shippingFee | number:'1.3-3' }} đ</p>
+        </div>
+        <p-divider />
+        <div class="line total">
+          <strong>Tổng tiền:</strong>
+          <p>{{ (discountedAmount + shippingFee) | number:'1.3-3' }} đ</p>
+        </div>
+      </div>
+      
+      <button type="submit" class="pay-btn" (click)="submitOrder()"><strong>ĐẶT HÀNG</strong></button>
+    </div>
   </div>
+
 </div>
 
 <!-- Nếu không có sản phẩm nào -->

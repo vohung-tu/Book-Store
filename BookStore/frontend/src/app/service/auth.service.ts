@@ -1,8 +1,9 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, EMPTY, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, of, switchMap, tap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { User } from '../model/users-details.model';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -22,18 +23,15 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: any
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-
     if (this.isBrowser) {
       this.restoreSession(); // ✅ Khôi phục trạng thái đăng nhập khi load lại trang
     }
   }
 
-  /**
-   * ✅ Khôi phục session khi load lại trang
-   */
   private restoreSession() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
@@ -50,34 +48,30 @@ export class AuthService {
       this.isLoggedInSubject.next(false);
     }
   }
+
   signup(user: any): Observable<any> {
     return this.http.post(`${this.API_URL}/signup`, user);
   }
-  /**
-   * ✅ Đăng nhập
-   */
+
   signin(credentials: any, rememberMe: boolean): Observable<any> {
     return this.http.post(`${this.API_URL}/signin`, credentials).pipe(
       tap((res: any) => {
-        if (res.token) {
+        if (res.token && res.user) {
           this.saveToken(res.token, rememberMe);
-          this.getUserInfo().subscribe();
+          localStorage.setItem('user', JSON.stringify(res.user)); // Lưu user info
         }
       })
     );
   }
-
+  
   setUsername(username: string) {
     this.usernameSubject.next(username);
   }
 
-  /**
-   *  Lấy thông tin user
-   */
   getUserInfo(): Observable<User | null> {
     if (typeof window === 'undefined') {
       return of(null); // Tránh gọi `localStorage` trên server
-  }
+    }
 
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (!token) {
@@ -85,7 +79,6 @@ export class AuthService {
     }
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
     return this.http.get<User>(`${this.API_URL}/user-info`, { headers }).pipe(
       tap((user: User) => {
         if (user && user.username) {
@@ -98,9 +91,6 @@ export class AuthService {
     );
   }
 
-  /**
-   * Lưu token (Remember Me)
-   */
   private saveToken(token: string, rememberMe: boolean) {
     if (this.isBrowser) {
       if (rememberMe) {
@@ -112,9 +102,16 @@ export class AuthService {
     }
   }
 
-  /**
-   *  Đăng xuất
-   */
+  setCurrentUser(user: User): void {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  getCurrentUser(): User | null {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  }
+  
+
   signout(): void {
     if (this.isBrowser) {
       localStorage.removeItem('token');
@@ -123,12 +120,11 @@ export class AuthService {
       this.isLoggedInSubject.next(false);
       this.userSubject.next(null);
       this.usernameSubject.next(null);
+      // Điều hướng người dùng về trang login sau khi đăng xuất
+      this.router.navigate(['/signin']);
     }
   }
 
-  /**
-   * ✅ Kiểm tra trạng thái đăng nhập
-   */
   isAuthenticated(): boolean {
     return this.isBrowser && !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
   }

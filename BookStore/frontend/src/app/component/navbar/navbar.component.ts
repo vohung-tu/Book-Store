@@ -54,6 +54,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
     // this.isLoading$ = this.authService.isLoading$;
     this.username$ = this.authService.username$;
+    
 
     // Kiểm tra và lấy thông tin user khi reload
     this.authService.getUserInfo().subscribe();

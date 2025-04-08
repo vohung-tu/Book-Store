@@ -36,15 +36,15 @@ export class UsersService {
   async signin(dto: SigninDto): Promise<any> {
     const user = await this.userModel.findOne({ email: dto.email });
     if (!user) throw new NotFoundException('Người dùng không tồn tại.');
-
-    // Kiểm tra mật khẩu
+  
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) throw new BadRequestException('Mật khẩu không đúng.');
-
-    // Tạo token JWT
+  
     const token = this.jwtService.sign({ id: user._id, email: user.email });
-    
-    return { token };
+  
+    // Trả token và thông tin người dùng (bạn có thể chọn lọc trường cần thiết)
+    const { password, ...userData } = user.toObject();
+    return { token, user: userData };
   }
 
   /** Lấy tất cả người dùng */

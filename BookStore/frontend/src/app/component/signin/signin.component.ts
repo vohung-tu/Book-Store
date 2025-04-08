@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AuthService } from '../../service/auth.service';
 import { Observable } from 'rxjs';
@@ -35,6 +35,7 @@ export class SigninComponent implements OnInit{
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private route: ActivatedRoute, // Inject ActivatedRoute
     private router: Router 
     ) {
     this.signinForm = this.fb.group({
@@ -57,7 +58,8 @@ export class SigninComponent implements OnInit{
       const { email, password, rememberMe } = this.signinForm.value;
       this.authService.signin({ email, password }, rememberMe).subscribe(
         () => {
-          this.router.navigate(['/home']); // Điều hướng sau khi đăng nhập
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+          this.router.navigate([returnUrl]); // Điều hướng về trang mà người dùng yêu cầu
         },
         (err) => {
           console.error('Đăng nhập thất bại', err);

@@ -25,6 +25,22 @@ export class User {
 
   @Prop()
   phone_number: string;
+
+  @Prop()
+  province?: string;
+
+  @Prop()
+  ward?: string;
+  
+  @Prop()
+  district?: string;
+
+  @Prop()
+  note?: string;
+
+  @Prop()
+  payment: string;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
