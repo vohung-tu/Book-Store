@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true }) // Tự động tạo `createdAt` và `updatedAt`
+@Schema({ timestamps: true }) 
 export class User {
   @Prop({ required: true, unique: true })
   email: string;
@@ -15,7 +15,10 @@ export class User {
   password: string;
 
   @Prop()
-  birth: Date; 
+  birth: Date;
+
+  @Prop({ default: 'admin' })
+  role: string;
 
   @Prop()
   address?: string;
@@ -31,7 +34,7 @@ export class User {
 
   @Prop()
   ward?: string;
-  
+
   @Prop()
   district?: string;
 

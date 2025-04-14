@@ -1,40 +1,53 @@
 import { Component, OnInit } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule } from '@angular/material/card';
-import { AuthService } from '../../service/auth.service';
-import { User } from '../../model/users-details.model';
+import { CardModule } from 'primeng/card';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
-import { ReactiveFormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-user-info',
   standalone: true,
   imports: [
-    MatIconModule,
-    MatCardModule,
+    CardModule,
     CommonModule,
-    MatTableModule,
-    ReactiveFormsModule,
-    MatFormFieldModule
+    ButtonModule,
+    RouterModule
   ],
   templateUrl: './user-info.component.html',
-  styleUrl: './user-info.component.scss'
+  styleUrls: ['./user-info.component.scss']
 })
 export class UserInfoComponent implements OnInit{
-  displayedColumns: string[] = ['username', 'full_name', 'birth', 'address', 'phone_number', 'email']
-  dataSource: User[] = []; // Dữ liệu từ API
-  profileForm!: FormGroup;
+  currentUser: any;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private http: HttpClient,
+  ) {}
 
   ngOnInit(): void {
-    // this.authService.getUserInfo().subscribe((data) => {
-    //   this.dataSource = data?.birth;
-    // })
+    this.getCurrentUser();
   }
 
- 
+  getCurrentUser() {
+    
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  
+    this.http.get<any>('http://localhost:3000/auth/me', { headers }).subscribe({
+      next: (data) => {
+        if (data) {
+          this.currentUser = data;
+        } else {
+          console.error('Không thể lấy thông tin người dùng');
+        }
+      },
+      error: (err) => {
+        console.error('Lỗi khi lấy thông tin người dùng', err);
+      }
+    });
+  }
 }

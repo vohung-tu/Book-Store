@@ -1,0 +1,77 @@
+<div class="card">
+  <div class="header">
+    <h2>Danh sách người dùng</h2>
+    <button pButton type="button" label="Thêm người dùng" icon="pi pi-plus" (click)="openAddUserDialog()" style="justify-content: flex-end;"></button>
+  </div>
+
+  <p-table [value]="users" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Họ tên</th>
+        <th>Email</th>
+        <th>Username</th>
+        <th>Điện thoại</th>
+        <th>Ngày sinh</th>
+        <th>Địa chỉ</th>
+        <th>Vai trò</th>
+        <th>Ngày tạo</th>
+        <th>Tính năng</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td>{{ user.full_name }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.phone_number }}</td>
+        <td>{{ user.birth | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ user.address }}</td>
+        <td>{{ user.role }}</td>
+        <td>{{ user.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+        <td>
+          <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editUser(user)"></button>
+          <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" (click)="deleteUser(user._id)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+ <!-- Dialog Form Thêm/Sửa -->
+ <p-dialog header="{{ isEditMode ? 'Cập nhật người dùng' : 'Thêm người dùng' }}" [(visible)]="displayDialog" [modal]="true" [style]="{width: '600px'}">
+  <form (ngSubmit)="onSubmit()" #userForm="ngForm" class="p-fluid">
+    <div class="p-field">
+      <label for="full_name">Họ tên:</label>
+      <input id="full_name" type="text" pInputText [(ngModel)]="user.full_name" name="full_name" required />
+    </div>
+    <div class="p-field">
+      <label for="email">Email</label>
+      <input id="email" type="email" pInputText [(ngModel)]="user.email" name="email" required />
+    </div>
+    <div class="p-field">
+      <label for="username">Username</label>
+      <input id="username" type="text" pInputText [(ngModel)]="user.username" name="username" required />
+    </div>
+    <div class="p-field">
+      <label for="phone_number">Số điện thoại</label>
+      <input id="phone_number" type="text" pInputText [(ngModel)]="user.phone_number" name="phone_number" />
+    </div>
+    <div class="p-field">
+      <label for="birth">Ngày sinh</label>
+      <input id="birth" type="date" pInputText [(ngModel)]="user.birth" name="birth" />
+    </div>
+    <div class="p-field">
+      <label for="address">Địa chỉ</label>
+      <input id="address" type="text" pInputText [(ngModel)]="user.address" name="address" />
+    </div>
+    <div class="p-field">
+      <label for="role">Vai trò</label>
+      <input id="role" type="text" pInputText [(ngModel)]="user.role" name="role" />
+    </div>
+    <div class="p-d-flex p-jc-end">
+      <button type="button" pButton label="Hủy" class="p-button-text p-mr-2" (click)="editUser(user)"></button>
+      <button type="submit" pButton label="{{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}"></button>
+    </div>
+  </form>
+</p-dialog>
+<p-toast></p-toast>

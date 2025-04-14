@@ -1,0 +1,26 @@
+<div class="address-book-container" *ngIf="currentUser">
+  <h2>Sổ địa chỉ</h2>
+
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        <p>Thông tin địa chỉ</p>
+      </div>
+    </ng-template>
+
+    <div class="card-body">
+      <!-- Hiển thị địa chỉ từ currentUser -->
+      <p><i class="pi pi-map-marker"></i> <strong>Địa chỉ:</strong> {{ currentUser.address }}</p>
+    </div>
+  </p-card>
+
+  <!-- Nút để thêm địa chỉ -->
+  <div class="add-address-button">
+    <button pButton type="button" label="Thêm địa chỉ" icon="pi pi-plus" (click)="addAddress()"></button>
+  </div>
+</div>
+
+<!-- Nếu chưa có thông tin -->
+<div *ngIf="!currentUser">
+  <p>Không tìm thấy thông tin người dùng.</p>
+</div>

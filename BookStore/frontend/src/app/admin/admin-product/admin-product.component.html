@@ -1,0 +1,39 @@
+<div class="card">
+  <div class="header">
+    <h2>Danh sách Sản Phẩm</h2>
+    <button pButton type="button" label="Thêm sản phẩm" icon="pi pi-plus" style="justify-content: flex-end;"></button>
+  </div>
+  <p-table [value]="products" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Ảnh bìa</th>
+        <th>Tên sách</th>
+        <th>Tác giả</th>
+        <th>Mô tả</th>
+        <th>Giá gốc</th>
+        <th>Giá giảm</th>
+        <th>Giảm (%)</th>
+        <th>Ngày phát hành</th>
+        <th>Danh mục</th>
+        <th>Tính năng</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-product>
+      <tr>
+        <td><img [src]="product.coverImage" alt="cover" width="60" /></td>
+        <td>{{ product.title }}</td>
+        <td>{{ product.author }}</td>
+        <td>{{ product.description }}</td>
+        <td>{{ product.price | currency:'VND':'symbol':'1.0-0' }}</td>
+        <td>{{ product.flashsale_price | currency:'VND':'symbol':'1.0-0' }}</td>
+        <td>{{ product.discount_percent }}%</td>
+        <td>{{ product.publishedDate | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ product.categoryName }}</td>
+        <td>
+          <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm"  ></button>
+          <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" ></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

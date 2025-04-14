@@ -1,0 +1,11 @@
+<div class="layout-wrapper">
+  <app-top-bar (menuToggle)="toggleSidebar()"></app-top-bar>
+  
+  <app-sidebar [visible]="sidebarVisible"></app-sidebar>
+  <div class="layout-main-container" [class.sidebar-open]="sidebarVisible">
+    <div class="layout-main">
+      <router-outlet></router-outlet>
+    </div>
+    <app-footer></app-footer>
+  </div>
+</div>

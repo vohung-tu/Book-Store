@@ -17,18 +17,22 @@ export class UsersService {
   /** Đăng ký */
   async signup(dto: SignupDto): Promise<any> {
     const { email, password } = dto;
-    
+  
     // Kiểm tra user tồn tại chưa
     const existingUser = await this.userModel.findOne({ email });
     if (existingUser) throw new BadRequestException('Email đã được sử dụng.');
-
-    // Hash mật khẩu
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Tạo user mới
-    const newUser = new this.userModel({ ...dto, password: hashedPassword });
+  
+    // Nếu không có password => dùng mặc định
+    const plainPassword = password || '123456';
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+  
+    const newUser = new this.userModel({
+      ...dto,
+      password: hashedPassword,
+    });
+  
     await newUser.save();
-    
+  
     return { message: 'Đăng ký thành công' };
   }
 
@@ -40,9 +44,14 @@ export class UsersService {
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) throw new BadRequestException('Mật khẩu không đúng.');
   
-    const token = this.jwtService.sign({ id: user._id, email: user.email });
+    // ✅ Gán token vào biến
+    const token = this.jwtService.sign({
+      id: user._id,
+      email: user.email,
+      role: user.role, // thêm role nếu dùng guard kiểm tra role
+    });
   
-    // Trả token và thông tin người dùng (bạn có thể chọn lọc trường cần thiết)
+    // Trả token và thông tin người dùng
     const { password, ...userData } = user.toObject();
     return { token, user: userData };
   }
@@ -60,4 +69,34 @@ export class UsersService {
     }
     return user;
   }
+
+  async createByAdmin(dto: SignupDto): Promise<any> {
+    const { email } = dto;
+  
+    const existingUser = await this.userModel.findOne({ email });
+    if (existingUser) {
+      throw new BadRequestException('Email đã được sử dụng.');
+    }
+  
+    // Nếu không có password, gán mặc định
+    const plainPassword = dto.password || '123456';
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+  
+    const newUser = new this.userModel({
+      ...dto,
+      password: hashedPassword,
+    });
+  
+    await newUser.save();
+  
+    return { message: 'Tạo người dùng thành công' };
+  }
+
+  async deleteUser(id: string) {
+    const user = await this.userModel.findById(id);
+    if (!user) throw new NotFoundException('Người dùng không tồn tại');
+  
+    return this.userModel.findByIdAndDelete(id);
+  }
+  
 }

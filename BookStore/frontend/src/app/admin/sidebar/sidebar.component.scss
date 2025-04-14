@@ -1,0 +1,32 @@
+.sidebar {
+  width: 200px;
+  height: calc(100vh - 64px); // Trừ chiều cao topbar (ví dụ: 60px)
+  background-color: #2c3e50;
+  color: #fff;
+  padding: 20px;
+  position: fixed;
+  top: 64px; // nằm dưới topbar
+  left: 0;
+  transition: transform 0.3s ease;
+  z-index: 999; // dưới topbar (nếu topbar là 1000)
+  overflow-y: auto;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .sidebar li {
+    margin: 20px 0;
+  }
+  
+  .sidebar a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+  }
+  

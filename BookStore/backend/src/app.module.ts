@@ -5,13 +5,15 @@ import { BooksModule } from './books/books.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { OrdersModule } from './order/order/order.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
     BooksModule,
     MongooseModule.forRoot('mongodb+srv://hungtu:123456%40@bookstorepam.lzrno.mongodb.net/book_store_pam?retryWrites=true&w=majority&appName=BookstorePam'),
     UsersModule,
-    OrdersModule
+    OrdersModule,
+    AdminModule
   ],
   controllers: [AppController],
   providers: [AppService],

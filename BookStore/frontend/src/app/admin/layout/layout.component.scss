@@ -1,0 +1,15 @@
+.layout-wrapper {
+    position: relative;
+    min-height: 100vh;
+    color: #000;
+  }
+  
+  .layout-main-container {
+    transition: margin-left 0.3s ease;
+    margin-left: 0;
+  
+    &.sidebar-open {
+      margin-left: 250px; // match sidebar width
+    }
+  }
+  

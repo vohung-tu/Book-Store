@@ -1,0 +1,43 @@
+.card {
+  padding: 3rem;
+  background: #ddd;
+  border-radius: 8px;
+  .header {
+    h2 {
+      text-align: center;
+    }
+    
+  }
+
+  
+}
+// Căn chỉnh field form
+.p-field {
+  margin-bottom: 1rem;
+
+  label {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+
+  input {
+    width: 100%;
+  }
+}
+
+// Căn chỉnh group button
+.p-d-flex.p-jc-end {
+  margin-top: 1.5rem;
+  gap: 1rem;
+  justify-content: flex-end;
+
+  button {
+    min-width: 100px;
+  }
+}
+
+// Responsive dialog width
+:host ::ng-deep .p-dialog {
+  max-width: 90vw;
+}

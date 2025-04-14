@@ -9,6 +9,12 @@ import { FavoritePageComponent } from './component/favorite-page/favorite-page.c
 import { ContactComponent } from './component/contact/contact.component';
 import { CategoryComponent } from './component/category/category.component';
 import { CheckoutComponent } from './component/checkout/checkout.component';
+import { AuthGuard } from './guard/auth.guard';
+import { LayoutComponent } from './admin/layout/layout.component';
+import { AdminUserComponent } from './admin/admin-user/admin-user.component';
+import { AdminProductComponent } from './admin/admin-product/admin-product.component';
+import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
+import { AddressBookComponent } from './address-book/address-book.component';
 
 const routes: Routes = [
   { 
@@ -63,7 +69,34 @@ const routes: Routes = [
     path: 'checkout',
     component: CheckoutComponent,
     title: 'Thanh Toán'
-  }
+  },
+  {
+    path: 'address-book',
+    component: AddressBookComponent,
+    title: 'Sổ địa chỉ'
+  },
+  { path: 'admin', 
+    component: LayoutComponent, 
+    canActivate: [AuthGuard], 
+    data: { roles: ['admin'] },
+    children: [
+      {
+        path: 'user',
+        component: AdminUserComponent,
+        title: 'Admin User'
+      },
+      {
+        path: 'product',
+        component: AdminProductComponent,
+        title: 'Admin Product'
+      },
+      {
+        path: 'dashboard',
+        component: AdminDashboardComponent,
+        title: 'Admin Dashboard'
+      }
+    ]
+  },
 ];
 
 export default routes;

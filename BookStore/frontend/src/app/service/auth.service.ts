@@ -59,6 +59,7 @@ export class AuthService {
         if (res.token && res.user) {
           this.saveToken(res.token, rememberMe);
           localStorage.setItem('user', JSON.stringify(res.user)); // Lưu user info
+          this.saveUserInfo(res.user, rememberMe); 
         }
       })
     );
@@ -102,27 +103,55 @@ export class AuthService {
     }
   }
 
+  saveUserInfo(user: any, rememberMe: boolean) {
+    const userInfo = JSON.stringify(user);
+    if (rememberMe) {
+      localStorage.setItem('user', userInfo);
+    } else {
+      sessionStorage.setItem('user', userInfo);
+    }
+  }
+
   setCurrentUser(user: User): void {
     localStorage.setItem('user', JSON.stringify(user));
   }
 
   getCurrentUser(): User | null {
-    const user = localStorage.getItem('user');
+    if (!this.isBrowser) {
+      return null;
+    }
+  
+    const user = localStorage.getItem('user') || sessionStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   }
   
+  
+  getToken(): string | null {
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
+  }
 
   signout(): void {
     if (this.isBrowser) {
       localStorage.removeItem('token');
-      sessionStorage.removeItem('token');
       localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
       this.isLoggedInSubject.next(false);
       this.userSubject.next(null);
       this.usernameSubject.next(null);
       // Điều hướng người dùng về trang login sau khi đăng xuất
       this.router.navigate(['/signin']);
     }
+  }
+
+  isLoggedIn(): boolean {
+    if (!this.isBrowser) return false;
+    return !!localStorage.getItem('token');
+  }
+
+  getUserRole(): string {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user?.role || '';
   }
 
   isAuthenticated(): boolean {

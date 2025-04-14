@@ -1,44 +1,24 @@
-<div class="profile-container">
-  <h2>Hồ sơ cá nhân</h2>
+<div class="profile-container" *ngIf="currentUser">
+  <h2>Thông tin tài khoản</h2>
 
-  <!-- <form [formGroup]="profileForm">
+  <p-card class="card">
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        <p>Thông tin khách hàng</p>
+      </div>
+    </ng-template>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Tên *</mat-label>
-      <input matInput formControlName="full_name" placeholder="Nhập tên" required />
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Số điện thoại</mat-label>
-      <input matInput formControlName="phone_number" placeholder="Nhập số điện thoại" />
-      <button mat-button color="primary" class="link-button">Thay đổi</button>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Email</mat-label>
-      <input matInput formControlName="email"/>
-      <button mat-button color="primary" class="link-button">Thêm mới</button>
-    </mat-form-field>
-
-    <div class="dob-group">
-      <mat-form-field appearance="outline" class="dob-field">
-        <mat-label>Ngày</mat-label>
-        <input matInput formControlName="day" placeholder="DD" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="dob-field">
-        <mat-label>Tháng</mat-label>
-        <input matInput formControlName="month" placeholder="MM" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="dob-field">
-        <mat-label>Năm</mat-label>
-        <input matInput formControlName="year" placeholder="YYYY" />
-      </mat-form-field>
+    <div class="card-body">
+      <p><i class="pi pi-user"></i> <strong>Họ tên:</strong> {{ currentUser.full_name }}</p>
+      <p><i class="pi pi-envelope"></i> <strong>Email:</strong> {{ currentUser.email }}</p>
+      <p><i class="pi pi-id-card"></i> <strong>Username:</strong> {{ currentUser.username }}</p>
+      <p><i class="pi pi-phone"></i> <strong>Điện thoại:</strong> {{ currentUser.phone_number }}</p>
+      <p><i class="pi pi-calendar"></i> <strong>Ngày sinh:</strong> {{ currentUser.birth | date: 'dd/MM/yyyy' }}</p>
+      <p><i class="pi pi-map-marker"></i> <strong>Địa chỉ:</strong> {{ currentUser.address }}</p>
     </div>
 
-    <button mat-raised-button color="warn" class="submit-button" type="submit">
-      Lưu thay đổi
-    </button>
-  </form> -->
+    <div class="card-footer" style="text-align: center; padding-top: 20px;">
+      <button pButton label="Sổ địa chỉ" icon="pi pi-book" routerLink="/address-book" class="p-button "></button>
+    </div>
+  </p-card>
 </div>

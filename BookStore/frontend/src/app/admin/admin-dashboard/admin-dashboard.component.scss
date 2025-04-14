@@ -1,0 +1,26 @@
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 64px;
+}
+
+.card {
+  text-align: center;
+  padding: 1rem;
+}
+
+.card-header .icon {
+  font-size: 2rem;
+  color: #007bff;
+}
+
+.main-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.additional-info {
+  font-size: 0.85rem;
+  color: #6c757d;
+}

@@ -56,15 +56,29 @@ export class SigninComponent implements OnInit{
   onSubmit() {
     if (this.signinForm.valid) {
       const { email, password, rememberMe } = this.signinForm.value;
+  
       this.authService.signin({ email, password }, rememberMe).subscribe(
-        () => {
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
-          this.router.navigate([returnUrl]); // Điều hướng về trang mà người dùng yêu cầu
+        (res) => {
+          const user = res.user;
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+  
+          // Lưu vào localStorage (nếu bạn chưa làm trong service)
+          localStorage.setItem('token', res.token);
+          localStorage.setItem('user', JSON.stringify(user));
+  
+          // ✅ Điều hướng dựa trên vai trò
+          if (user.role === 'admin') {
+            this.router.navigate(['/admin']);
+          } else if (returnUrl) {
+            this.router.navigateByUrl(returnUrl);
+          } else {
+            this.router.navigate(['/home']);
+          }
         },
         (err) => {
           console.error('Đăng nhập thất bại', err);
         }
       );
     }
-  }
+  }  
 }

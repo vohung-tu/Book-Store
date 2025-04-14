@@ -42,6 +42,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   cartItemCount: number = 0;
   private destroy$ = new Subject<void>();
   cart$: Observable<BookDetails[]>;
+  currentUser: any;
+  userRole: string | null = null;
 
   constructor(private authService: AuthService,
     private cartService: CartService,
@@ -61,6 +63,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.cart$.subscribe(cart => {
       this.cartItemCount = cart ? cart.length : 0;
     });
+
+    this.currentUser = this.authService.getCurrentUser();
+    this.userRole = this.currentUser?.role || null;
   }
 
   signout(): void {

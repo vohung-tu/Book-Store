@@ -20,7 +20,6 @@ import { RadioButton } from 'primeng/radiobutton';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { CascadeSelectModule } from 'primeng/cascadeselect';
-import { Select } from 'primeng/select';
 import { District, Province, Ward } from '../../model/location.model';
 export interface DiscountCode {
   code: string;
@@ -177,8 +176,8 @@ export class CheckoutComponent implements OnInit {
     }
   
     const orderData = {
-      userId: this.userInfo.id, // ✅ Sửa lại đúng field từ backend schema
-      products: this.selectedBooks, // ✅ Sửa lại từ `items` => `products`
+      userId: this.userInfo.id,
+      products: this.selectedBooks,
       name: this.orderInfo.name,
       email: this.orderInfo.email,
       phone: this.orderInfo.phone,
