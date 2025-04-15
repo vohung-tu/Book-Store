@@ -22,10 +22,10 @@
             </mat-menu>
 
           </div>
-          <mat-form-field appearance="outline" class="search-field">
-            <input matInput type="text" placeholder="Luyện đề thi đại học..." />
-            <mat-icon matSuffix>search</mat-icon>
-          </mat-form-field>
+          <div class="search-container">
+            <i class="pi pi-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Tìm kiếm sách bạn cần" />
+          </div>              
         </div>
       </div>
 
@@ -57,7 +57,7 @@
                   <mat-icon>person</mat-icon> Thông tin cá nhân
                 </button>
 
-                <button mat-menu-item *ngIf="userRole === 'admin'" routerLink="/admin">
+                <button mat-menu-item *ngIf="userRole === 'admin'" routerLink="/admin/dashboard">
                   <mat-icon>admin_panel_settings</mat-icon> Quản trị
                 </button>
                 <button mat-menu-item (click)="signout()">

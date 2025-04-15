@@ -29,6 +29,7 @@ export class UserInfoComponent implements OnInit{
   }
 
   getCurrentUser() {
+    if (typeof window === 'undefined') return; 
     
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -49,5 +50,16 @@ export class UserInfoComponent implements OnInit{
         console.error('Lỗi khi lấy thông tin người dùng', err);
       }
     });
+  }
+
+  // Hàm để lấy địa chỉ mặc định
+  getDefaultAddress() {
+    if (!this.currentUser || !this.currentUser.address || this.currentUser.address.length === 0) {
+      return '';
+    }
+
+    // Tìm địa chỉ mặc định (isDefault = true)
+    const defaultAddress = this.currentUser.address.find((addr: any) => addr.isDefault);
+    return defaultAddress ? defaultAddress.value : '';
   }
 }

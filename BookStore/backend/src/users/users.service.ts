@@ -98,5 +98,46 @@ export class UsersService {
   
     return this.userModel.findByIdAndDelete(id);
   }
+
+  // Hàm thêm địa chỉ vào mảng địa chỉ của người dùng
+  async addAddress(userId: string, newAddress: { value: string; isDefault: boolean }): Promise<User> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.address.push(newAddress);  // Thêm đối tượng địa chỉ mới vào mảng
+    await user.save();
+    return user;
+  }
+
+  // Hàm cập nhật tất cả địa chỉ
+  async updateAddress(
+    userId: string,
+    addresses: { value: string; isDefault: boolean }[]
+  ): Promise<User> {
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      userId,
+      { address: addresses },
+      { new: true }
+    );
   
+    if (!updatedUser) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+  
+    return updatedUser;
+  }
+  
+  // Hàm xóa địa chỉ trong mảng địa chỉ của người dùng
+  async removeAddress(userId: string, addressToRemove: { value: string; isDefault: boolean }): Promise<User> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.address = user.address.filter(address => address.value !== addressToRemove.value);  // Lọc ra địa chỉ cần xóa
+    await user.save();
+    return user;
+  }
 }

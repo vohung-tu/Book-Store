@@ -1,3 +1,7 @@
+export interface Address {
+  value: string;      // Địa chỉ
+  isDefault: boolean; // Cờ chỉ định địa chỉ mặc định
+}
 export interface User {
   id: string;
   _id: string;
@@ -6,7 +10,7 @@ export interface User {
   password: string;
   re_password: string;
   birth: Date;
-  address: string;
+  address: Address[];
   username: string;
   phone_number: number;
   role: 'admin' | 'user';

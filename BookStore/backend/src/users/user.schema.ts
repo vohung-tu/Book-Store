@@ -20,9 +20,17 @@ export class User {
   @Prop({ default: 'admin' })
   role: string;
 
-  @Prop()
-  address?: string;
-
+  @Prop({
+    type: [
+      {
+        value: { type: String, required: true },
+        isDefault: { type: Boolean, default: false }
+      }
+    ],
+    default: []
+  })
+  address: { value: string; isDefault: boolean }[];
+  
   @Prop({ required: true, unique: true })
   username: string;
 

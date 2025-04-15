@@ -1,26 +1,120 @@
-<div class="address-book-container" *ngIf="currentUser">
-  <h2>Sổ địa chỉ</h2>
+<!-- Danh sách địa chỉ -->
+<div class="address">
+  <div class="head-address">
+    <h3>Danh sách địa chỉ</h3>
+    <button 
+      pButton 
+      type="button" 
+      label="Quay lại trang tài khoản" 
+      routerLink="/userInfo">
+    </button>
+  </div>
 
+  <ul>
+    <li *ngFor="let address of user.address; let i = index" class="mb-3 flex align-items-center">
+      <p-radioButton 
+        name="defaultAddress" 
+        [value]="i" 
+        [(ngModel)]="defaultAddressIndex" 
+        (onClick)="setDefaultAddress(i)">
+      </p-radioButton> 
+
+      <span class="ml-2">{{ address.value }}</span>
+      <span *ngIf="address.isDefault" class="ml-2 text-green-600 font-bold">(Mặc định)</span>
+    </li>
+  </ul>
+
+  <button 
+    pButton 
+    type="button" 
+    label="Thêm địa chỉ" 
+    icon="pi pi-plus" 
+    (click)="openAddAddressDialog()">
+  </button>
+</div>
+<p-dialog header="Thêm địa chỉ" [(visible)]="displayAddAddressDialog">
+  <div class="p-fluid">
+    <label for="newAddress">Địa chỉ mới:</label>
+    <input type="text" id="newAddress" [(ngModel)]="newAddress" />
+  </div>
+  <div class="dialog-buttons">
+    <button pButton label="Lưu" icon="pi pi-check" (click)="addAddress()"></button>
+    <button pButton label="Hủy" icon="pi pi-times" (click)="displayAddAddressDialog = false"></button>
+  </div>
+</p-dialog>
+
+<p-toast></p-toast>
+
+<!-- <div class="address-book-container" *ngIf="currentUser">
+  <h2>Danh Sách Địa Chỉ</h2>
+
+  Chỉnh sửa thông tin người dùng 
   <p-card class="card">
     <ng-template pTemplate="header">
       <div class="card-header">
-        <p>Thông tin địa chỉ</p>
+        <p>Thông tin người dùng</p>
       </div>
     </ng-template>
 
     <div class="card-body">
-      <!-- Hiển thị địa chỉ từ currentUser -->
-      <p><i class="pi pi-map-marker"></i> <strong>Địa chỉ:</strong> {{ currentUser.address }}</p>
+      <form (ngSubmit)="updateUserInfo()">
+        <div class="p-fluid p-formgrid p-grid">
+          <div class="p-field p-col">
+            <label for="fullName">Họ và tên</label>
+            <input id="fullName" [(ngModel)]="currentUser.full_name" name="fullName" pInputText required />
+          </div>
+          <div class="p-field p-col">
+            <label for="email">Email</label>
+            <input id="email" [(ngModel)]="currentUser.email" name="email" pInputText required />
+          </div>
+          <div class="p-field p-col">
+            <label for="phone">Số điện thoại</label>
+            <input id="phone" [(ngModel)]="currentUser.phone_number" name="phone" pInputText required />
+          </div>
+        </div>
+        <button pButton type="submit" label="Cập nhật thông tin" icon="pi pi-save"></button>
+      </form>
     </div>
   </p-card>
 
-  <!-- Nút để thêm địa chỉ -->
-  <div class="add-address-button">
-    <button pButton type="button" label="Thêm địa chỉ" icon="pi pi-plus" (click)="addAddress()"></button>
-  </div>
-</div>
+  
+  <h3>Danh Sách Địa Chỉ</h3>
+  <p-table [value]="currentUser.address" [paginator]="true" [rows]="10" [responsive]="true">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Địa chỉ</th>
+        <th>Địa chỉ mặc định</th>
+        <th>Thao tác</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-address>
+      <tr>
+        <td>{{ address.value }}</td>
+        <td>{{ address.isDefault ? 'Có' : 'Không' }}</td>
+        <td>
+          <button pButton icon="pi pi-pencil" (click)="editAddress(address)" class="p-button-rounded p-button-info"></button>
+          <button pButton icon="pi pi-trash" (click)="deleteAddress(address)" class="p-button-rounded p-button-danger"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 
-<!-- Nếu chưa có thông tin -->
-<div *ngIf="!currentUser">
-  <p>Không tìm thấy thông tin người dùng.</p>
-</div>
+
+  <p-dialog [(visible)]="editDialogVisible" [modal]="true" [closable]="false">
+    <p-header>Chỉnh sửa địa chỉ</p-header>
+    <div class="p-fluid">
+      <div class="p-field">
+        <label for="editAddress">Địa chỉ</label>
+        <input id="editAddress" [(ngModel)]="selectedAddress.value" pInputText required />
+      </div>
+      <div class="p-field">
+        <label for="editIsDefault">Địa chỉ mặc định</label>
+        <p-checkbox id="editIsDefault" [(ngModel)]="selectedAddress.isDefault" binary="true"></p-checkbox>
+      </div>
+    </div>
+    <p-footer>
+      <button pButton type="button" label="Lưu" icon="pi pi-check" (click)="saveAddress()" class="p-button-success"></button>
+      <button pButton type="button" label="Hủy" icon="pi pi-times" (click)="editDialogVisible = false" class="p-button-secondary"></button>
+    </p-footer>
+  </p-dialog>
+</div> -->

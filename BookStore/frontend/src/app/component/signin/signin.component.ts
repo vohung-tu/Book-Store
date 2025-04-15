@@ -68,7 +68,7 @@ export class SigninComponent implements OnInit{
   
           // ✅ Điều hướng dựa trên vai trò
           if (user.role === 'admin') {
-            this.router.navigate(['/admin']);
+            this.router.navigate(['/admin/dashboard']);
           } else if (returnUrl) {
             this.router.navigateByUrl(returnUrl);
           } else {

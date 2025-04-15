@@ -14,7 +14,7 @@
       <p><i class="pi pi-id-card"></i> <strong>Username:</strong> {{ currentUser.username }}</p>
       <p><i class="pi pi-phone"></i> <strong>Điện thoại:</strong> {{ currentUser.phone_number }}</p>
       <p><i class="pi pi-calendar"></i> <strong>Ngày sinh:</strong> {{ currentUser.birth | date: 'dd/MM/yyyy' }}</p>
-      <p><i class="pi pi-map-marker"></i> <strong>Địa chỉ:</strong> {{ currentUser.address }}</p>
+      <p><i class="pi pi-map-marker"></i> <strong>Địa chỉ:</strong> {{ getDefaultAddress() }}</p> <!-- Hiển thị địa chỉ mặc định -->
     </div>
 
     <div class="card-footer" style="text-align: center; padding-top: 20px;">

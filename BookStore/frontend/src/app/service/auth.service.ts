@@ -2,7 +2,7 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, EMPTY, Observable, of, switchMap, tap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
-import { User } from '../model/users-details.model';
+import { Address, User } from '../model/users-details.model';
 import { Router } from '@angular/router';
 
 @Injectable({
@@ -156,5 +156,15 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return this.isBrowser && !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
+  }
+
+  updateAddress(userId: string, addresses: Address[]) {
+    const token = localStorage.getItem('token'); // hoặc nơi bạn lưu token
+  
+    return this.http.patch(`${this.API_URL}/${userId}/address`, { address: addresses }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
   }
 }

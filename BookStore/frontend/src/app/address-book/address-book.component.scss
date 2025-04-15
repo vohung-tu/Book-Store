@@ -1,27 +1,112 @@
-.address-book-container {
-    margin: 20px;
+:host {
+  display: block;
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+ul {
+  padding-left: 1.25rem;
+  margin-bottom: 1.5rem;
+
+  li {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    list-style-type: disc;
+    list-style: none;
   }
-  
-  .card-header {
-    font-size: 1.5rem;
-    font-weight: bold;
+}
+
+button[pButton] {
+  margin-top: 1rem;
+}
+
+::ng-deep .p-dialog .p-dialog-header {
+  background: #f1f3f5;
+  font-weight: bold;
+}
+
+.p-fluid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+label {
+  font-weight: 500;
+}
+
+input {
+  padding: 0.5rem;
+}
+.head-address {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  h3 {
+    font-weight: 600;
+    color: #495057;
+    text-align: center;
+    flex: 1;
+    margin: 0;
   }
-  
-  .card-body {
-    padding: 10px;
+  button {
+    white-space: nowrap;
   }
-  
-  .address-item {
-    font-size: 1.1rem;
-    margin: 10px 0;
-  }
-  
-  .add-address-button {
-    margin-top: 20px;
-  }
-  
-  .add-address-button button {
-    background-color: #007ad9;
-    color: white;
-  }
-  
+}
+
+/* Dialog container style */
+p-dialog {
+  max-width: 600px;  /* Maximum width */
+  border-radius: 8px;  /* Rounded corners */
+}
+
+/* Dialog header style */
+.p-dialog-header {
+  color: white; /* White text */
+  font-size: 1.2rem;  /* Larger font size for header */
+  padding: 10px 20px;  /* Padding for header */
+  border-radius: 8px 8px 0 0;  /* Rounded top corners */
+}
+
+/* Dialog body style */
+.p-dialog-body {
+  padding: 20px;  /* Add padding inside the body */
+  background-color: #f7f7f7;  /* Light background for content */
+}
+
+/* Input field styling */
+.p-fluid input {
+  width: 100%;  /* Full width input fields */
+  padding: 8px;  /* Padding for input fields */
+  border-radius: 5px;  /* Rounded corners */
+  border: 1px solid #ccc;  /* Light gray border */
+  margin-bottom: 15px;  /* Space below the input */
+}
+
+.p-fluid input:focus {
+  border-color: #007bff;  /* Focus color */
+  outline: none;  /* Remove outline */
+}
+
+/* Button container */
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;  /* Align buttons to the right */
+  gap: 15px;  /* Space between buttons */
+  margin-top: 20px;  /* Space above the buttons */
+}
+
+/* Button styles */
+.dialog-buttons button {
+  width: 100px;  /* Fix button width */
+  border-radius: 5px;  /* Rounded button corners */
+}
+
+.dialog-buttons button.p-button {
+  padding: 8px 16px;  /* Padding inside buttons */
+}

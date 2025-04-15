@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Req, UseGuards, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Req, UseGuards, NotFoundException, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignupDto } from './dto/signup.dto';
 import { SigninDto } from './dto/signin.dto';
@@ -36,4 +36,30 @@ export class UsersController {
     const userId = req.user?.userId;
     return this.usersService.findById(userId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/address')
+  async updateAddress(
+    @Param('id') id: string,
+    @Body('address') address: { value: string; isDefault: boolean }[]
+  ) {
+    if (
+      !Array.isArray(address) ||
+      !address.every(
+        (a) =>
+          typeof a.value === 'string' &&
+          typeof a.isDefault === 'boolean'
+      )
+    ) {
+      throw new NotFoundException('Danh sách địa chỉ không hợp lệ');
+    }
+
+    const updatedUser = await this.usersService.updateAddress(id, address);
+    if (!updatedUser) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+
+    return updatedUser;
+  }
+
 }

@@ -136,7 +136,7 @@ export class CheckoutComponent implements OnInit {
       name: this.userInfo.full_name || '',
       email: this.userInfo.email || '',
       phone: String(this.userInfo.phone_number || ''),
-      address: this.userInfo.address || '',
+      address: (this.userInfo.address || []).join(', '),
       note: '',
       province: this.userInfo.province || '',
       district: this.userInfo.district || '',
