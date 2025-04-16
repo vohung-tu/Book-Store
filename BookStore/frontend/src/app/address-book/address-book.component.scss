@@ -59,54 +59,54 @@ input {
   }
 }
 
-/* Dialog container style */
 p-dialog {
-  max-width: 600px;  /* Maximum width */
-  border-radius: 8px;  /* Rounded corners */
+  max-width: 600px;
+  border-radius: 8px;
 }
 
-/* Dialog header style */
 .p-dialog-header {
-  color: white; /* White text */
-  font-size: 1.2rem;  /* Larger font size for header */
-  padding: 10px 20px;  /* Padding for header */
-  border-radius: 8px 8px 0 0;  /* Rounded top corners */
+  color: white;
+  font-size: 1.2rem;
+  padding: 10px 20px;
+  border-radius: 8px 8px 0 0;
 }
 
-/* Dialog body style */
 .p-dialog-body {
-  padding: 20px;  /* Add padding inside the body */
-  background-color: #f7f7f7;  /* Light background for content */
+  padding: 20px;
+  background-color: #f7f7f7;
 }
 
-/* Input field styling */
 .p-fluid input {
-  width: 100%;  /* Full width input fields */
-  padding: 8px;  /* Padding for input fields */
-  border-radius: 5px;  /* Rounded corners */
-  border: 1px solid #ccc;  /* Light gray border */
-  margin-bottom: 15px;  /* Space below the input */
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 15px;
 }
 
 .p-fluid input:focus {
-  border-color: #007bff;  /* Focus color */
-  outline: none;  /* Remove outline */
+  border-color: #007bff;
+  outline: none;
 }
 
-/* Button container */
 .dialog-buttons {
   display: flex;
-  justify-content: flex-end;  /* Align buttons to the right */
-  gap: 15px;  /* Space between buttons */
-  margin-top: 20px;  /* Space above the buttons */
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
 }
 
-/* Button styles */
 .dialog-buttons button {
-  width: 100px;  /* Fix button width */
-  border-radius: 5px;  /* Rounded button corners */
+  width: 100px;
+  border-radius: 5px;
 }
 
 .dialog-buttons button.p-button {
-  padding: 8px 16px;  /* Padding inside buttons */
+  padding: 8px 16px;
+}
+
+.address-item {
+  display: flex;
+  align-items: center;
+  gap: 10px; // Khoảng cách giữa các field
 }

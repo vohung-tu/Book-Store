@@ -158,6 +158,17 @@ export class AuthService {
     return this.isBrowser && !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
   }
 
+  getAddresses(userId: string): Observable<any> {
+    const token = localStorage.getItem('token'); // Lấy token từ localStorage
+
+    // Gửi request GET để lấy danh sách địa chỉ của người dùng
+    return this.http.get(`${this.API_URL}/${userId}/addresses`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  }
+
   updateAddress(userId: string, addresses: Address[]) {
     const token = localStorage.getItem('token'); // hoặc nơi bạn lưu token
   

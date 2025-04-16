@@ -11,8 +11,9 @@
   </div>
 
   <ul>
-    <li *ngFor="let address of user.address; let i = index" class="mb-3 flex align-items-center">
-      <p-radioButton 
+    <li *ngFor="let address of user.address; let i = index">
+      <div class="address-item">
+        <p-radioButton 
         name="defaultAddress" 
         [value]="i" 
         [(ngModel)]="defaultAddressIndex" 
@@ -21,6 +22,7 @@
 
       <span class="ml-2">{{ address.value }}</span>
       <span *ngIf="address.isDefault" class="ml-2 text-green-600 font-bold">(Mặc định)</span>
+      </div>
     </li>
   </ul>
 

@@ -14,6 +14,22 @@ export class Order extends Document {
 
   @Prop({ required: true, type: Array })
   products: any[];
+
+  @Prop()
+  name: string;
+
+  @Prop()
+  phone: string;
+
+  @Prop()
+  email: string;
+
+  @Prop()
+  total: number;
+
+  @Prop()
+  orderDate: Date;
+
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

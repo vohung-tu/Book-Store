@@ -37,6 +37,13 @@ export class UsersController {
     return this.usersService.findById(userId);
   }
 
+  @Get(':userId/addresses')
+  @UseGuards(JwtAuthGuard) // Bảo vệ endpoint nếu cần
+  async getAddresses(@Param('userId') userId: string) {
+    const user = await this.usersService.findById(userId); // Lấy user từ DB
+    return { address: user.address }; // Trả về danh sách địa chỉ
+  }
+
   @UseGuards(JwtAuthGuard)
   @Patch(':id/address')
   async updateAddress(

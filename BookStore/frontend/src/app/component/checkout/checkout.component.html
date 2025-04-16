@@ -34,7 +34,7 @@
       <form (ngSubmit)="submitOrder()" class="checkout-form">
         <!-- Họ và tên -->
         <label for="name">Họ và tên:</label>
-        <input id="name" type="text" [(ngModel)]="orderInfo.name" name="name" />
+        <input id="name" type="text" [(ngModel)]="orderInfo.name" name="name" required />
       
         <label for="email">Email:</label>
         <input id="email" type="email" [(ngModel)]="orderInfo.email" name="email" required />
@@ -42,14 +42,34 @@
         <label for="phone">Số điện thoại:</label>
         <input id="phone" type="tel" [(ngModel)]="orderInfo.phone" name="phone" required />
       
-        <label for="address">Địa chỉ:</label>
-        <input id="address" type="text" [(ngModel)]="orderInfo.address" name="address" required />
-      
+        <label for="addresses">Sổ địa chỉ:</label>
+        <p-dropdown
+          [options]="addresses"
+          [(ngModel)]="selectedAddress"
+          optionLabel="value"
+          (onChange)="onAddressChange()"
+          [disabled]="!orderInfo.address"
+        >
+        </p-dropdown>
+
+        <!-- Ô nhập địa chỉ khác -->
+        <label for="address">Địa chỉ khác:</label>
+        <input
+          id="address"
+          type="text"
+          [(ngModel)]="orderInfo.address"
+          name="address"
+          required
+          placeholder="Chọn địa chỉ hoặc nhập địa chỉ khác"
+          [disabled]="selectedAddress !== 'Địa chỉ khác'"
+          (input)="onAddressInput()"
+        />
+        
+        
         <label for="note">Ghi chú (tùy chọn):</label>
         <textarea id="note" rows="5" [(ngModel)]="orderInfo.note" name="note"></textarea>
       </form>
     </div>
-
 
     <!-- Phương thức thanh toán -->
     <div class="payment-method">
@@ -142,10 +162,11 @@
         </div>
       </div>
       
-      <button type="submit" class="pay-btn" (click)="submitOrder()"><strong>ĐẶT HÀNG</strong></button>
+      <button type="submit" class="pay-btn" [disabled]="!orderInfo.name || !orderInfo.email || !orderInfo.phone || !orderInfo.address" (click)="submitOrder()">
+        <strong>ĐẶT HÀNG</strong>
+      </button>
     </div>
   </div>
-
 </div>
 
 <!-- Nếu không có sản phẩm nào -->

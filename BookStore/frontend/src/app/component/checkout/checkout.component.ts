@@ -6,7 +6,7 @@ import { BookDetails } from '../../model/books-details.model';
 import { Router } from '@angular/router';
 import { OrderService } from '../../service/order.service';
 import { AuthService } from '../../service/auth.service';
-import { User } from '../../model/users-details.model';
+import { Address, User } from '../../model/users-details.model';
 import { TableModule } from 'primeng/table';
 import { PaginatorModule } from 'primeng/paginator';
 import { TextareaModule } from 'primeng/textarea';
@@ -20,7 +20,7 @@ import { RadioButton } from 'primeng/radiobutton';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { CascadeSelectModule } from 'primeng/cascadeselect';
-import { District, Province, Ward } from '../../model/location.model';
+import { DropdownModule } from 'primeng/dropdown';
 export interface DiscountCode {
   code: string;
   minOrderAmount?: number;
@@ -47,7 +47,8 @@ export interface DiscountCode {
     CascadeSelectModule,
     ButtonModule,
     InputNumberModule,
-    DividerModule
+    DividerModule,
+    DropdownModule
   ],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss']
@@ -57,15 +58,12 @@ export class CheckoutComponent implements OnInit {
   totalAmount: number = 0;
   discountedAmount: number = 0;
   userInfo: User | null = null;
-  selectedProvince: number | null = null;
-  selectedDistrict: number | null = null;
-  selectedWard: number | null = null;
   discountCode: string = '';
   discountMessage: string = '';
-  isDiscountValid: boolean = false; // true nếu mã hợp lệ
-  provinces: Province[] = [];
-  districts: District[] = [];
-  wards: Ward[] = [];
+  isDiscountValid: boolean = false; // true nếu mã hợp l
+  addresses: Address[] = [];
+  selectedAddress: string = '';
+  currentUser: any;
   discountCodes: DiscountCode[] = [
     {
       code: 'GIAM10',
@@ -92,9 +90,6 @@ export class CheckoutComponent implements OnInit {
     email: '',
     address: '',
     phone: '',
-    province: '',
-    district: '',
-    ward: '',
     note: '',
     payment: ''
   };
@@ -124,6 +119,7 @@ export class CheckoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Lấy thông tin người dùng từ AuthService
     this.userInfo = this.authService.getCurrentUser();
     console.log('userInfo:', this.userInfo);
   
@@ -132,38 +128,75 @@ export class CheckoutComponent implements OnInit {
       return;
     }
   
+    // Lưu danh sách địa chỉ của người dùng
+    this.addresses = this.userInfo.address || [];
+    this.orderInfo.address = '';
+
+    this.authService.getAddresses(this.userInfo._id).subscribe((data: any) => {
+      // Thêm option "Địa chỉ khác" vào cuối mảng
+      this.addresses = [...data.address, { value: 'other', label: 'Địa chỉ khác' }];
+    });
+  
+    // Sắp xếp các địa chỉ sao cho địa chỉ mặc định (isDefault = true) luôn ở đầu
+    this.addresses = this.addresses.sort((a: Address, b: Address) => {
+      if (a.isDefault && !b.isDefault) return -1;  // Địa chỉ mặc định lên đầu
+      if (!a.isDefault && b.isDefault) return 1;   // Địa chỉ mặc định xuống dưới
+      return 0;  // Giữ nguyên thứ tự nếu cả hai đều hoặc đều không phải mặc định
+    });
+  
+    // Gán địa chỉ mặc định hoặc địa chỉ đầu tiên (nếu không có địa chỉ mặc định)
+    this.selectedAddress = this.addresses.length > 0 ? this.addresses[0].value : '';
+  
+    // Cập nhật thông tin đơn hàng từ thông tin người dùng
     this.orderInfo = {
       name: this.userInfo.full_name || '',
       email: this.userInfo.email || '',
       phone: String(this.userInfo.phone_number || ''),
-      address: (this.userInfo.address || []).join(', '),
+      address: this.selectedAddress,  // Địa chỉ mặc định hoặc đầu tiên
       note: '',
-      province: this.userInfo.province || '',
-      district: this.userInfo.district || '',
-      ward: this.userInfo.ward || '',
       payment: this.userInfo.payment || ''
     };
   
+    // Lấy giỏ hàng từ localStorage và tính toán tổng tiền
     const savedCart = localStorage.getItem('cart');
     this.selectedBooks = savedCart ? JSON.parse(savedCart) : [];
   
+    // Tính tổng số tiền
     this.totalAmount = this.selectedBooks.reduce(
       (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
       0
     );
     this.discountedAmount = this.totalAmount;
-  
-    this.loadProvinces();
-  }
+  }  
    
   submitOrder() {
+  if (!this.userInfo?._id || !this.orderInfo.address) return;
+
+  // Thêm địa chỉ nếu là "Địa chỉ khác"
+  if (this.selectedAddress === 'Địa chỉ khác') {
+    const newAddress = {
+      value: this.orderInfo.address,
+      isDefault: false
+    };
+
+    const exists = this.addresses.some(addr => addr.value === newAddress.value);
+    if (!exists) {
+      this.addresses.push(newAddress);
+      this.authService.updateAddress(this.userInfo?._id, this.addresses).subscribe({
+        next: res => console.log('Đã lưu địa chỉ mới'),
+        error: err => console.error('Lỗi khi lưu địa chỉ', err)
+      });
+    }
+  }
     if (!this.orderInfo.name || !this.orderInfo.email || !this.orderInfo.address || !this.orderInfo.phone) {
       alert('Vui lòng nhập đủ thông tin!');
       return;
     }
   
     // Kiểm tra userId có tồn tại
-    if (!this.userInfo || !this.userInfo.id) {
+    console.log(this.userInfo);
+    console.log(this.userInfo.id);
+    if (!this.userInfo || !this.userInfo._id) {
       alert('Không tìm thấy thông tin người dùng, vui lòng đăng nhập lại!');
       return;
     }
@@ -174,14 +207,16 @@ export class CheckoutComponent implements OnInit {
       alert('Giỏ hàng trống!');
       return;
     }
+
+    const finalAddress = this.orderInfo.address || this.selectedAddress;
   
     const orderData = {
-      userId: this.userInfo.id,
+      userId: this.userInfo._id,
       products: this.selectedBooks,
       name: this.orderInfo.name,
       email: this.orderInfo.email,
       phone: this.orderInfo.phone,
-      address: this.orderInfo.address,
+      address: finalAddress,
       note: this.orderInfo.note,
       total: this.totalAmount,
       orderDate: new Date()
@@ -202,41 +237,37 @@ export class CheckoutComponent implements OnInit {
     });
   }
   
+  onAddressChange() {
+    if (this.selectedAddress !== 'Địa chỉ khác') {
+      this.orderInfo.address = this.selectedAddress;
+    } else {
+      this.orderInfo.address = ''; // cho phép nhập
+    }
+  }
 
-   // Hàm tải tỉnh thành từ file provinces.json
-  loadProvinces(): void {
-  this.http.get<Province[]>('assets/json/provinces.json').subscribe((data: Province[]) => {
-    this.provinces = data; // Gán dữ liệu vào provinces
+   // Hàm xử lý thay đổi khi người dùng nhập địa chỉ
+   onAddressInput() {
+    if (this.orderInfo.address) {
+      // Khi có nhập địa chỉ khác, disable dropdown
+      this.selectedAddress = ''; // Reset selectedAddress
+    }
+  }
+
+  // Cập nhật địa chỉ người dùng
+  updateUserAddress(userId: string) {
+    // Giả sử orderInfo.address chứa địa chỉ người dùng nhập
+    if (this.selectedAddress === 'other') {
+      // Thêm địa chỉ mới vào mảng địa chỉ
+      this.addresses.push({ value: this.orderInfo.address, isDefault: false });
+    }
+
+    // Gọi hàm updateAddress để gửi các địa chỉ mới lên backend
+    this.authService.updateAddress(userId, this.addresses).subscribe(response => {
+      console.log('Địa chỉ đã được cập nhật', response);
     }, error => {
-      console.error('Error loading provinces:', error);
+      console.error('Có lỗi khi cập nhật địa chỉ', error);
     });
   }
-
-  getDistricts(selectedProvinceId: string | null): void {
-    if (selectedProvinceId !== null) {
-      const selectedProvince = this.provinces.find(p => p.id === selectedProvinceId);
-      if (selectedProvince) {
-        this.districts = selectedProvince.data2;
-      }
-    }
-    this.selectedDistrict = null;
-    this.selectedWard = null;
-  }
-
-  
-      
-  getWards(selectedDistrictId: number | null): void {
-    if (selectedDistrictId !== null) {
-      // Chuyển đổi số thành chuỗi nếu cần
-      const districtIdStr = selectedDistrictId.toString();
-      const selectedDistrict = this.districts.find(d => d.id.toString() === districtIdStr);
-      if (selectedDistrict) {
-        this.wards = selectedDistrict.data3; // Lấy danh sách phường của quận
-      }
-    }
-    this.selectedWard = null; // Reset ward khi thay đổi district
-  }
-  
   // Áp dụng mã giảm giá
   applyDiscountCode() {
     const codeInput = this.discountCode.trim().toUpperCase();
@@ -295,5 +326,15 @@ export class CheckoutComponent implements OnInit {
   selectCoupon(code: string) {
     this.discountCode = code;
     this.applyDiscountCode(); // gọi luôn hàm áp dụng nếu muốn
+  }
+
+  getDefaultAddress() {
+    if (!this.currentUser || !this.currentUser.address || this.currentUser.address.length === 0) {
+      return '';
+    }
+
+    // Tìm địa chỉ mặc định (isDefault = true)
+    const defaultAddress = this.currentUser.address.find((addr: any) => addr.isDefault);
+    return defaultAddress ? defaultAddress.value : '';
   }
 }
