@@ -34,6 +34,7 @@ export class AdminUserComponent implements OnInit{
   constructor(private http: HttpClient, private messageService: MessageService) {}
 
   ngOnInit(): void {
+    this.user.address = this.user.address?.[0]?.value || '';
     this.fetchUsers();
   }
 
@@ -55,7 +56,7 @@ export class AdminUserComponent implements OnInit{
       email: '',
       username: '',
       phone_number: '',
-      address: '',
+      address: [],
       birth: '',
       role: 'user'
     };
@@ -83,19 +84,29 @@ export class AdminUserComponent implements OnInit{
       'Authorization': `Bearer ${token}`
     });
   
+     // Biến đổi address thành object
+    const updatedUser = {
+      ...this.user,
+      address: [
+        {
+          value: typeof this.user.address === 'string' ? this.user.address : this.user.address?.value || '',
+          isDefault: true
+        }
+      ]
+    };
     if (this.isEditMode) {
-      this.http.put(`http://localhost:3000/auth/${this.user._id}`, this.user, { headers }).subscribe(() => {
+      this.http.put(`http://localhost:3000/auth/${this.user._id}`, updatedUser, { headers }).subscribe(() => {
         this.fetchUsers();
         this.cancelEdit();
-        this.messageService.add({severity: 'success', summary: 'Thành công', detail: 'Cập nhật người dùng thành công!'});
+        this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật người dùng thành công!' });
         this.displayDialog = false;
       });
     } else {
-      this.http.post('http://localhost:3000/admin/create-user', this.user, { headers }).subscribe(() => {
+      this.http.post('http://localhost:3000/admin/create-user', updatedUser, { headers }).subscribe(() => {
         this.fetchUsers();
         this.user = this.getEmptyUser();
-        this.messageService.add({severity: 'success', summary: 'Thành công', detail: 'Tạo người dùng thành công!'});
-        this.displayDialog = false;  // Đóng dialog sau khi tạo thành công 
+        this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo người dùng thành công!' });
+        this.displayDialog = false;
       });
     }
   }

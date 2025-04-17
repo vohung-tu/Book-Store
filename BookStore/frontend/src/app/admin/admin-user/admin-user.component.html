@@ -25,7 +25,14 @@
         <td>{{ user.username }}</td>
         <td>{{ user.phone_number }}</td>
         <td>{{ user.birth | date: 'dd/MM/yyyy' }}</td>
-        <td>{{ user.address }}</td>
+        <td>
+          <div *ngFor="let addr of user.address">
+            {{ addr.value }}
+            <span *ngIf="addr.isDefault" style="font-style: italic; color: green;">
+              (mặc định)
+            </span>
+          </div>
+        </td>
         <td>{{ user.role }}</td>
         <td>{{ user.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
         <td>

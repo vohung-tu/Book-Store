@@ -1,76 +1,161 @@
 .book-item {
-    border-radius: 10px; 
-      position: relative;
-      max-width: 250px;
-      max-height: 470px;
-      background-color: #fff;
-      padding: 10px;
-      overflow: hidden;
-      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+  position: relative;
+  max-width: 250px;
+  max-height: 470px;
+  background-color: #fff;
+  padding: 10px;
+  overflow: hidden;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0); // bắt đầu trong suốt
+    transition: background-color 0.3s ease;
+    z-index: 1; // dưới các icon
   }
-  
-  .book-item:hover {
+
+  &:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   }
-  
-  .book-item a {
-    text-decoration: none;
-    color: inherit;
-    display: block;
+
+  &:hover::after {
+    background-color: rgba(0, 0, 0, 0.4); // đen mờ khi hover
   }
-  
-  .book-item img {
+
+  img {
     width: 100%;
     height: 250px;
     object-fit: cover;
     border-radius: 5px;
     margin-bottom: 10px;
   }
-  
-  .book-item h3 {
+
+  h3 {
     font-size: 16px;
     font-weight: bold;
     margin: 5px 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 100%; /* Giới hạn chiều rộng */
+    width: 100%;
   }
-  
-  .book-item p {
+
+  p {
     font-size: 0.9rem;
     color: #666;
   }
-  
-  .book-item h4 {
+
+  h4 {
     font-size: 1rem;
     color: #ff5722;
     font-weight: bold;
     margin-top: 5px;
   }
-  
+
   .discount {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     margin-top: 5px;
+
+    h5 {
+      font-size: 0.9rem;
+      color: #999;
+      text-decoration: line-through;
+    }
+
+    .discount-badge {
+      background: #ff5722;
+      color: white;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
   }
-  
-  .discount h5 {    
-    font-size: 0.9rem;
-    color: #999;
-    text-decoration: line-through;
+
+  .hover-icons {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+    z-index: 2;
+
+    .cart-btn,
+    .heart-btn,
+    .detail-btn {
+      position: relative;
+      transform: scale(0.5) rotate(0deg);
+      opacity: 0;
+      transition: all 0.5s ease;
+      pointer-events: auto;
+    }
+
+    .cart-btn {
+      left: -60px;
+      background-color: white !important;
+      
+    }
+
+    .detail-btn {
+      z-index: 3;
+      transform: scale(0.5) rotate(0deg);
+      background-color: white !important;
+    }
+
+    .heart-btn {
+      right: -60px;
+      background-color: white !important;
+    }
+
+    ::ng-deep .p-button {
+      width: 2.8rem;
+      height: 2.8rem;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0 !important;
+      font-size: 1.2rem;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    ::ng-deep .p-button:hover {
+      transform: scale(1.1) rotate(360deg);
+      background-color: white;
+    }
   }
-  
-  .discount-badge {
-    background: #ff5722;
-    color: white;
-    font-size: 0.8rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-weight: bold;
+
+  &:hover .hover-icons .cart-btn {
+    transform: translateX(60px) scale(1.2) rotate(360deg);
+    opacity: 1;
   }
-  
+
+  &:hover .hover-icons .detail-btn {
+    transform: scale(1.2) rotate(360deg);
+    opacity: 1;
+  }
+
+  &:hover .hover-icons .heart-btn {
+    transform: translateX(-60px) scale(1.2) rotate(360deg);
+    opacity: 1;
+  }
+
+  .hover-icons p-toast {
+    display: none;
+  }
+}

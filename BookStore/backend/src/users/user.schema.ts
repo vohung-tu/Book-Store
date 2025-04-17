@@ -38,15 +38,6 @@ export class User {
   phone_number: string;
 
   @Prop()
-  province?: string;
-
-  @Prop()
-  ward?: string;
-
-  @Prop()
-  district?: string;
-
-  @Prop()
   note?: string;
 
   @Prop()

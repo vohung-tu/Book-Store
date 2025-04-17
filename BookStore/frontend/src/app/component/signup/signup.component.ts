@@ -63,7 +63,20 @@ export class SignupComponent {
   // Submit form
   onSubmit(): void {
     if (this.signupForm.valid) {
-      this.authService.signup(this.signupForm.value).subscribe(
+      const formValue = this.signupForm.value;
+  
+      const userData = {
+        ...formValue,
+        role: 'user',
+        address: [
+          {
+            value: formValue.address || '',
+            isDefault: true
+          }
+        ]
+      };
+  
+      this.authService.signup(userData).subscribe(
         (res) => alert('Đăng ký thành công'),
         (err) => alert('Đăng ký thất bại')
       );

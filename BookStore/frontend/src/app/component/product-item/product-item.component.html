@@ -1,5 +1,4 @@
-<div class="book-item">
-  <a [routerLink]="['/details', book.id]">
+  <div class="book-item">
     <img [src]="book.coverImage" alt="{{ book.title }}" />
     <h3>{{ book.title }}</h3>
     <p>Tác giả: {{ book.author }}</p>
@@ -7,6 +6,32 @@
     <div class="discount">
       <h5> {{ book.price | number:'1.3-3' }} đ </h5> 
       <div class="discount-badge">-{{ book.discount_percent }}%</div>
+  </div>
+    <!-- Hover icons -->
+    <div class="hover-icons">
+      <p-button
+      pRipple
+      icon="pi pi-shopping-cart"
+      class="cart-btn"
+      [rounded]="true"
+      [text]="true"
+      [raised]="true"
+    />
+     <!-- Button Detail -->
+    <p-button
+      class="detail-btn"
+      [routerLink]="['/details', book.id]"
+      pButton
+      icon="pi pi-info-circle"
+      [text]="true"
+      [raised]="true"
+    ></p-button>
+    <p-button
+      [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
+      class="heart-btn"
+      [rounded]="true"
+      [text]="true"
+      [raised]="true"
+    />
     </div>
-  </a>
-</div>
+  </div>

@@ -18,6 +18,9 @@ import { NgIf } from '@angular/common';
 export class AppComponent {
   constructor(public router: Router) {}
   isAdminPage(): boolean {
-    return this.router.url.startsWith('/admin');
+    const url = this.router.url;
+    // Mảng các route bạn muốn kiểm tra
+    const prefixes = ['/admin', '/signin', '/signup'];
+    return prefixes.some(prefix => url.startsWith(prefix));
   }
 }
