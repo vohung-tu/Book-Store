@@ -1,8 +1,10 @@
 <ng-container class="container-ads">
+  <p-toast position="top-right" key="tr"></p-toast>
+
   <div class="content-ads-1">
     <img class="img-ads" src="assets/images/ads_1.jpg" alt="">
     <div class="content-ads-2">
-      <a href="">
+      <a routerLink="/">
         <img src="assets/images/ads_2.png" alt="">
       </a>
       <a href="">
@@ -13,26 +15,25 @@
 
   <div class="container-flashsale">
     <div class="flash-sale-countdown">
-      <h2>Flash Sale</h2><p>kết thúc sau: </p> 
+      <h2>Flash Sale</h2>
+      <p *ngIf="!saleActive">Bắt đầu sau:</p>
+      <p *ngIf=" saleActive">Kết thúc sau:</p>
+    
       <div class="countdown-timer">
         <span class="time">
-          {{ days }}
-          <small>Days</small>
+          {{ days }}<small>Days</small>
         </span>
         <span class="time">
-          {{ hours }}
-          <small>Hours</small>
+          {{ hours }}<small>Hours</small>
         </span>
         <span class="time">
-          {{ minutes }}
-          <small>Minutes</small>
+          {{ minutes }}<small>Minutes</small>
         </span>
         <span class="time">
-          {{ seconds }}
-          <small>Seconds</small>
+          {{ seconds }}<small>Seconds</small>
         </span>
       </div>
-    </div>
+    </div>    
     
     <div class="flashsale-col">
       <div class="flashsale-col-1">
@@ -56,7 +57,7 @@
         <p-tabpanel value="0">
           <p-carousel [value]="sachThamKhao" [numVisible]="5" [numScroll]="2" [circular]="false" [responsiveOptions]="responsiveOptions">
             <ng-template let-book pTemplate="item">
-              <app-product-item [book]="book"></app-product-item>
+              <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
             </ng-template>
           </p-carousel>
         </p-tabpanel>

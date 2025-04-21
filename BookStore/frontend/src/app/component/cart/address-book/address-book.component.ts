@@ -4,12 +4,12 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { AuthService } from '../service/auth.service';
+import { AuthService } from '../../../service/auth.service';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { RadioButtonModule } from 'primeng/radiobutton';
-import { Address, User } from '../model/users-details.model';
+import { Address, User } from '../../../model/users-details.model';
 
 @Component({
   selector: 'app-address-book',

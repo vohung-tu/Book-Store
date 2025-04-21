@@ -92,6 +92,14 @@ export class UsersService {
     return { message: 'Tạo người dùng thành công' };
   }
 
+  async updateUser(id: string, updateData: any) {
+    const user = await this.userModel.findByIdAndUpdate(id, updateData, { new: true });
+    if (!user) {
+      throw new NotFoundException(`Không tìm thấy người dùng với ID: ${id}`);
+    }
+    return user;
+  }
+
   async deleteUser(id: string) {
     const user = await this.userModel.findById(id);
     if (!user) throw new NotFoundException('Người dùng không tồn tại');

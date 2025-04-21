@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './component/navbar/navbar.component';
 import { FooterComponent } from './component/footer/footer.component';
 import { NgIf } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-root',
@@ -11,12 +12,24 @@ import { NgIf } from '@angular/common';
     NgIf,
     RouterOutlet, 
     NavbarComponent,
-    FooterComponent],
+    FooterComponent,
+    ButtonModule
+
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+  showBackToTop = false;
   constructor(public router: Router) {}
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    this.showBackToTop = window.pageYOffset > 100;
+  }
+
+  scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   isAdminPage(): boolean {
     const url = this.router.url;
     // Mảng các route bạn muốn kiểm tra

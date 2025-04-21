@@ -45,40 +45,39 @@
   color: #000;
 
   .flash-sale-countdown {
-    text-align: center;
-    background-color: #f8f8f8;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 20px auto;
-    max-width: 600px;
-  
-    h2 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-  
-    .countdown-timer {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      font-size: 2rem;
-      
-      .time {
-        background-color: #fff;
-        padding: 10px 15px;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      small {
-        font-size: 0.5rem;
-        color: #777;
-      }
-    }
+    display: flex;
+    align-items: center; /* căn giữa theo chiều dọc */
+    gap: 12px; /* khoảng cách giữa các phần tử */
+    flex-wrap: wrap; /* cho xuống hàng nếu không đủ chỗ */
+    margin-bottom: 20px;
+    margin-left: 90px;
   }
+  
+  .flash-sale-countdown h2,
+  .flash-sale-countdown p {
+    color: #fff;
+    margin: 0;
+  }
+  
+  .countdown-timer {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .time {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    min-width: 60px;
+  }
+  
+  .time small {
+    display: block;
+    font-size: 12px;
+    color: #666;
+  }
+  
   
 }
 .flashsale-col {
@@ -90,90 +89,6 @@
     justify-content: center; /* Căn giữa */
     max-width: 1450px; /* Giới hạn tối đa chiều rộng */
     margin: auto; /* Căn giữa toàn bộ grid */
-    
-    // .book-item {
-    //   border-radius: 10px; 
-    //   position: relative;
-    //   max-width: 250px;
-    //   background-color: #fff;
-    //   padding: 10px;
-    //   overflow: hidden;
-    //   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    //   transition: transform 0.3s ease, box-shadow 0.3s ease;
-      
-    //   h3 {
-    //     font-size: 16px;
-    //     font-weight: bold;
-    //     margin: 5px 0;
-    //     white-space: nowrap;
-    //     overflow: hidden;
-    //     text-overflow: ellipsis;
-    //     width: 100%; /* Giới hạn chiều rộng */
-    //   }
-
-    //   img {
-    //     width: 200px; 
-    //     display: block; 
-    //     margin: auto;
-    //   }
-    //   a {
-    //     text-decoration: none; 
-    //     text-align: left; 
-    //     color: #000
-    //   }
-    //   h4 {
-    //     color: red;
-    //   }
-    //   h5 {
-    //     text-decoration: line-through;
-    //     color: #888;
-    //   }
-
-    // }
-
-    // .book-item:hover {
-    //   transform: scale(1.05); /* Phóng to nhẹ */
-    //   box-shadow: 0px 0px 15px rgba(248, 247, 243, 0.8); /* Viền sáng */
-    //   border: 2px solid rgba(255, 253, 242, 0.8); /* Viền vàng nổi bật */
-    // }
-    
-    // @media (max-width: 1200px) {
-    //   .flashsale-col-1 {
-    //     grid-template-columns: repeat(4, 1fr); /* 4 cột khi màn hình nhỏ hơn 1200px */
-    //   }
-    // }
-    
-    // @media (max-width: 992px) {
-    //   .flashsale-col-1 {
-    //     grid-template-columns: repeat(3, 1fr); /* 3 cột khi màn hình nhỏ hơn 992px */
-    //   }
-    // }
-    // @media (max-width: 768px) {
-    //   .flashsale-col-1 {
-    //     grid-template-columns: repeat(2, 1fr); /* 2 cột khi màn hình nhỏ hơn 768px */
-    //   }
-    // }
-    
-    // @media (max-width: 480px) {
-    //   .flashsale-col-1 {
-    //     grid-template-columns: repeat(1, 1fr); /* 1 cột khi màn hình nhỏ hơn 480px */
-    //   }
-    // }
-    // .discount {
-    //   display: flex;
-    //   .discount-badge {
-    //     margin: auto;
-    //     background-color: #d32f2f; 
-    //     color: #fff;            
-    //     border-radius: 4px;    
-    //     font-weight: bold;
-    //     font-size: 13px;
-    //     display: inline-block;
-    //     text-align: center;
-    //     width: 15%;
-    //     height: 16px;
-    //   }
-    // }
   }
 }
 // top - right - bottom - left 

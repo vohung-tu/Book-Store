@@ -1,9 +1,9 @@
 <div class="card">
   <div class="header">
     <h2>Danh sách Sản Phẩm</h2>
-    <button pButton type="button" label="Thêm sản phẩm" icon="pi pi-plus" style="justify-content: flex-end;"></button>
+    <button pButton type="button" label="Thêm sản phẩm" icon="pi pi-plus" (click)="openAddProductDialog()"></button>
   </div>
-  <p-table [value]="products" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'">
+  <p-table [value]="products" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'" dataKey="id">
     <ng-template pTemplate="header">
       <tr>
         <th>Ảnh bìa</th>
@@ -30,10 +30,53 @@
         <td>{{ product.publishedDate | date: 'dd/MM/yyyy' }}</td>
         <td>{{ product.categoryName }}</td>
         <td>
-          <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm"  ></button>
-          <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" ></button>
+          <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editProduct(product)" ></button>
+          <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" (click)="deleteProduct(product)"></button>
         </td>
       </tr>
     </ng-template>
   </p-table>
 </div>
+<p-dialog [header]="isEditMode ? 'Sửa sản phẩm' : 'Thêm sản phẩm'" [(visible)]="displayAddDialog" [modal]="true" [closable]="true" [style]="{ width: '600px' }">
+  <div class="p-fluid">
+    <div class="p-field">
+      <label>Tên sách</label>
+      <input pInputText [(ngModel)]="productForm.title" />
+    </div>
+    <div class="p-field">
+      <label>Tác giả</label>
+      <input pInputText [(ngModel)]="productForm.author" />
+    </div>
+    <div class="p-field">
+      <label>Mô tả</label>
+      <input pInputText [(ngModel)]="productForm.description" />
+    </div>
+    <div class="p-field">
+      <label>Giá gốc</label>
+      <input pInputText type="number" [(ngModel)]="productForm.price" />
+    </div>
+    <div class="p-field">
+      <label>Giá giảm</label>
+      <input pInputText type="number" [(ngModel)]="productForm.flashsale_price" />
+    </div>
+    <div class="p-field">
+      <label>Giảm (%)</label>
+      <input pInputText type="number" [(ngModel)]="productForm.discount_percent" />
+    </div>
+    <div class="p-field">
+      <label>Ngày phát hành</label>
+      <input pInputText type="date" [(ngModel)]="productForm.publishedDate" />
+    </div>
+    <div class="p-field">
+      <label>Danh mục</label>
+      <input pInputText [(ngModel)]="productForm.categoryName" />
+    </div>
+    <div class="p-field">
+      <label>Ảnh bìa</label>
+      <input type="file" (change)="onImageSelected($event)" />
+      <img *ngIf="productForm.coverImage" [src]="productForm.coverImage" alt="preview" width="100" class="preview-img" />
+    </div>
+  </div>
+  <button pButton label="Lưu" (click)="saveProduct()" icon="pi pi-check"></button>
+</p-dialog>
+

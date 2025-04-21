@@ -13,8 +13,13 @@ export class BooksService {
     }
 
     async findAll(): Promise<Book[]> {
-        return this.bookModel.find().exec();
-    }
+        const books = await this.bookModel.find().lean(); // dùng lean để trả plain object
+        return books.map(book => ({
+          ...book,
+          id: book._id.toString(), // thêm trường id từ _id
+        }));
+      }
+      
 
     async findOne(id: string): Promise<Book | null> {
         const book = await this.bookModel.findById(id).exec();

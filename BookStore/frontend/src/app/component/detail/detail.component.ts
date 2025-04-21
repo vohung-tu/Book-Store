@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { BooksService } from '../../service/books.service';
 import { BookDetails } from '../../model/books-details.model';
 import { ActivatedRoute, RouterModule } from '@angular/router';

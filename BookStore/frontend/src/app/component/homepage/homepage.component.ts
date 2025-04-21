@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { interval, Subscription } from 'rxjs';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { interval, Subscription, takeWhile } from 'rxjs';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -10,6 +10,8 @@ import { CarouselModule } from 'primeng/carousel';
 import { CommonModule } from '@angular/common';
 import { TabsModule } from 'primeng/tabs';
 import { ProductItemComponent } from '../product-item/product-item.component';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-homepage',
@@ -23,25 +25,31 @@ import { ProductItemComponent } from '../product-item/product-item.component';
     RouterModule,
     TabsModule,
     CarouselModule,
-    ProductItemComponent
+    ProductItemComponent,
+    ToastModule
   ],
   styleUrls: ['./homepage.component.scss'],
+  providers: [MessageService]
 })
 export class HomepageComponent implements OnInit, OnDestroy {
   constructor(
-    private bookService: BooksService
+    private bookService: BooksService,
+    private messageService: MessageService
   ) {}
+  intervalId: any;
   books: BookDetails[] = [];
   selectedBook?: BookDetails;
   sachThamKhao: BookDetails[] = [];
   sachTrongNuoc: BookDetails[] = [];
-  // Đặt thời gian kết thúc flash sale (ví dụ: 30 00:00:00)
-  flashSaleEnd: Date = new Date('2025-03-10T00:00:00');
+  // Đặt thời gian kết thúc flash sale trong vòng 1 ngày kể từ bây giờ
+  flashSaleStart = new Date('2025-04-20T18:00:00');
+  flashSaleEnd   = new Date('2025-04-22T18:00:00');
+  saleActive = false; // true khi đã sang thời gian sale
 
-  days: number = 0;
-  hours: number = 0;
-  minutes: number = 0;
-  seconds: number = 0;
+  days = 0;
+  hours = 0;
+  minutes = 0;
+  seconds = 0;
 
   blogPosts = [
     {
@@ -72,14 +80,12 @@ export class HomepageComponent implements OnInit, OnDestroy {
   responsiveOptions: any[] | undefined;
 
   
-  private timerSubscription!: Subscription;
+  private timerSubscription?: Subscription;
 
   ngOnInit(): void {
     // Cập nhật đếm ngược mỗi giây
-    this.timerSubscription = interval(1000).subscribe(() => {
-      this.updateCountdown();
-    });
-    this.updateCountdown();
+    // this.startCountdown();
+    console.log(this.flashSaleEnd);
     this.responsiveOptions = [
       {
           breakpoint: '1400px',
@@ -119,30 +125,55 @@ export class HomepageComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateCountdown(): void {
-    const now = new Date().getTime();
-    const distance = this.flashSaleEnd.getTime() - now;
-  
-    if (distance < 0) {
-      this.days = 0;
-      this.hours = 0;
-      this.minutes = 0;
-      this.seconds = 0;
-      if (this.timerSubscription) {
-        this.timerSubscription.unsubscribe();
+  startCountdown(): void {
+    console.log('Start countdown called');
+    this.timerSubscription = interval(1000).subscribe(() => {
+      const now = Date.now();
+
+      if (now < this.flashSaleStart.getTime()) {
+        // Chưa đến giờ bắt đầu
+        this.saleActive = false;
+        this.updateTime(this.flashSaleStart.getTime() - now);
       }
-    } else {
-      this.days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      this.hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      this.minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      this.seconds = Math.floor((distance % (1000 * 60)) / 1000);
-    }
+      else if (now < this.flashSaleEnd.getTime()) {
+        // Đang trong thời gian sale
+        this.saleActive = true;
+        this.updateTime(this.flashSaleEnd.getTime() - now);
+      }
+      else {
+        // Sale đã kết thúc
+        this.setTimeValues(0);
+        this.timerSubscription?.unsubscribe();
+      }
+    });
+  }
+
+  private updateTime(distance: number) {
+    this.days    = Math.floor(distance / (1000 * 60 * 60 * 24));
+    distance %= (1000 * 60 * 60 * 24);
+
+    this.hours   = Math.floor(distance / (1000 * 60 * 60));
+    distance %= (1000 * 60 * 60);
+
+    this.minutes = Math.floor(distance / (1000 * 60));
+    this.seconds = Math.floor((distance % (1000 * 60)) / 1000);
   }
   
+  private setTimeValues(value: number): void {
+    this.days = this.hours = this.minutes = this.seconds = value;
+  }
+    
+  
   ngOnDestroy(): void {
-    if (this.timerSubscription) {
-      this.timerSubscription.unsubscribe();
-    }
+    this.timerSubscription?.unsubscribe();
+  }
+
+  handleToast(event: any) {
+    this.messageService.add({
+      ...event,
+      key: 'tr',
+      life: 3000
+    });
   }
 
 }

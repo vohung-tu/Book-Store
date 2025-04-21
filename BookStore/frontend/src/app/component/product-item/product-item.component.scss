@@ -103,23 +103,27 @@
       opacity: 0;
       transition: all 0.5s ease;
       pointer-events: auto;
+      color:#fff !important;
     }
 
     .cart-btn {
       left: -60px;
-      background-color: white !important;
+      border: 1px solid #000;
+      background-color: #fff !important;
       
     }
 
     .detail-btn {
       z-index: 3;
-      transform: scale(0.5) rotate(0deg);
-      background-color: white !important;
+      // transform: scale(0.5) rotate(0deg);
+      border: 1px solid #000;
+      background-color: #fff !important;
     }
 
     .heart-btn {
       right: -60px;
-      background-color: white !important;
+      border: 1px solid #000;      
+      background-color: #fff !important;  
     }
 
     ::ng-deep .p-button {

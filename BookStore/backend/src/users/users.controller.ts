@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Req, UseGuards, NotFoundException, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Req, UseGuards, NotFoundException, Patch, Delete, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignupDto } from './dto/signup.dto';
 import { SigninDto } from './dto/signin.dto';
@@ -27,6 +27,25 @@ export class UsersController {
   @Get()
   async getUsers() {
     return this.usersService.findAll(); // Trả về danh sách người dùng
+  }
+
+  @Get(':id')
+  // @Roles('admin') // nếu bạn muốn chỉ admin được phép gọi
+  async getUserById(@Param('id') id: string) {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new NotFoundException(`Không tìm thấy user với ID: ${id}`);
+    }
+    return user;
+  }
+
+  @Delete(':id')
+  async deleteUser(@Param('id') id: string) {
+    const result = await this.usersService.deleteUser(id);
+    if (!result) {
+      throw new NotFoundException(`Không tìm thấy người dùng với ID: ${id}`);
+    }
+    return { message: 'Xoá người dùng thành công' };
   }
   
   @UseGuards(JwtAuthGuard)
@@ -67,6 +86,12 @@ export class UsersController {
     }
 
     return updatedUser;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async updateUser(@Param('id') id: string, @Body() body: any) {
+    return this.usersService.updateUser(id, body);
   }
 
 }

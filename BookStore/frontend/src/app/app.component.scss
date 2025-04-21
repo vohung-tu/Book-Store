@@ -1,8 +1,17 @@
 .top-banner {
-    height: 93.74px;
-  }
-  
-  .top-banner-img {
-    width: 100%;
-    height: 100%;
-  }
+  height: 93.74px;
+}
+
+.top-banner-img {
+  width: 100%;
+  height: 100%;
+}
+
+.back-to-top {
+  position: fixed;
+  bottom: 40px;
+  right: 30px;
+  z-index: 1000;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}

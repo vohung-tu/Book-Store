@@ -8,6 +8,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-admin-user',
@@ -19,33 +20,32 @@ import { MessageService } from 'primeng/api';
     FormsModule,
     DialogModule,
     InputTextModule,
-    ToastModule
+    ToastModule,
+    DropdownModule
   ],
   providers: [MessageService],
   templateUrl: './admin-user.component.html',
   styleUrl: './admin-user.component.scss'
 })
-export class AdminUserComponent implements OnInit{
+export class AdminUserComponent implements OnInit {
   users: any[] = [];
   user: any = this.getEmptyUser();
   displayDialog = false;
-  isEditMode: boolean = false;
+  isEditMode = false;
+  selectedAddress: any = null;
+  newAddress: string = '';
 
   constructor(private http: HttpClient, private messageService: MessageService) {}
 
   ngOnInit(): void {
-    this.user.address = this.user.address?.[0]?.value || '';
     this.fetchUsers();
   }
 
   fetchUsers() {
     const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-  
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     this.http.get<any[]>('http://localhost:3000/auth/', { headers }).subscribe({
-      next: (data) => this.users = data,
+      next: (data) => (this.users = data),
       error: (err) => console.error('Lỗi khi lấy danh sách người dùng', err)
     });
   }
@@ -65,35 +65,44 @@ export class AdminUserComponent implements OnInit{
   openAddUserDialog() {
     this.isEditMode = false;
     this.user = this.getEmptyUser();
+    this.selectedAddress = null;
+    this.newAddress = '';
     this.displayDialog = true;
   }
 
   editUser(u: any) {
     this.user = { ...u };
+    this.selectedAddress = this.user.address?.find((a: any) => a.isDefault)?.value || null;
+    this.newAddress = '';
     this.isEditMode = true;
+    this.displayDialog = true;
   }
 
   cancelEdit() {
     this.isEditMode = false;
     this.user = this.getEmptyUser();
+    this.selectedAddress = null;
+    this.newAddress = '';
+    this.displayDialog = false;
   }
 
   onSubmit() {
     const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
   
-     // Biến đổi address thành object
+    let updatedAddress: { value: string; isDefault: boolean }[] = [];
+  
+    if (this.newAddress.trim()) {
+      updatedAddress = [{ value: this.newAddress.trim(), isDefault: true }];
+    } else if (this.selectedAddress) {
+      updatedAddress = [{ value: this.selectedAddress, isDefault: true }];
+    }
+  
     const updatedUser = {
       ...this.user,
-      address: [
-        {
-          value: typeof this.user.address === 'string' ? this.user.address : this.user.address?.value || '',
-          isDefault: true
-        }
-      ]
+      address: updatedAddress
     };
+  
     if (this.isEditMode) {
       this.http.put(`http://localhost:3000/auth/${this.user._id}`, updatedUser, { headers }).subscribe(() => {
         this.fetchUsers();
@@ -110,12 +119,17 @@ export class AdminUserComponent implements OnInit{
       });
     }
   }
-  
-  deleteUser(id: string) {
+
+  deleteUser(user: any) {
+    const userId = user._id;
     if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
-      this.http.delete(`http://localhost:3000/auth/${id}`).subscribe(() => {
+      this.http.delete(`http://localhost:3000/auth/${userId}`).subscribe(() => {
         this.fetchUsers();
-        this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Xóa người dùng thành công' });
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: 'Xóa người dùng thành công'
+        });
       });
     }
   }

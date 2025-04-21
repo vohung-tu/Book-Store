@@ -3,4 +3,11 @@
 </div>
 <app-navbar *ngIf="!isAdminPage()"></app-navbar>
 <router-outlet></router-outlet>
+<p-button
+  *ngIf="showBackToTop"
+  icon="pi pi-arrow-up"
+  (click)="scrollToTop()"
+  styleClass="p-button-rounded p-button-secondary back-to-top"
+  label="Top"
+></p-button>
 <app-footer *ngIf="!isAdminPage()"></app-footer>

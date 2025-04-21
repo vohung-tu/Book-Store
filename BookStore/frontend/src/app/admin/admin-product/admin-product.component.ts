@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-admin-product',
@@ -17,12 +18,28 @@ import { TableModule } from 'primeng/table';
     FormsModule,
     DialogModule,
     InputTextModule,
+    ToastModule
   ],
   templateUrl: './admin-product.component.html',
   styleUrls: ['./admin-product.component.scss']
 })
 export class AdminProductComponent {
   products: any[] = [];
+  displayAddDialog = false;
+  editingProduct: any = null;
+  isEditMode = false;
+
+  newProduct = {
+    title: '',
+    author: '',
+    description: '',
+    price: 0,
+    flashsale_price: 0,
+    discount_percent: 0,
+    publishedDate: '',
+    categoryName: '',
+    coverImage: ''
+  };
 
   constructor(private http: HttpClient) {}
 
@@ -32,8 +49,97 @@ export class AdminProductComponent {
 
   fetchProducts() {
     this.http.get<any[]>('http://localhost:3000/books').subscribe({
-      next: (data) => this.products = data,
-      error: (err) => console.error('Lỗi khi lấy danh sách sản phẩm', err)
+      next: data => {
+        this.products = data.map(book => ({
+          ...book,
+          id: book._id    // gán _id thành id để phù hợp với dataKey
+        }));
+      },
+      error: err => console.error('Lỗi khi lấy danh sách sản phẩm', err)
     });
+  }
+
+  openAddProductDialog() {
+    this.displayAddDialog = true;
+  }
+
+  onImageSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (this.isEditMode && this.editingProduct) {
+          this.editingProduct.coverImage = reader.result as string;
+        } else {
+          this.newProduct.coverImage = reader.result as string;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  saveProduct() {
+    if (this.isEditMode) {
+      if (!this.editingProduct?.id) {
+        console.error('Không có ID sản phẩm để cập nhật');
+        return;
+      }
+  
+      this.http.put(`http://localhost:3000/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
+        next: () => {
+          this.fetchProducts();
+          this.resetDialog();
+        },
+        error: (err) => console.error('Lỗi khi cập nhật sản phẩm', err)
+      });
+    } else {
+      this.http.post(`http://localhost:3000/books`, this.newProduct).subscribe({
+        next: () => {
+          this.fetchProducts();
+          this.resetDialog();
+        },
+        error: (err) => console.error('Lỗi khi thêm sản phẩm', err)
+      });
+    }
+  }
+
+  resetDialog() {
+    this.displayAddDialog = false;
+    this.isEditMode = false;
+    this.editingProduct = null;
+    this.newProduct = {
+      title: '', 
+      author: '', 
+      description: '',
+      price: 0, 
+      flashsale_price: 0, 
+      discount_percent: 0,
+      publishedDate: '', 
+      categoryName: '', 
+      coverImage: ''
+    };
+  }
+
+  get productForm() {
+    return this.isEditMode ? this.editingProduct : this.newProduct;
+  }
+
+  editProduct(product: any) {
+    this.isEditMode = true;
+    this.editingProduct = { ...product };
+    this.newProduct = { ...product };   
+    this.displayAddDialog = true;
+  }
+  
+  deleteProduct(product: any) {
+    if (confirm(`Bạn có chắc muốn xoá sản phẩm "${product.title}"?`)) {
+      this.http.delete(`http://localhost:3000/books/${product.id}`).subscribe({
+        next: () => {
+          this.products = this.products.filter(p => p.id !== product.id);
+          console.log('Đã xoá sản phẩm');
+        },
+        error: (err) => console.error('Lỗi khi xoá sản phẩm', err)
+      });
+    }
   }
 }
