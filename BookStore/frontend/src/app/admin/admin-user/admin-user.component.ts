@@ -9,6 +9,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DropdownModule } from 'primeng/dropdown';
+import { Address } from '../../model/users-details.model';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
   selector: 'app-admin-user',
@@ -34,21 +36,53 @@ export class AdminUserComponent implements OnInit {
   isEditMode = false;
   selectedAddress: any = null;
   newAddress: string = '';
+  searchText: string = '';
+  filteredUsers: any[] = [];
+  addresses: Address[] = [];
+  
 
-  constructor(private http: HttpClient, private messageService: MessageService) {}
+  constructor(
+    private http: HttpClient, 
+    private messageService: MessageService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.fetchUsers();
+    this.filteredUsers = this.users;
+    this.addresses = this.user.address || [];
+
   }
 
   fetchUsers() {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     this.http.get<any[]>('http://localhost:3000/auth/', { headers }).subscribe({
-      next: (data) => (this.users = data),
+      next: (data) => {
+        this.users = data;
+        this.filteredUsers = data; // để bảng hiển thị ban đầu
+      },
       error: (err) => console.error('Lỗi khi lấy danh sách người dùng', err)
     });
   }
+
+  loadUserAddresses(userId: string) {
+    this.authService.getAddresses(userId).subscribe((data: any) => {
+      // Thêm option "Địa chỉ khác" cuối danh sách
+      const savedAddresses = data.address || [];
+      this.addresses = [...savedAddresses, { value: 'other', label: 'Địa chỉ khác' }];
+  
+      // Sắp xếp mặc định lên đầu
+      this.addresses.sort((a: Address, b: Address) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return 0;
+      });
+  
+      this.selectedAddress = this.addresses.length > 0 ? this.addresses[0].value : '';
+    });
+  }
+  
 
   getEmptyUser() {
     return {
@@ -62,6 +96,17 @@ export class AdminUserComponent implements OnInit {
     };
   }
 
+  filterUser() {
+    const query = this.searchText.toLowerCase();
+    this.filteredUsers = this.users.filter(p =>
+      (p.full_name?.toLowerCase().includes(query) || '') ||
+      (p.email?.toLowerCase().includes(query) || '') ||
+      (p.phone_number?.toLowerCase().includes(query) || '') ||
+      (p.role?.toLowerCase().includes(query) || '') ||
+      (Array.isArray(p.address) && p.address.some((addr: any) => addr?.value?.toLowerCase().includes(query)))
+    );
+  }
+
   openAddUserDialog() {
     this.isEditMode = false;
     this.user = this.getEmptyUser();
@@ -72,10 +117,14 @@ export class AdminUserComponent implements OnInit {
 
   editUser(u: any) {
     this.user = { ...u };
-    this.selectedAddress = this.user.address?.find((a: any) => a.isDefault)?.value || null;
+    this.selectedAddress = null;
     this.newAddress = '';
     this.isEditMode = true;
     this.displayDialog = true;
+  
+    if (this.user._id) {
+      this.loadUserAddresses(this.user._id);
+    }
   }
 
   cancelEdit() {
@@ -86,22 +135,34 @@ export class AdminUserComponent implements OnInit {
     this.displayDialog = false;
   }
 
+  onAddressChange(event: any) {
+    if (event.value === 'other') {
+      this.newAddress = '';
+    }
+  }
+
   onSubmit() {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
   
-    let updatedAddress: { value: string; isDefault: boolean }[] = [];
+    let updatedAddress: Address[] = this.user.address || [];
+  
+    // Reset tất cả isDefault về false
+    updatedAddress = updatedAddress.map((addr: Address) => ({ ...addr, isDefault: false }));
   
     if (this.newAddress.trim()) {
-      updatedAddress = [{ value: this.newAddress.trim(), isDefault: true }];
+      updatedAddress.push({ value: this.newAddress.trim(), isDefault: true });
     } else if (this.selectedAddress) {
-      updatedAddress = [{ value: this.selectedAddress, isDefault: true }];
+      updatedAddress = updatedAddress.map((addr: Address) => ({
+        ...addr,
+        isDefault: addr.value === this.selectedAddress
+      }));
     }
   
     const updatedUser = {
       ...this.user,
       address: updatedAddress
-    };
+    };  
   
     if (this.isEditMode) {
       this.http.put(`http://localhost:3000/auth/${this.user._id}`, updatedUser, { headers }).subscribe(() => {
@@ -119,6 +180,7 @@ export class AdminUserComponent implements OnInit {
       });
     }
   }
+  
 
   deleteUser(user: any) {
     const userId = user._id;

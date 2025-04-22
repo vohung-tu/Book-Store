@@ -194,8 +194,6 @@ export class CheckoutComponent implements OnInit {
     }
   
     // Kiểm tra userId có tồn tại
-    console.log(this.userInfo);
-    console.log(this.userInfo.id);
     if (!this.userInfo || !this.userInfo._id) {
       alert('Không tìm thấy thông tin người dùng, vui lòng đăng nhập lại!');
       return;

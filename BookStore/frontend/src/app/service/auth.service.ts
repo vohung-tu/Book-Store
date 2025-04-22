@@ -130,6 +130,23 @@ export class AuthService {
     return localStorage.getItem('token') || sessionStorage.getItem('token');
   }
 
+    /** ← đây là method mới dùng `/auth/me` */
+  getProfile(): Observable<User | null> {
+    const token = this.getToken();
+    if (!token) return of(null as any);  // hoặc EMPTY
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get<User>(`${this.API_URL}/me`, { headers }).pipe(
+      tap(user => {
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+          this.userSubject.next(user);
+          this.isLoggedInSubject.next(true);
+        }
+      })
+    );
+  }
+
   signout(): void {
     if (this.isBrowser) {
       localStorage.removeItem('token');

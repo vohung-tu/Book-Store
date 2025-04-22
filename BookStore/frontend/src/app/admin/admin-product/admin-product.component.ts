@@ -3,10 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-admin-product',
@@ -18,7 +20,9 @@ import { ToastModule } from 'primeng/toast';
     FormsModule,
     DialogModule,
     InputTextModule,
-    ToastModule
+    ToastModule,
+    CheckboxModule,
+    TooltipModule,
   ],
   templateUrl: './admin-product.component.html',
   styleUrls: ['./admin-product.component.scss']
@@ -28,6 +32,9 @@ export class AdminProductComponent {
   displayAddDialog = false;
   editingProduct: any = null;
   isEditMode = false;
+  searchText: string = '';
+  filteredProducts: any[] = [];
+  selectedProducts: any[] = [];
 
   newProduct = {
     title: '',
@@ -45,12 +52,17 @@ export class AdminProductComponent {
 
   ngOnInit(): void {
     this.fetchProducts();
+    this.filteredProducts = this.products;
   }
 
   fetchProducts() {
     this.http.get<any[]>('http://localhost:3000/books').subscribe({
       next: data => {
         this.products = data.map(book => ({
+          ...book,
+          id: book._id    // gán _id thành id để phù hợp với dataKey
+        }));
+        this.filteredProducts = data.map(book => ({
           ...book,
           id: book._id    // gán _id thành id để phù hợp với dataKey
         }));
@@ -61,6 +73,22 @@ export class AdminProductComponent {
 
   openAddProductDialog() {
     this.displayAddDialog = true;
+  }
+
+  filterProducts() {
+    const query = this.searchText.toLowerCase();
+    this.filteredProducts = this.products.filter(p =>
+      p.title.toLowerCase().includes(query) ||
+      p.author.toLowerCase().includes(query) ||
+      p.categoryName.toLowerCase().includes(query)
+    );
+  }
+
+  deleteSelectedProducts() {
+    if (this.selectedProducts && this.selectedProducts.length) {
+      this.filteredProducts = this.filteredProducts.filter(p => !this.selectedProducts.includes(p));
+      this.selectedProducts = [];
+    }
   }
 
   onImageSelected(event: any) {

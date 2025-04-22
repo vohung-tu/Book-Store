@@ -1,9 +1,21 @@
 <div class="card">
   <div
-    class="header"
-    style="display: flex; justify-content: space-between; align-items: center;"
-  >
+    class="header">
     <h2 style="margin: 0;">Danh sách người dùng</h2>
+    
+  </div>
+  <div class="body-bar">
+    
+    <div class="search-bar">
+      <i class="pi pi-search search-icon"></i>
+      <input
+      type="text"
+      pInputText
+      placeholder="Tìm kiếm người dùng..."
+      [(ngModel)]="searchText"
+      (input)="filterUser()"
+      />
+    </div>
     <button
       pButton
       type="button"
@@ -13,7 +25,8 @@
     ></button>
   </div>
 
-  <p-table [value]="users">
+
+  <p-table [value]="filteredUsers" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'">
     <ng-template pTemplate="header">
       <tr>
         <th>Họ tên</th>
@@ -38,11 +51,11 @@
             <span *ngIf="addr.isDefault">(mặc định)</span>
           </div>
         </td>
-        <td>{{ user.birth }}</td>
+        <td>{{ user.birth | date: 'short'}}</td>
         <td>{{ user.role }}</td>
         <td>
-          <button pButton type="button" icon="pi pi-pencil" (click)="editUser(user)"></button>
-          <button pButton type="button" icon="pi pi-trash" class="p-button-danger" (click)="deleteUser(user)"></button>
+          <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editUser(user)"></button>
+          <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" (click)="deleteUser(user)"></button>
         </td>
       </tr>
     </ng-template>
@@ -53,32 +66,33 @@
   <div class="p-fluid">
     <div class="p-field">
       <label for="full_name">Họ tên</label>
-      <input id="full_name" type="text" pInputText [(ngModel)]="user.full_name" />
+      <input id="full_name" pInputText type="text" pInputText [(ngModel)]="user.full_name" />
     </div>
 
     <div class="p-field">
       <label for="email">Email</label>
-      <input id="email" type="email" pInputText [(ngModel)]="user.email" />
+      <input id="email" pInputText type="email" pInputText [(ngModel)]="user.email" />
     </div>
 
     <div class="p-field">
       <label for="username">Tên đăng nhập</label>
-      <input id="username" type="text" pInputText [(ngModel)]="user.username" />
+      <input id="username" pInputText type="text" pInputText [(ngModel)]="user.username" />
     </div>
 
     <div class="p-field">
       <label for="phone_number">Số điện thoại</label>
-      <input id="phone_number" type="text" pInputText [(ngModel)]="user.phone_number" />
+      <input id="phone_number" pInputText type="text" pInputText [(ngModel)]="user.phone_number" />
     </div>
 
     <div class="p-field">
-      <label>Chọn địa chỉ đã lưu</label>
+      <label for="addresses">Chọn địa chỉ đã lưu</label>
       <p-dropdown
-        [options]="user.address"
+        [options]="addresses"
         optionLabel="value"
         [(ngModel)]="selectedAddress"
         placeholder="Chọn địa chỉ"
-        [disabled]="user.address.length === 0"
+        (onChange)="onAddressChange($event)"
+        [disabled]="addresses.length === 0"
       ></p-dropdown>
     </div>
     

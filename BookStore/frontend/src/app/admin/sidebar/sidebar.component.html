@@ -1,7 +1,8 @@
 <nav class="sidebar" [ngClass]="{ 'collapsed': !visible }">
-    <ul>
-      <li><a routerLink="/admin/dashboard">📊 Dashboard</a></li>
-      <li><a routerLink="/admin/user">👤 User</a></li>
-      <li><a routerLink="/admin/product">📦 Product</a></li>
-    </ul>
+  <ul>
+    <li><a routerLink="/admin/dashboard" routerLinkActive="active"> <i class="pi pi-chart-bar"></i> Dashboard</a></li>
+    <li><a routerLink="/admin/user"><i class="pi pi-users"></i> User</a></li>
+    <li><a routerLink="/admin/product"><i class="pi pi-shopping-bag"></i> Product</a></li>
+    <li><a routerLink="/admin/order"><i class="pi pi-shopping-cart"></i> Order</a></li>
+  </ul>
 </nav>

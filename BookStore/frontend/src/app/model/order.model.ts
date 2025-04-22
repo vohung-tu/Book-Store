@@ -1,11 +1,23 @@
-export interface OrderItem {
-    title: string;
-    price: number;
-    quantity: number;
-}
-
 export interface Order {
-    email: string;
-    items: OrderItem[];
-    totalPrice: number;
+  _id: string;
+  userId: string;
+  address: string;
+  note: string;
+  products: {
+    _id: string;
+    title: string;
+    author: string;
+    price: number;
+    flashsale_price: number;
+    discount_percent: number;
+    coverImage: string;
+    quantity: number;
+    categoryName: string;
+  }[];
+  name: string;
+  phone: number;
+  email: string;
+  total: number;
+  orderDate: string;
+  createdAt: string;
 }

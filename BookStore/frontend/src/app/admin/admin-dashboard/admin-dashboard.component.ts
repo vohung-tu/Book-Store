@@ -1,96 +1,30 @@
+import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, effect, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
-// import { isPlatformBrowser } from '@angular/common';
-// import { AppConfigService } from '@/service/appconfigservice';
+import { ProgressBarModule } from 'primeng/progressbar';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [
     CardModule,
-    ChartModule
+    ChartModule,
+    ProgressBarModule,
+    CommonModule
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
 })
 export class AdminDashboardComponent {
-//   basicData: any;
+  products = [
+    { name: 'Space T-Shirt', category: 'Clothing', percentage: 50, color: 'orange-bar', colorHex: '#f97316' },
+    { name: 'Portal Sticker', category: 'Accessories', percentage: 16, color: 'cyan-bar', colorHex: '#06b6d4' },
+    { name: 'Supernova Sticker', category: 'Accessories', percentage: 67, color: 'pink-bar', colorHex: '#ec4899' },
+    { name: 'Wonders Notebook', category: 'Office', percentage: 35, color: 'green-bar', colorHex: '#22c55e' },
+    { name: 'Mat Black Case', category: 'Accessories', percentage: 75, color: 'purple-bar', colorHex: '#a855f7' },
+    { name: 'Robots T-Shirt', category: 'Clothing', percentage: 40, color: 'teal-bar', colorHex: '#14b8a6' },
+  ];
+  constructor() {}
 
-//   basicOptions: any;
-
-//   platformId = inject(PLATFORM_ID);
-
-//   configService = inject(AppConfigService);
-
-  constructor(private cd: ChangeDetectorRef) {}
-
-//   themeEffect = effect(() => {
-//       if (this.configService.transitionComplete()) {
-//           if (this.designerService.preset()) {
-//               this.initChart();
-//           }
-//       }
-//   });
-
-//   ngOnInit() {
-//       this.initChart();
-//   }
-
-//   initChart() {
-//       if (isPlatformBrowser(this.platformId)) {
-//           const documentStyle = getComputedStyle(document.documentElement);
-//           const textColor = documentStyle.getPropertyValue('--p-text-color');
-//           const textColorSecondary = documentStyle.getPropertyValue('--p-text-muted-color');
-//           const surfaceBorder = documentStyle.getPropertyValue('--p-content-border-color');
-
-//           this.basicData = {
-//               labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-//               datasets: [
-//                   {
-//                       label: 'Sales',
-//                       data: [540, 325, 702, 620],
-//                       backgroundColor: [
-//                           'rgba(249, 115, 22, 0.2)',
-//                           'rgba(6, 182, 212, 0.2)',
-//                           'rgb(107, 114, 128, 0.2)',
-//                           'rgba(139, 92, 246, 0.2)',
-//                       ],
-//                       borderColor: ['rgb(249, 115, 22)', 'rgb(6, 182, 212)', 'rgb(107, 114, 128)', 'rgb(139, 92, 246)'],
-//                       borderWidth: 1,
-//                   },
-//               ],
-//           };
-
-//           this.basicOptions = {
-//               plugins: {
-//                   legend: {
-//                       labels: {
-//                           color: textColor,
-//                       },
-//                   },
-//               },
-//               scales: {
-//                   x: {
-//                       ticks: {
-//                           color: textColorSecondary,
-//                       },
-//                       grid: {
-//                           color: surfaceBorder,
-//                       },
-//                   },
-//                   y: {
-//                       beginAtZero: true,
-//                       ticks: {
-//                           color: textColorSecondary,
-//                       },
-//                       grid: {
-//                           color: surfaceBorder,
-//                       },
-//                   },
-//               },
-//           };
-//           this.cd.markForCheck()
-//       }
-//   }
 }

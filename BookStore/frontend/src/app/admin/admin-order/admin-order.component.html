@@ -1,0 +1,62 @@
+<div class="card order-card">
+  <div class="header">
+    <h2>Danh sách Đơn Hàng</h2>
+  </div>
+
+  <div class="body-bar">
+    <div class="search-bar">
+      <i class="pi pi-search search-icon"></i>
+      <input
+        type="text"
+        pInputText
+        placeholder="Tìm kiếm đơn hàng..."
+        [(ngModel)]="searchText"
+        (input)="filterOrders()"
+      />
+    </div>
+  </div>
+
+  <p-table
+    [value]="filteredOrders"
+    [paginator]="true"
+    [rows]="10"
+    responsiveLayout="scroll"
+    class="p-datatable-striped"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Mã Đơn</th>
+        <th>User</th>
+        <th>Địa chỉ</th>
+        <th>Ghi chú</th>
+        <th>Ngày tạo</th>
+        <th>Sản phẩm</th>
+        <th>Số điện thoại</th>
+        <th>Email</th>
+        <th>Tổng tiền</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-order>
+      <tr>
+        <td>{{ order._id }}</td>
+        <td>{{ order.name }}</td>
+        <td>{{ order.address }}</td>
+        <td>{{ order.note || '-' }}</td>
+        <td>{{ order.createdAt | date: 'short' }}</td>
+        <td>
+          <ul>
+            <li *ngFor="let p of order.products" style="text-decoration: none;">
+              <p>{{ p.title }}</p> 
+            </li>
+          </ul>
+        </td>
+        <td>{{ order.phone }}</td>
+        <td>{{ order.email }}</td>
+        <td>
+          {{ order.total | number:'1.3-3' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

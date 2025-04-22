@@ -15,6 +15,7 @@ import { AdminUserComponent } from './admin/admin-user/admin-user.component';
 import { AdminProductComponent } from './admin/admin-product/admin-product.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AddressBookComponent } from './component/cart/address-book/address-book.component';
+import { AdminOrderComponent } from './admin/admin-order/admin-order.component';
 
 const routes: Routes = [
   { 
@@ -94,6 +95,11 @@ const routes: Routes = [
         path: 'dashboard',
         component: AdminDashboardComponent,
         title: 'Admin Dashboard'
+      },
+      {
+        path: 'order',
+        component: AdminOrderComponent,
+        title: 'Admin Order'
       }
     ]
   },

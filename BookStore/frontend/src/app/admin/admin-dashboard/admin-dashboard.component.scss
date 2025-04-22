@@ -1,8 +1,15 @@
 .dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 64px;
+}
+
+/* 4 cột cho card-total */
+.card-total {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
-  margin-top: 64px;
 }
 
 .card {
@@ -23,4 +30,68 @@
 .additional-info {
   font-size: 0.85rem;
   color: #6c757d;
+}
+
+/* 2 cột cho card-progress */
+.card-progress {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+p-card.shadow {
+  padding: 1rem;
+}
+
+/* Bên trong mỗi p-card (best-selling products) */
+.product-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.product-info {
+  flex: 1;
+}
+
+.product-name {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.product-category {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.product-stats {
+  width: 40%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.product-percent {
+  font-weight: 500;
+}
+
+/* Custom bar colors */
+::ng-deep .orange-bar .p-progressbar-value {
+  background-color: #f97316 !important;
+}
+::ng-deep .cyan-bar .p-progressbar-value {
+  background-color: #06b6d4 !important;
+}
+::ng-deep .pink-bar .p-progressbar-value {
+  background-color: #ec4899 !important;
+}
+::ng-deep .green-bar .p-progressbar-value {
+  background-color: #22c55e !important;
+}
+::ng-deep .purple-bar .p-progressbar-value {
+  background-color: #a855f7 !important;
+}
+::ng-deep .teal-bar .p-progressbar-value {
+  background-color: #14b8a6 !important;
 }

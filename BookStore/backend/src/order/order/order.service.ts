@@ -11,16 +11,6 @@ export class OrderService {
     private emailService: EmailService
   ) {}
 
-  // async createOrder(orderData: any): Promise<Order> {
-  //   const newOrder = new this.orderModel(orderData);
-  //   const savedOrder = await newOrder.save();
-
-  //   // Gửi email hóa đơn sau khi lưu đơn hàng
-  //   await this.emailService.sendInvoice(savedOrder.email, savedOrder);
-    
-  //   return savedOrder;
-  // }
-
   async create(createOrderDto: any): Promise<Order> {
     try {
       console.log('createOrderDto:', createOrderDto); // 👈 Debug log
@@ -30,6 +20,9 @@ export class OrderService {
       console.error('Create Order Error:', error); // 👈 Xem log lỗi
       throw new InternalServerErrorException('Failed to create order');
     }
+  }
+  async findAll(): Promise<Order[]> {
+    return this.orderModel.find().sort({ createdAt: -1 }).exec();
   }
 }
   

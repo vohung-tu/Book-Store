@@ -6,10 +6,11 @@
     top: 0;
     width: 100%;
     padding: 0 2rem;
-    background-color:#b2bec3;
+    background-color: #e4ebf8;
     transition: left var(--layout-section-transition-duration);
     display: flex;
     align-items: center;
+    border-bottom: 2px solid  rgba(22, 43, 77, 0.6);
 
     .layout-topbar-logo-container {
         width: 20rem;
@@ -37,11 +38,12 @@
         width: 2.5rem;
         height: 2.5rem;
         color: var(--text-color);
+        background-color: transparent;
         transition: background-color var(--element-transition-duration);
         cursor: pointer;
 
         &:hover {
-            background-color: var(--surface-hover);
+            background-color: transparent;
         }
 
         i {
@@ -61,6 +63,7 @@
 
     .layout-menu-button {
         margin-right: 0.5rem;
+        background-color: transparent;
     }
 
     .layout-topbar-menu-button {

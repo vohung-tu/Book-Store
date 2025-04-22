@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CardModule } from 'primeng/card';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../service/auth.service';
+import { User } from '../../model/users-details.model';
 
 @Component({
   selector: 'app-user-info',
@@ -18,30 +19,26 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./user-info.component.scss']
 })
 export class UserInfoComponent implements OnInit{
-  currentUser: any;
+  currentUser: User | null = null;
 
   constructor(
-    private http: HttpClient,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.getCurrentUser();
   }
 
-  getCurrentUser() {
+  getCurrentUser(): void {
     if (typeof window === 'undefined') return; 
-    
+    console.log(localStorage.getItem('token'))
     const token = localStorage.getItem('token');
     if (!token) return;
     
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-  
-    this.http.get<any>('http://localhost:3000/auth/me', { headers }).subscribe({
-      next: (data) => {
-        if (data) {
-          this.currentUser = data;
+    this.authService.getProfile().subscribe({
+      next: (user) => {
+        if (user) {
+          this.currentUser = user;
         } else {
           console.error('Không thể lấy thông tin người dùng');
         }

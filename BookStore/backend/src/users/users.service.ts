@@ -36,25 +36,6 @@ export class UsersService {
     return { message: 'Đăng ký thành công' };
   }
 
-  /** Đăng nhập */
-  async signin(dto: SigninDto): Promise<any> {
-    const user = await this.userModel.findOne({ email: dto.email });
-    if (!user) throw new NotFoundException('Người dùng không tồn tại.');
-  
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-    if (!isPasswordValid) throw new BadRequestException('Mật khẩu không đúng.');
-  
-    // ✅ Gán token vào biến
-    const token = this.jwtService.sign({
-      id: user._id,
-      email: user.email,
-      role: user.role, // thêm role nếu dùng guard kiểm tra role
-    });
-  
-    // Trả token và thông tin người dùng
-    const { password, ...userData } = user.toObject();
-    return { token, user: userData };
-  }
 
   /** Lấy tất cả người dùng */
   async findAll(): Promise<User[]> {
