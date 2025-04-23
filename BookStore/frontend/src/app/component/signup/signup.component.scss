@@ -1,11 +1,17 @@
 .container {
-  background-color: #A1E3F9;
+  background-color: #fff;
   background-size: cover;
   .signup-container {
-    width: 400px;
+    background-color: #fcfcfc;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    width: 600px;
     margin: auto;
+    margin-top: 50px !important;
+    margin-bottom: 50px !important;
     text-align: center;
-    background: #fff;
+    padding-top: 10px;
+    height: 100%;
     padding: 30px;
     p {
       text-align: left;

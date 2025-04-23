@@ -33,7 +33,8 @@ export class AppComponent {
   isAdminPage(): boolean {
     const url = this.router.url;
     // Mảng các route bạn muốn kiểm tra
-    const prefixes = ['/admin', '/signin', '/signup'];
-    return prefixes.some(prefix => url.startsWith(prefix));
+    const prefixes = ['/signin', '/signup'];
+    const pref = ['/admin'];
+    return [prefixes, pref].some(prefix => url.startsWith([prefix]));
   }
 }

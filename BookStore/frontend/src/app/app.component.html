@@ -3,7 +3,7 @@
     <img class="top-banner-img" src="assets/images/top-banner.jpg" alt="" />
   </div>
 
-  <app-navbar></app-navbar>
+  <app-navbar *ngIf="!isAdminPage()"></app-navbar>
 
   <div class="main-content">
     <router-outlet></router-outlet>
