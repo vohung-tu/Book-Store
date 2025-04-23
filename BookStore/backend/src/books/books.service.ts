@@ -40,4 +40,10 @@ export class BooksService {
     async findByCategory(categoryName: string): Promise<Book[]> {
         return this.bookModel.find({ categoryName: categoryName }).exec();
     }
+
+    async searchBooks(keyword: string): Promise<Book[]> {
+        return this.bookModel.find({
+          title: { $regex: keyword, $options: 'i' }
+        }).exec();
+      }
 }

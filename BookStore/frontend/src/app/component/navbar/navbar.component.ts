@@ -14,6 +14,7 @@ import { BookDetails } from '../../model/books-details.model';
 import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import { ButtonModule } from 'primeng/button';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-navbar',
@@ -31,7 +32,8 @@ import { ButtonModule } from 'primeng/button';
     RouterModule,
     BadgeModule,
     OverlayBadgeModule,
-    ButtonModule
+    ButtonModule,
+    FormsModule,
   ],
   styleUrls: ['./navbar.component.scss']
 })
@@ -44,6 +46,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   cart$: Observable<BookDetails[]>;
   currentUser: any;
   userRole: string | null = null;
+  searchTerm = '';
 
   constructor(private authService: AuthService,
     private cartService: CartService,
@@ -74,6 +77,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   changeLanguage(lang: string) {
     console.log('Selected language:', lang);
+  }
+
+  onSearch() {
+    if (this.searchTerm.trim()) {
+      this.router.navigate(['/search'], {
+        queryParams: { keyword: this.searchTerm.trim() }
+      });
+    }
   }
 
   ngOnDestroy(): void {

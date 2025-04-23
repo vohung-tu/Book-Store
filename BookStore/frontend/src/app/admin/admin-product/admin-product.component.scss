@@ -1,5 +1,5 @@
 .card {
-  padding: 3rem;
+  padding-top: 3rem;
   border-radius: 8px;
   margin-top: 30px;
   margin-left: 10px;
@@ -76,10 +76,10 @@
 }
 
 // Responsive dialog
-// :host ::ng-deep .p-dialog {
-//   max-width: 90vw;
-//   width: 100% !important;
-// }
+:host ::ng-deep .p-dialog {
+  max-width: 90vw;
+  width: 100% !important;
+}
 
 // Image preview
 .preview-img {
@@ -116,6 +116,7 @@
     input {
       width: 100%;
       padding: 0.5rem 0.5rem 0.5rem 2rem;
+      border-radius: 999px;
       border: 1px solid #ccc;
     }
 

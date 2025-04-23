@@ -24,8 +24,14 @@
           </div>
           <div class="search-container">
             <i class="pi pi-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Tìm kiếm sách bạn cần" />
-          </div>              
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Tìm kiếm sách bạn cần"
+              [(ngModel)]="searchTerm"
+              (keydown.enter)="onSearch()"
+            />
+          </div>           
         </div>
       </div>
 

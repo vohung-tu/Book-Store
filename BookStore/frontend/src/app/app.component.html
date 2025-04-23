@@ -1,13 +1,21 @@
-<div class="top-banner"  *ngIf="!isAdminPage()">
-  <img class="top-banner-img" src="assets/images/top-banner.jpg" alt="">
+<div class="app-wrapper">
+  <div class="top-banner" *ngIf="!isAdminPage()">
+    <img class="top-banner-img" src="assets/images/top-banner.jpg" alt="" />
+  </div>
+
+  <app-navbar></app-navbar>
+
+  <div class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+
+  <p-button
+    *ngIf="showBackToTop"
+    icon="pi pi-arrow-up"
+    (click)="scrollToTop()"
+    styleClass="p-button-rounded p-button-secondary back-to-top"
+    label="Top"
+  ></p-button>
+
+  <app-footer *ngIf="!isAdminPage()"></app-footer>
 </div>
-<app-navbar *ngIf="!isAdminPage()"></app-navbar>
-<router-outlet></router-outlet>
-<p-button
-  *ngIf="showBackToTop"
-  icon="pi pi-arrow-up"
-  (click)="scrollToTop()"
-  styleClass="p-button-rounded p-button-secondary back-to-top"
-  label="Top"
-></p-button>
-<app-footer *ngIf="!isAdminPage()"></app-footer>

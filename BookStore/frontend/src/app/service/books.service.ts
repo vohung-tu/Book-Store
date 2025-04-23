@@ -38,4 +38,17 @@ export class BooksService {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/category/${categoryName}`);
   }
 
+  searchBooks(keyword: string): Observable<BookDetails[]> {
+    const url = `${this.apiUrl}/search?keyword=${encodeURIComponent(keyword)}`;
+    return this.http
+      .get<BookDetails[]>(url)
+      .pipe(
+        map(books =>
+          books.map(book => ({
+            ...book,
+            id: book._id
+          }))
+        )
+      );
+  }
 }   

@@ -14,10 +14,6 @@
       transform: translateX(-50%);
       margin: 0;
     }
-  
-    button {
-      margin-left: auto;
-    }
     
   }
   ::ng-deep .p-datatable {
@@ -75,6 +71,8 @@
   display: flex;
   justify-content: space-between;
   padding: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 
   button {
     max-height: 50px;
@@ -91,7 +89,7 @@
   
   .search-bar input {
     width: 100%;
-    padding: 0.5rem 0.5rem 0.5rem 2rem; /* chừa chỗ cho icon */
+    padding: 0.5rem 0.5rem 0.5rem 2rem; 
     border-radius: 999px;
     border: 1px solid #ccc;
   }

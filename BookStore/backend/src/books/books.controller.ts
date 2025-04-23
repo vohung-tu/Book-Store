@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException, Query } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Book } from './book.schema';
 
@@ -14,6 +14,14 @@ export class BooksController {
   @Get()
   async findAll(): Promise<Book[]> {
     return this.booksService.findAll();
+  }
+
+  @Get('search')
+  async searchBooks(@Query('keyword') keyword: string): Promise<Book[]> {
+    if (!keyword) {
+      throw new BadRequestException('Keyword is required');
+    }
+    return this.booksService.searchBooks(keyword);
   }
 
   @Get(':id')
