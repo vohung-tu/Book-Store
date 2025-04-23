@@ -51,7 +51,7 @@
             <span *ngIf="addr.isDefault">(mặc định)</span>
           </div>
         </td>
-        <td>{{ user.birth | date: 'short'}}</td>
+        <td>{{ user.birth | date: 'dd/MM/yyyy'}}</td>
         <td>{{ user.role }}</td>
         <td>
           <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editUser(user)"></button>
