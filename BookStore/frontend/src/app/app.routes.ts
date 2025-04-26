@@ -14,7 +14,7 @@ import { LayoutComponent } from './admin/layout/layout.component';
 import { AdminUserComponent } from './admin/admin-user/admin-user.component';
 import { AdminProductComponent } from './admin/admin-product/admin-product.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
-import { AddressBookComponent } from './component/cart/address-book/address-book.component';
+import { AddressBookComponent } from './component/address-book/address-book.component';
 import { AdminOrderComponent } from './admin/admin-order/admin-order.component';
 import { SearchPageComponent } from './component/search-page/search-page.component';
 

@@ -4,6 +4,7 @@ import { BooksService } from '../../service/books.service';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProductItemComponent } from '../product-item/product-item.component';
+import { NormalizeStringPipe } from '../../pipes/normalize-string.pipe';
 
 @Component({
   selector: 'app-search',
@@ -18,19 +19,48 @@ import { ProductItemComponent } from '../product-item/product-item.component';
 export class SearchPageComponent implements OnInit{
   keyword: string = '';
   products: BookDetails[] = [];
+  filteredProducts: BookDetails[] = [];
+
+  normalize(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D')
+      .toLowerCase();
+  }
   constructor(
     private route: ActivatedRoute,
     private bookService: BooksService
   ) {}
 
+  // ngOnInit() {
+  //   this.route.queryParams.subscribe(params => {
+  //     this.keyword = params['keyword'] || '';
+  //     if (this.keyword) {
+  //       this.bookService.searchBooks(this.keyword).subscribe(res => {
+  //         this.products = res;
+  //         this.applyFilter();
+  //       });
+  //     }
+  //   });
+  // }
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.keyword = params['keyword'] || '';
+  
       if (this.keyword) {
-        this.bookService.searchBooks(this.keyword).subscribe(res => {
+        this.bookService.getBooks().subscribe(res => {
           this.products = res;
+          this.applyFilter(); // Gọi hàm lọc tại đây
         });
       }
     });
+  }
+  applyFilter() {
+    const normalizedKeyword = this.normalize(this.keyword);
+    this.filteredProducts = this.products.filter(product =>
+      this.normalize(product.title).includes(normalizedKeyword)
+    );
   }
 }

@@ -21,20 +21,21 @@
     </div>
 
 		<div class="quantity-control">
-			<!-- Nút giảm số lượng --> 
-			 <p><strong>Số lượng:</strong></p>
-			<button mat-icon-button (click)="decreaseQty()" [disabled]="quantity <= 1">	
-				<mat-icon>remove</mat-icon>
-			</button>
-		
-			<!-- Hiển thị số lượng -->
-			<span class="quantity">{{ quantity }}</span>
-		
-			<!-- Nút tăng số lượng -->
-			<button mat-icon-button (click)="increaseQty()">
-				<mat-icon>add</mat-icon>
-			</button>
-		</div>
+      <p><strong>Số lượng:</strong></p>
+    
+      <!-- Nút giảm số lượng -->
+      <button mat-icon-button (click)="decreaseQty()" [disabled]="quantities <= 1">
+        <mat-icon>remove</mat-icon>
+      </button>
+    
+      <!-- Hiển thị số lượng -->
+      <span class="quantity">{{ quantities }}</span>
+    
+      <!-- Nút tăng số lượng -->
+      <button mat-icon-button (click)="increaseQty()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
 		
     <!-- Nút mua sách -->
     <div class="purchase-buttons">

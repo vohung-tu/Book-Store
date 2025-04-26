@@ -70,14 +70,15 @@ export class DetailComponent implements OnInit{
 
   // Hàm tăng số lượng
   increaseQty(): void {
-    this.quantity++;
+    this.cartService.updateQuantity(this.book._id, 1);
   }
 
-  // Hàm giảm số lượng (không giảm dưới 1)
   decreaseQty(): void {
-    if (this.quantity > 1) {
-      this.quantity--;
-    }
+    this.cartService.updateQuantity(this.book._id, -1);
+  }
+
+  get quantities(): number {
+    return this.book.quantity || 1;
   }
 
   addToCart(): void {
