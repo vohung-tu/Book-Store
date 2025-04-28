@@ -1,78 +1,22 @@
-/* Container bao quanh phần thông tin tài khoản */
-.profile-container {
+.profile-page {
+  display: flex;
+  align-items: flex-start;
+  padding: 20px 20px;
+  justify-content: center;
+  gap: 30px;
+}
+
+app-sidebar-user {
+  width: 250px;
+  // flex-shrink: 0;
+}
+
+.layout-main {
+  flex: 1;
   max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Arial', sans-serif;
+  // margin: 0 auto; /* Căn giữa */
   background-color: #f9f9f9;
   border-radius: 10px;
+  padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Tiêu đề */
-.profile-container h2 {
-  text-align: center;
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 20px;
-}
-
-/* Thiết kế cho card */
-.card {
-  border-radius: 10px;
-  overflow: hidden;
-  border: none;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Header của card */
-.card-header {
-  background-color: #BE5985;
-  color: white;
-  padding: 10px 15px;
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  border-bottom: 1px solid #ccc;
-}
-
-/* Phần nội dung trong card */
-.card-body {
-  padding: 15px;
-  font-size: 16px;
-  line-height: 1.6;
-  color: #555;
-}
-
-.card-body p {
-  margin-bottom: 12px;
-}
-
-/* Icon và phần thông tin */
-.card-body i {
-  margin-right: 10px;
-  color: #007bff;
-}
-
-/* Hover cho các mục trong card */
-.card-body p:hover {
-  background-color: #f1f1f1;
-  padding-left: 10px;
-  border-left: 4px solid #007bff;
-  transition: background-color 0.3s, padding-left 0.3s;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .profile-container {
-    padding: 10px;
-  }
-
-  .card-body p {
-    font-size: 14px;
-  }
-
-  .card-header {
-    font-size: 16px;
-  }
 }

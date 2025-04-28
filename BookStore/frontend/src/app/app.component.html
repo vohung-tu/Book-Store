@@ -1,5 +1,5 @@
 <div class="app-wrapper">
-  <div class="top-banner" *ngIf="!isAdminPage()">
+  <div class="top-banner" *ngIf="!isAdminPage() && !isAuthPage()">
     <img class="top-banner-img" src="assets/images/top-banner.jpg" alt="" />
   </div>
 
@@ -17,5 +17,5 @@
     label="Top"
   ></p-button>
 
-  <app-footer *ngIf="!isAdminPage()"></app-footer>
+  <app-footer *ngIf="!isAdminPage() && !isAuthPage()"></app-footer>
 </div>

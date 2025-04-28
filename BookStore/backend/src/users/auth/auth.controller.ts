@@ -36,22 +36,24 @@ export class AuthController {
     @Patch(':id/address')
     async updateAddress(
         @Param('id') id: string,
-        @Body('address') address: { value: string; isDefault: boolean }[]
-    ) {
-        if (
-        !Array.isArray(address) ||
-        !address.every(
-            (a) =>
-            typeof a.value === 'string' &&
-            typeof a.isDefault === 'boolean'
-        )
+        @Body('address') address: { value: string; isDefault: boolean; fullName?: string; phoneNumber?: number }[]
         ) {
-        throw new NotFoundException('Danh sách địa chỉ không hợp lệ');
+        if (
+            !Array.isArray(address) ||
+            !address.every(
+            (a) =>
+                typeof a.value === 'string' &&
+                typeof a.isDefault === 'boolean' &&
+                (a.fullName === undefined || typeof a.fullName === 'string') &&
+                (a.phoneNumber === undefined || typeof a.phoneNumber === 'number')
+            )
+        ) {
+            throw new NotFoundException('Danh sách địa chỉ không hợp lệ');
         }
 
         const updatedUser = await this.usersService.updateAddress(id, address);
         if (!updatedUser) {
-        throw new NotFoundException('Không tìm thấy người dùng');
+            throw new NotFoundException('Không tìm thấy người dùng');
         }
 
         return updatedUser;

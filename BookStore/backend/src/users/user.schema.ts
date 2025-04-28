@@ -23,13 +23,20 @@ export class User {
   @Prop({
     type: [
       {
-        value: { type: String, required: true },
-        isDefault: { type: Boolean, default: false }
+        value:     { type: String,  required: true },
+        isDefault: { type: Boolean, default: false },
+        fullName:  { type: String },    // ← thêm
+        phoneNumber: { type: Number }   // ← thêm
       }
     ],
     default: []
   })
-  address: { value: string; isDefault: boolean }[];
+  address: Array<{
+    value: string;
+    isDefault: boolean;
+    fullName?: string;
+    phoneNumber?: number;
+  }>;
   
   @Prop({ required: true, unique: true })
   username: string;

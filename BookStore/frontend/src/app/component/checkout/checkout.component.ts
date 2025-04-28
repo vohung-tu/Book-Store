@@ -114,38 +114,31 @@ export class CheckoutComponent implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private orderService: OrderService,
-    private http: HttpClient
+    private orderService: OrderService
   ) {}
 
   ngOnInit(): void {
     // Lấy thông tin người dùng từ AuthService
     this.userInfo = this.authService.getCurrentUser();
-    console.log('userInfo:', this.userInfo);
-  
-    if (!this.userInfo) {
-      console.log('User not logged in, redirecting...');
-      return;
-    }
-  
-    // Lưu danh sách địa chỉ của người dùng
-    this.addresses = this.userInfo.address || [];
-    this.orderInfo.address = '';
+    if (!this.userInfo) return;
 
-    this.authService.getAddresses(this.userInfo._id).subscribe((data: any) => {
-      // Thêm option "Địa chỉ khác" vào cuối mảng
-      this.addresses = [...data.address, { value: 'other', label: 'Địa chỉ khác' }];
+    this.authService.getAddresses(this.userInfo._id).subscribe((res: any) => {
+      const raw = res.address as Address[];
+      // Chuyển về đúng shape cho p-dropdown:
+      this.addresses = raw
+        .map(a => ({
+          label: a.value,    // hiển thị phần địa chỉ
+          value: a.value,    // gán vào selectedAddress
+          isDefault: a.isDefault
+        }))
+        // thêm option "Khác"
+        .concat([{ label: 'Địa chỉ khác', value: 'other', isDefault: false }])
+        // sort để default lên trước
+        .sort((a, b) => (a.isDefault ? -1 : b.isDefault ? 1 : 0));
+
+      this.selectedAddress = this.addresses[0].value;
+      this.orderInfo.address = this.selectedAddress;
     });
-  
-    // Sắp xếp các địa chỉ sao cho địa chỉ mặc định (isDefault = true) luôn ở đầu
-    this.addresses = this.addresses.sort((a: Address, b: Address) => {
-      if (a.isDefault && !b.isDefault) return -1;  // Địa chỉ mặc định lên đầu
-      if (!a.isDefault && b.isDefault) return 1;   // Địa chỉ mặc định xuống dưới
-      return 0;  // Giữ nguyên thứ tự nếu cả hai đều hoặc đều không phải mặc định
-    });
-  
-    // Gán địa chỉ mặc định hoặc địa chỉ đầu tiên (nếu không có địa chỉ mặc định)
-    this.selectedAddress = this.addresses.length > 0 ? this.addresses[0].value : '';
   
     // Cập nhật thông tin đơn hàng từ thông tin người dùng
     this.orderInfo = {
@@ -167,47 +160,49 @@ export class CheckoutComponent implements OnInit {
       0
     );
     this.discountedAmount = this.totalAmount;
-  }  
-   
-  submitOrder() {
-  if (!this.userInfo?._id || !this.orderInfo.address) return;
-
-  // Thêm địa chỉ nếu là "Địa chỉ khác"
-  if (this.selectedAddress === 'Địa chỉ khác') {
-    const newAddress = {
-      value: this.orderInfo.address,
-      isDefault: false
-    };
-
-    const exists = this.addresses.some(addr => addr.value === newAddress.value);
-    if (!exists) {
-      this.addresses.push(newAddress);
-      this.authService.updateAddress(this.userInfo?._id, this.addresses).subscribe({
-        next: res => console.log('Đã lưu địa chỉ mới'),
-        error: err => console.error('Lỗi khi lưu địa chỉ', err)
-      });
-    }
   }
+
+  submitOrder() {
+    if (!this.userInfo?._id || !this.orderInfo.address) return;
+
+    // Nếu địa chỉ là "Địa chỉ khác", kiểm tra xem địa chỉ đó đã tồn tại chưa
+    if (this.selectedAddress === 'Địa chỉ khác') {
+      const newAddress = {
+        value: this.orderInfo.address,
+        isDefault: false
+      };
+
+      const exists = this.addresses.some(addr => addr.value === newAddress.value);
+      if (!exists) {
+        this.addresses.push(newAddress);
+        this.authService.updateAddress(this.userInfo?._id, this.addresses).subscribe({
+          next: res => console.log('Đã lưu địa chỉ mới'),
+          error: err => console.error('Lỗi khi lưu địa chỉ', err)
+        });
+      }
+    }
+
+    // Kiểm tra các trường thông tin người dùng
     if (!this.orderInfo.name || !this.orderInfo.email || !this.orderInfo.address || !this.orderInfo.phone) {
       alert('Vui lòng nhập đủ thông tin!');
       return;
     }
-  
+
     // Kiểm tra userId có tồn tại
     if (!this.userInfo || !this.userInfo._id) {
       alert('Không tìm thấy thông tin người dùng, vui lòng đăng nhập lại!');
       return;
     }
-  
+
     // Kiểm tra danh sách sản phẩm
-    console.log(this.selectedBooks);
     if (!this.selectedBooks || this.selectedBooks.length === 0) {
       alert('Giỏ hàng trống!');
       return;
     }
 
-    const finalAddress = this.orderInfo.address || this.selectedAddress;
-  
+    // Địa chỉ cuối cùng sẽ là address người dùng đã chọn
+    const finalAddress = this.selectedAddress === 'other' ? this.orderInfo.address : this.selectedAddress;
+
     const orderData = {
       userId: this.userInfo._id,
       products: this.selectedBooks,
@@ -219,9 +214,9 @@ export class CheckoutComponent implements OnInit {
       total: this.totalAmount,
       orderDate: new Date()
     };
-  
+
     console.log('🚀 Gửi đơn hàng:', orderData); // Debug
-  
+
     this.orderService.createOrder(orderData).subscribe({
       next: (response) => {
         alert('Đơn hàng đã được đặt thành công!');
@@ -234,17 +229,18 @@ export class CheckoutComponent implements OnInit {
       }
     });
   }
+
   
   onAddressChange() {
-    if (this.selectedAddress !== 'Địa chỉ khác') {
+    if (this.selectedAddress !== 'other') {
       this.orderInfo.address = this.selectedAddress;
     } else {
-      this.orderInfo.address = ''; // cho phép nhập
+      this.orderInfo.address = '';
     }
   }
 
    // Hàm xử lý thay đổi khi người dùng nhập địa chỉ
-   onAddressInput() {
+  onAddressInput() {
     if (this.orderInfo.address) {
       // Khi có nhập địa chỉ khác, disable dropdown
       this.selectedAddress = ''; // Reset selectedAddress

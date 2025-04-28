@@ -39,7 +39,7 @@
       <div class="flashsale-col-1">
         <p-carousel [value]="books" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
           <ng-template let-book pTemplate="item">
-            <app-product-item [book]="book"></app-product-item>
+            <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
           </ng-template>
         </p-carousel>
       </div>

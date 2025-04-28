@@ -41,7 +41,7 @@
             <i class="pi pi-shopping-cart"></i>
             <p-badge *ngIf="cartItemCount > 0" [value]="cartItemCount" severity="danger"></p-badge>
           </a>
-          <p-button routerLink="/wishlist" variant="text"   styleClass="m-0">
+          <p-button routerLink="/wishlist" variant="text"  styleClass="m-0">
             <i class="pi pi-heart-fill" style="color: #fff"></i>
           </p-button>
         </div>
@@ -54,12 +54,14 @@
         
           <ng-template #loadedState>
             <ng-container *ngIf="isLoggedIn$ | async; else notLoggedIn">
-              <button mat-button [matMenuTriggerFor]="userMenu">
-                <i class="pi pi-user" style="color: #fff"></i>
+              <button mat-button [matMenuTriggerFor]="userMenu" *ngIf="currentUser" style="color: #fff;">
+                <span style="display: flex; align-items: center; gap: 8px;">
+                  <i class="pi pi-user"></i>
+                  <p style="margin: 0; font-size: 14px;">Hi, {{ currentUser.username }}!</p>
+                </span>
               </button>
-        
               <mat-menu #userMenu="matMenu">
-                <button mat-menu-item routerLink="/userInfo">
+                <button mat-menu-item routerLink="/user-info">
                   <mat-icon>person</mat-icon> Thông tin cá nhân
                 </button>
 

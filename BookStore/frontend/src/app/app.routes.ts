@@ -17,6 +17,7 @@ import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard
 import { AddressBookComponent } from './component/address-book/address-book.component';
 import { AdminOrderComponent } from './admin/admin-order/admin-order.component';
 import { SearchPageComponent } from './component/search-page/search-page.component';
+import { LayoutUserComponent } from './component/user-info/layout-user/layout-user.component';
 
 const routes: Routes = [
   { 
@@ -49,9 +50,12 @@ const routes: Routes = [
     title: 'Cart'
   },
   {
-    path: 'userInfo',
+    path: 'user-info',
     component: UserInfoComponent,
-    title: 'User Detail'
+    children: [
+      { path: '', component: LayoutUserComponent }, // Mặc định hiện thông tin user
+      { path: 'address-book', component: AddressBookComponent }
+    ]
   },
   {
     path: 'wishlist',

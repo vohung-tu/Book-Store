@@ -1,6 +1,8 @@
 export interface Address {
   value: string;      // Địa chỉ
   isDefault: boolean; // Cờ chỉ định địa chỉ mặc định
+  fullName?: string;
+  phoneNumber?: number;
 }
 export interface User {
   id: string;

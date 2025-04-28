@@ -40,7 +40,6 @@ import { FormsModule } from '@angular/forms';
 export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn$!: Observable<boolean>;
   isLoading$!: Observable<boolean>;
-  username$!: Observable<string | null>;
   cartItemCount: number = 0;
   private destroy$ = new Subject<void>();
   cart$: Observable<BookDetails[]>;
@@ -57,10 +56,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
-    // this.isLoading$ = this.authService.isLoading$;
-    this.username$ = this.authService.username$;
-    
-
     // Kiểm tra và lấy thông tin user khi reload
     this.authService.getUserInfo().subscribe();
     this.cart$.subscribe(cart => {
@@ -69,6 +64,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     this.currentUser = this.authService.getCurrentUser();
     this.userRole = this.currentUser?.role || null;
+    this.getCurrentUser();
   }
 
   signout(): void {
@@ -77,6 +73,25 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   changeLanguage(lang: string) {
     console.log('Selected language:', lang);
+  }
+
+  getCurrentUser(): void {
+    if (typeof window === 'undefined') return; 
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    this.authService.getProfile().subscribe({
+      next: (user) => {
+        if (user) {
+          this.currentUser = user;
+        } else {
+          console.error('Không thể lấy thông tin người dùng');
+        }
+      },
+      error: (err) => {
+        console.error('Lỗi khi lấy thông tin người dùng', err);
+      }
+    });
   }
 
   onSearch() {

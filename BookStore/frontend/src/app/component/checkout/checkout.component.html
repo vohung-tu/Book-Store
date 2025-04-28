@@ -46,11 +46,11 @@
         <p-dropdown
           [options]="addresses"
           [(ngModel)]="selectedAddress"
-          optionLabel="value"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Chọn địa chỉ"
           (onChange)="onAddressChange()"
-          [disabled]="!orderInfo.address"
-        >
-        </p-dropdown>
+        ></p-dropdown>
 
         <!-- Ô nhập địa chỉ khác -->
         <label for="address">Địa chỉ khác:</label>
@@ -61,10 +61,9 @@
           name="address"
           required
           placeholder="Chọn địa chỉ hoặc nhập địa chỉ khác"
-          [disabled]="selectedAddress !== 'Địa chỉ khác'"
+          [disabled]="selectedAddress !== 'other'"
           (input)="onAddressInput()"
         />
-        
         
         <label for="note">Ghi chú (tùy chọn):</label>
         <textarea id="note" rows="5" [(ngModel)]="orderInfo.note" name="note"></textarea>

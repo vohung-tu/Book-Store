@@ -104,9 +104,42 @@ p-dialog {
 .dialog-buttons button.p-button {
   padding: 8px 16px;
 }
+.address-actions button {
+  margin-left: 8px;
+}
 
 .address-item {
   display: flex;
+  font-weight: bold;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px; // Khoảng cách giữa các field
+
+  .default-address{
+    display: flex;
+    padding: 3px 8px;
+    margin-left: 16px;
+    background-color: rgba(36, 137, 244, 0.2);
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: #2489F4;
+    font-size: 12px;
+  }
+  .separated-btn-address-book {
+    border-right: 2px solid #ddd;
+    height: 18px;
+    margin: 0 8px;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+  }
+}
+.address-value {
+  font-size: 13px;
+  color: #495057;
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding-left: 2rem;
 }

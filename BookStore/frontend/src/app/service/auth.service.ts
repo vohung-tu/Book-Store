@@ -186,13 +186,11 @@ export class AuthService {
     });
   }
 
-  updateAddress(userId: string, addresses: Address[]) {
+  updateAddress(userId: string, addresses: Address[]): Observable<User> {
     const token = localStorage.getItem('token'); // hoặc nơi bạn lưu token
   
-    return this.http.patch(`${this.API_URL}/${userId}/address`, { address: addresses }, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+    return this.http.patch<User>(`${this.API_URL}/${userId}/address`, { address: addresses }, {
+      headers: { Authorization: `Bearer ${token}` }
     });
   }
 }

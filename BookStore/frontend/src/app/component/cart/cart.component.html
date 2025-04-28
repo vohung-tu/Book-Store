@@ -9,11 +9,19 @@
       <button class="deselect-all-btn" (click)="deselectAll()" mat-button>BỎ CHỌN TẤT CẢ</button>
     </div>
 
-    <p-table #dt [value]="cartData" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]">
+    <p-table
+      #dt
+      [value]="cartData"
+      [paginator]="true"
+      [rows]="5"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [(selection)]="selectedBooks"
+      dataKey="_id"
+    >
       <ng-template pTemplate="header">
         <tr>
-          <th>
-            <p-checkbox (change)="deselectAll()" [binary]="true" [ngModel]="selectedBooks.length === cartData.length"></p-checkbox>
+          <th style="width: 3rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox> 
           </th>
           <th>Sản phẩm</th>
           <th>Giá</th>
@@ -26,7 +34,7 @@
       <ng-template pTemplate="body" let-book>
         <tr>
           <td>
-            <p-checkbox (change)="onCheckboxChange(book, $event)" [binary]="true"></p-checkbox>
+            <p-tableCheckbox [value]="book"></p-tableCheckbox>
           </td>
           <td>
             <img [src]="book.coverImage" alt="product" class="product-img" />

@@ -30,10 +30,15 @@ export class AppComponent {
   scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
   isAdminPage(): boolean {
     const url = this.router.url;
-    // Mảng các route bạn muốn kiểm tra
-    const prefixes = ['/admin', '/signin', '/signup'];
-    return prefixes.some(prefix => url.startsWith(prefix));
+    return url.startsWith('/admin');
   }
+
+  isAuthPage(): boolean {
+    const url = this.router.url;
+    return url.startsWith('/signin') || url.startsWith('/signup');
+  }
+  
 }

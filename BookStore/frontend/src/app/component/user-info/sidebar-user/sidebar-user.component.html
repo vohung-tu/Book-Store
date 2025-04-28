@@ -1,0 +1,17 @@
+<div class="sidebar">
+  <div class="sidebar-header" *ngIf="currentUser">
+    <img src="assets/images/ava.jfif" alt="avatar" class="avatar">
+    <h3>{{ currentUser.full_name }}</h3>
+  </div>
+  <ul>
+    <li >
+      <a class="sidebar-btn" routerLink="/user-info" routerLinkActive="active">Thông tin cá nhân</a>
+    </li>
+    <li>
+      <a label="Sổ địa chỉ" class="sidebar-btn" routerLink="/user-info/address-book">Sổ địa chỉ</a>
+    </li>
+    <li>
+      <a label="" class="sidebar-btn" routerLink="/user-info/address-book">Đơn hàng của tôi</a>
+    </li>
+  </ul>
+</div>

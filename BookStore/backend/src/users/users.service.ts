@@ -103,7 +103,7 @@ export class UsersService {
   // Hàm cập nhật tất cả địa chỉ
   async updateAddress(
     userId: string,
-    addresses: { value: string; isDefault: boolean }[]
+    addresses: { value: string; isDefault: boolean; fullName?: string; phoneNumber?: number }[]
   ): Promise<User> {
     const updatedUser = await this.userModel.findByIdAndUpdate(
       userId,
