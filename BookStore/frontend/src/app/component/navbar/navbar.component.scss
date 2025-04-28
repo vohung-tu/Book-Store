@@ -56,17 +56,6 @@ mat-icon {
       color: #fff;
     }
   } 
-  .search-field {
-    margin-left: 30px;
-    justify-content: center;
-    margin-top: 20px;
-    border-radius: 15px !important;
-    flex-grow: 1;
-    width: 500px !important;
-    max-width: 100%;
-    margin-left: 20px;
-
-  } 
   ::ng-deep .mat-mdc-text-field-wrapper {
     flex: none !important;
     width: 100% !important;
@@ -141,6 +130,7 @@ mat-icon {
 }
 .search-container {
   display: flex;
+  width: 500px;
   align-items: center;
   margin: 20px;
   background-color: white;

@@ -21,6 +21,7 @@ import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { CascadeSelectModule } from 'primeng/cascadeselect';
 import { DropdownModule } from 'primeng/dropdown';
+import { CartService } from '../../service/cart.service';
 export interface DiscountCode {
   code: string;
   minOrderAmount?: number;
@@ -114,7 +115,8 @@ export class CheckoutComponent implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private cartService: CartService
   ) {}
 
   ngOnInit(): void {
@@ -215,12 +217,11 @@ export class CheckoutComponent implements OnInit {
       orderDate: new Date()
     };
 
-    console.log('🚀 Gửi đơn hàng:', orderData); // Debug
-
     this.orderService.createOrder(orderData).subscribe({
       next: (response) => {
         alert('Đơn hàng đã được đặt thành công!');
         localStorage.removeItem('cart');
+        this.cartService.clearCart();
         this.router.navigate(['/']);
       },
       error: (err) => {
@@ -231,10 +232,20 @@ export class CheckoutComponent implements OnInit {
   }
 
   
-  onAddressChange() {
-    if (this.selectedAddress !== 'other') {
-      this.orderInfo.address = this.selectedAddress;
-    } else {
+  onAddressChange(event: any) {
+    if (!this.userInfo) return;
+  
+    const selectedValue = event.value; // Lấy địa chỉ vừa chọn từ event
+  
+    const selected = this.userInfo.address.find((a: any) => a.value === selectedValue);
+  
+    if (selected) {
+      this.orderInfo.name = selected.fullName ?? '';
+      this.orderInfo.phone = String(selected.phoneNumber);
+      this.orderInfo.address = selected.value;
+    } else if (selectedValue === 'other') {
+      this.orderInfo.name = this.userInfo.full_name || '';
+      this.orderInfo.phone = String(this.userInfo.phone_number || '');
       this.orderInfo.address = '';
     }
   }
@@ -285,7 +296,7 @@ export class CheckoutComponent implements OnInit {
   
     if (discount.minOrderAmount && applicableAmount < discount.minOrderAmount) {
       this.discountedAmount = this.totalAmount;
-      this.discountMessage = `Đơn hàng cần tối thiểu ${discount.minOrderAmount.toLocaleString()}đ để áp dụng mã.`;
+      this.discountMessage = `Đơn hàng cần tối thiểu ${discount.minOrderAmount.toLocaleString()}000đ để áp dụng mã.`;
       this.isDiscountValid = false;
       return;
     }
@@ -293,7 +304,7 @@ export class CheckoutComponent implements OnInit {
     const discountAmount = this.calculateDiscountAmount(discount, applicableAmount);
   
     this.discountedAmount = Math.max(this.totalAmount - discountAmount, 0);
-    this.discountMessage = `Đã áp dụng mã giảm: - ${discountAmount.toLocaleString()}000đ`;
+    this.discountMessage = `Đã áp dụng mã giảm: - ${discountAmount.toLocaleString()}đ`;
     this.isDiscountValid = true;
   }
   
