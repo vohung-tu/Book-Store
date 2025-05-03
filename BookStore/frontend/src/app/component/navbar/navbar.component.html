@@ -41,9 +41,9 @@
             <i class="pi pi-shopping-cart"></i>
             <p-badge *ngIf="cartItemCount > 0" [value]="cartItemCount" severity="danger"></p-badge>
           </a>
-          <p-button routerLink="/wishlist" variant="text"  styleClass="m-0">
-            <i class="pi pi-heart-fill" style="color: #fff"></i>
-          </p-button>
+          <a routerLink="/wishlist" class="cart-btn"  mat-button>
+            <i class="pi pi-heart-fill"></i>
+          </a>
         </div>
 
         <a routerLink="/contact" mat-button style="color:#fff">Liên Hệ</a>
@@ -75,19 +75,10 @@
             </ng-container>
         
             <ng-template #notLoggedIn>
-              <button class="logIn" mat-button routerLink="/signin">ĐĂNG NHẬP</button>
+              <button class="auth-button" mat-button routerLink="/signin">Đăng Nhập</button>
             </ng-template>
           </ng-template>
         </div>
-
-        <div class="header__top__right__language">
-          <button class="btn-change-language" mat-button [matMenuTriggerFor]="languageMenu">🇻🇳</button>
-          <mat-menu #languageMenu="matMenu">
-            <button mat-menu-item (click)="changeLanguage('vi')">🇻🇳 Vietnam</button>
-            <button mat-menu-item (click)="changeLanguage('en')">🇬🇧 Englissh</button>
-          </mat-menu>
-        </div>
-
       </div>
     </div>
   </div>

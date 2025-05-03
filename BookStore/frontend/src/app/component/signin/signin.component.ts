@@ -9,6 +9,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AuthService } from '../../service/auth.service';
 import { Observable } from 'rxjs';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-signin',
@@ -22,7 +23,8 @@ import { Observable } from 'rxjs';
     ReactiveFormsModule,
     RouterModule,
     MatCheckboxModule,
-    CommonModule
+    CommonModule,
+    DialogModule
   ],
   templateUrl: './signin.component.html',
   styleUrls: ['./signin.component.scss']
@@ -31,6 +33,7 @@ export class SigninComponent implements OnInit{
   signinForm: FormGroup;
   hidePassword = true;
   isLoading$!: Observable<boolean>;
+  errorMessage: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -55,18 +58,16 @@ export class SigninComponent implements OnInit{
   // Xử lý đăng nhập
   onSubmit() {
     if (this.signinForm.valid) {
-      const { email, password, rememberMe } = this.signinForm.value;
+      const { email, password } = this.signinForm.value;
   
-      this.authService.signin({ email, password }, rememberMe).subscribe(
+      this.authService.signin({ email, password }).subscribe(
         (res) => {
           const user = res.user;
           const returnUrl = this.route.snapshot.queryParams['returnUrl'];
   
-          // Lưu vào localStorage (nếu bạn chưa làm trong service)
           localStorage.setItem('token', res.token);
           localStorage.setItem('user', JSON.stringify(user));
   
-          // ✅ Điều hướng dựa trên vai trò
           if (user.role === 'admin') {
             this.router.navigate(['/admin/dashboard']);
           } else if (returnUrl) {
@@ -74,11 +75,13 @@ export class SigninComponent implements OnInit{
           } else {
             this.router.navigate(['/home']);
           }
+          this.errorMessage = null; // Xóa lỗi nếu đăng nhập thành công
         },
         (err) => {
           console.error('Đăng nhập thất bại', err);
+          this.errorMessage = 'Nhập sai mật khẩu hoặc email, vui lòng thử lại.';
         }
       );
     }
-  }  
+  }
 }

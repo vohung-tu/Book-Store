@@ -1,6 +1,6 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, EMPTY, Observable, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, of, tap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { Address, User } from '../model/users-details.model';
 import { Router } from '@angular/router';
@@ -20,6 +20,7 @@ export class AuthService {
 
   private userSubject = new BehaviorSubject<User | null>(null);
   user$ = this.userSubject.asObservable();
+  authStatusChanged = new BehaviorSubject<boolean>(false);
 
   constructor(
     private http: HttpClient,
@@ -28,15 +29,15 @@ export class AuthService {
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
-      this.restoreSession(); // ✅ Khôi phục trạng thái đăng nhập khi load lại trang
+      this.restoreSession(); // ✅ Tự động đăng nhập nếu còn session
     }
   }
 
   private restoreSession() {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       this.isLoggedInSubject.next(true);
-      const storedUser = localStorage.getItem('user');
+      const storedUser = sessionStorage.getItem('user');
       if (storedUser) {
         const user: User = JSON.parse(storedUser);
         this.userSubject.next(user);
@@ -53,37 +54,35 @@ export class AuthService {
     return this.http.post(`${this.API_URL}/signup`, user);
   }
 
-  signin(credentials: any, rememberMe: boolean): Observable<any> {
+  signin(credentials: any): Observable<any> {
     return this.http.post(`${this.API_URL}/signin`, credentials).pipe(
       tap((res: any) => {
         if (res.token && res.user) {
-          this.saveToken(res.token, rememberMe);
-          localStorage.setItem('user', JSON.stringify(res.user)); // Lưu user info
-          this.saveUserInfo(res.user, rememberMe); 
+          sessionStorage.setItem('token', res.token);
+          sessionStorage.setItem('user', JSON.stringify(res.user));
+          this.userSubject.next(res.user);
+          this.usernameSubject.next(res.user.username);
+          this.isLoggedInSubject.next(true);
+          this.authStatusChanged.next(true);
         }
       })
     );
   }
-  
+
   setUsername(username: string) {
     this.usernameSubject.next(username);
   }
 
   getUserInfo(): Observable<User | null> {
-    if (typeof window === 'undefined') {
-      return of(null); // Tránh gọi `localStorage` trên server
-    }
-
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (!token) {
-      return EMPTY;
-    }
+    if (!this.isBrowser) return of(null);
+    const token = sessionStorage.getItem('token');
+    if (!token) return EMPTY;
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.get<User>(`${this.API_URL}/user-info`, { headers }).pipe(
       tap((user: User) => {
         if (user && user.username) {
-          localStorage.setItem('user', JSON.stringify(user));
+          sessionStorage.setItem('user', JSON.stringify(user));
           this.userSubject.next(user);
           this.usernameSubject.next(user.username);
           this.isLoggedInSubject.next(true);
@@ -92,54 +91,19 @@ export class AuthService {
     );
   }
 
-  private saveToken(token: string, rememberMe: boolean) {
-    if (this.isBrowser) {
-      if (rememberMe) {
-        localStorage.setItem('token', token);
-      } else {
-        sessionStorage.setItem('token', token);
-      }
-      this.isLoggedInSubject.next(true);
-    }
-  }
-
-  saveUserInfo(user: any, rememberMe: boolean) {
-    const userInfo = JSON.stringify(user);
-    if (rememberMe) {
-      localStorage.setItem('user', userInfo);
-    } else {
-      sessionStorage.setItem('user', userInfo);
-    }
-  }
-
-  setCurrentUser(user: User): void {
-    localStorage.setItem('user', JSON.stringify(user));
-  }
-
-  getCurrentUser(): User | null {
-    if (!this.isBrowser) {
-      return null;
-    }
-  
-    const user = localStorage.getItem('user') || sessionStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  }
-  
-  
   getToken(): string | null {
-    return localStorage.getItem('token') || sessionStorage.getItem('token');
+    return sessionStorage.getItem('token');
   }
 
-    /** ← đây là method mới dùng `/auth/me` */
   getProfile(): Observable<User | null> {
     const token = this.getToken();
-    if (!token) return of(null as any);  // hoặc EMPTY
+    if (!token) return of(null);
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.get<User>(`${this.API_URL}/me`, { headers }).pipe(
       tap(user => {
         if (user) {
-          localStorage.setItem('user', JSON.stringify(user));
+          sessionStorage.setItem('user', JSON.stringify(user));
           this.userSubject.next(user);
           this.isLoggedInSubject.next(true);
         }
@@ -149,46 +113,49 @@ export class AuthService {
 
   signout(): void {
     if (this.isBrowser) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('user');
       this.isLoggedInSubject.next(false);
       this.userSubject.next(null);
       this.usernameSubject.next(null);
-      // Điều hướng người dùng về trang login sau khi đăng xuất
       this.router.navigate(['/signin']);
+      this.authStatusChanged.next(false);
     }
   }
 
   isLoggedIn(): boolean {
     if (!this.isBrowser) return false;
-    return !!localStorage.getItem('token');
+    return !!sessionStorage.getItem('token');
   }
 
   getUserRole(): string {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
     return user?.role || '';
   }
 
   isAuthenticated(): boolean {
-    return this.isBrowser && !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
+    return this.isBrowser && !!sessionStorage.getItem('token');
+  }
+
+  getCurrentUser(): User | null {
+    if (!this.isBrowser) return null;
+    const user = sessionStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  }
+
+  setCurrentUser(user: User): void {
+    sessionStorage.setItem('user', JSON.stringify(user));
   }
 
   getAddresses(userId: string): Observable<any> {
-    const token = localStorage.getItem('token'); // Lấy token từ localStorage
-
-    // Gửi request GET để lấy danh sách địa chỉ của người dùng
+    const token = sessionStorage.getItem('token');
     return this.http.get(`${this.API_URL}/${userId}/addresses`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     });
   }
 
   updateAddress(userId: string, addresses: Address[]): Observable<User> {
-    const token = localStorage.getItem('token'); // hoặc nơi bạn lưu token
-  
+    const token = sessionStorage.getItem('token');
     return this.http.patch<User>(`${this.API_URL}/${userId}/address`, { address: addresses }, {
       headers: { Authorization: `Bearer ${token}` }
     });

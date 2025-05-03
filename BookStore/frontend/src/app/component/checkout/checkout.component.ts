@@ -168,12 +168,12 @@ export class CheckoutComponent implements OnInit {
     if (!this.userInfo?._id || !this.orderInfo.address) return;
 
     // Nếu địa chỉ là "Địa chỉ khác", kiểm tra xem địa chỉ đó đã tồn tại chưa
-    if (this.selectedAddress === 'Địa chỉ khác') {
+    if (this.selectedAddress === 'other') {
       const newAddress = {
         value: this.orderInfo.address,
         isDefault: false
       };
-
+      
       const exists = this.addresses.some(addr => addr.value === newAddress.value);
       if (!exists) {
         this.addresses.push(newAddress);

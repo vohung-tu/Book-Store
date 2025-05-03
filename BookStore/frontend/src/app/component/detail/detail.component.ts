@@ -13,6 +13,7 @@ import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
 import { FavoritePageService } from '../../service/favorite-page.service';
+import { RatingModule } from 'primeng/rating';
 
 @Component({
   selector: 'app-detail',
@@ -26,7 +27,8 @@ import { FavoritePageService } from '../../service/favorite-page.service';
     RouterModule,
     ButtonModule,
     ToastModule,
-    RippleModule
+    RippleModule,
+    RatingModule
   ],
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.scss'],
@@ -68,6 +70,9 @@ export class DetailComponent implements OnInit{
     });
   }
 
+  openReviewDialog() {
+    console.log('abc');
+  } 
   // Hàm tăng số lượng
   increaseQty(): void {
     this.cartService.updateQuantity(this.book._id, 1);

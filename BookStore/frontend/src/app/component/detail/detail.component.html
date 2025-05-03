@@ -1,60 +1,85 @@
-<div class="book-detail" *ngIf="books; else loading">
-  <!-- Cột trái: Ảnh bìa sách -->
-  <div class="book-detail-left">
-    <img [src]="books.coverImage" [alt]="books.title" />
+<div class="book-cover" *ngIf="books; else loading">
+
+  <!-- PHẦN TRÁI VÀ PHẢI -->
+  <div class="book-details-row">
+
+    <!-- Div 1: Ảnh và thông tin cơ bản -->
+    <div class="book-detail-1">
+      <!-- Cột trái: Ảnh bìa -->
+      <div class="book-detail-left">
+        <img [src]="books.coverImage" [alt]="books.title" />
+      </div>
+
+      <!-- Cột phải: Thông tin sách -->
+      <div class="book-detail-right">
+        <h2>{{ books.title }}</h2>
+
+        <div class="book-info">
+          <h4 class="price">{{ books.flashsale_price | number:'1.3-3' }} đ</h4>
+
+          <div class="discount">
+            <h5>{{ books.price | number:'1.3-3' }} đ</h5>
+            <div class="discount-badge">-{{ books.discount_percent }}%</div>
+          </div>
+
+          <p><strong>Tác giả:</strong> {{ books.author }}</p>
+          <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
+
+          <h4>Mô tả ngắn:</h4>
+          <p class="description">{{ books.description }}</p>
+        </div>
+
+        <!-- Nút mua sách -->
+        <div class="purchase-buttons">
+          <p-toast position="top-right" key="tr"></p-toast>
+          <p-button pRipple [rounded]="true" (click)="addToCart()" label="Thêm vào giỏ hàng" severity="success"></p-button>
+          <p-button 
+            [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
+            (click)="toggleFavorite()" 
+            [rounded]="true" 
+            [text]="true" 
+            [raised]="true" 
+            severity="success">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Div 2: Mô tả chi tiết -->
+    <div class="book-detail-2">
+      <h3>Mô tả sản phẩm</h3>
+      <p class="detailed-description">{{ 'Không có mô tả chi tiết.' }}</p>
+    </div>
   </div>
 
-  <!-- Cột phải: Thông tin sách -->
-  <div class="book-detail-right">
-    <h2>{{ books.title }}</h2>
-    <div class="book-info">
-      <h4 class="price">{{ books.flashsale_price | number:'1.3-3' }} đ</h4>
-			<div class="discount"  style="display: flex;">
-				<h5> {{ books.price | number:'1.3-3' }} đ </h5> 
-				<div class="discount-badge">-{{ books.discount_percent }}%</div>
-			</div>
-      <p><strong>Tác giả:</strong> {{ books.author }}</p>
-      <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
-      <!-- Mô tả ngắn -->
-			 <h4>Mô tả sản phẩm:</h4>
-      <p class="description">{{ books.description }}</p>
+  <!-- Div 3: Đánh giá sản phẩm -->
+  <div class="book-detail-3">
+    <h3>Đánh giá sản phẩm</h3>
+    <div class="rating-summary">
+      <div class="average-score">
+        <div class="score">0<span>/5</span></div>
+        <p-rating [readonly]="true" [stars]="5"></p-rating>
+        <div class="rating-count">(0 đánh giá)</div>
+      </div>
+  
+      <div class="rating-breakdown">
+        <div class="rating-bar" *ngFor="let star of [5, 4, 3, 2, 1]">
+          <span class="label">{{ star }} sao</span>
+          <div class="bar">
+            <div class="fill" [style.width.%]="0"></div>
+          </div>
+          <span class="percent">0%</span>
+        </div>
+      </div>
+  
+      <div class="review-button">
+        <button pButton label="Viết đánh giá" icon="pi pi-pencil" class="p-button-outlined p-button-danger"></button>
+      </div>
     </div>
-
-		<div class="quantity-control">
-      <p><strong>Số lượng:</strong></p>
-    
-      <!-- Nút giảm số lượng -->
-      <button mat-icon-button (click)="decreaseQty()" [disabled]="quantities <= 1">
-        <mat-icon>remove</mat-icon>
-      </button>
-    
-      <!-- Hiển thị số lượng -->
-      <span class="quantity">{{ quantities }}</span>
-    
-      <!-- Nút tăng số lượng -->
-      <button mat-icon-button (click)="increaseQty()">
-        <mat-icon>add</mat-icon>
-      </button>
-    </div>
-		
-    <!-- Nút mua sách -->
-    <div class="purchase-buttons">
-      <p-toast position="top-right" key="tr" />
-      <p-button pRipple [rounded]="true" (click)="addToCart()" label="Thêm vào giỏ hàng" severity="success"/>
-      <p-button 
-      [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
-      (click)="toggleFavorite()" 
-      [rounded]="true" 
-      [text]="true" 
-      [raised]="true" 
-      severity="success" />
-    </div>
-
   </div>
 </div>
 
-
-<!-- Nếu chưa tải xong -->
+<!-- Khi đang tải dữ liệu -->
 <ng-template #loading>
   <p>Đang tải thông tin sách...</p>
 </ng-template>

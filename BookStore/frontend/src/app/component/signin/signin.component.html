@@ -1,6 +1,9 @@
 <div class="container" >
   <div class="signin-container">
     <h2>Đăng Nhập</h2>
+    <div *ngIf="errorMessage" style="color: #BA1A1A; margin-top: 8px;">
+      {{ errorMessage }}
+    </div>
   
     <form [formGroup]="signinForm" (ngSubmit)="onSubmit()">
       <div class="email-input">
