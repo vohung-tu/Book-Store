@@ -218,5 +218,43 @@
         border-radius: 8px;
       }
     }
+    .review-dialog {
+      .p-dialog {
+        border-radius: 12px;
+      }
+      .p-dialog-header {
+        font-weight: bold;
+        font-size: 18px;
+        text-align: center;
+      }
+      .p-rating .pi-star {
+        font-size: 1.5rem;
+        color: #f59e0b; // vàng đẹp
+      }
+      
+    }
   }
 }
+.book-detail-4 {
+  border-radius: 5px;
+  h3 {
+    text-align: center;
+    font-size: 24px;
+  }
+  padding-left: 80px;
+  background: linear-gradient(to right, #BE5985, #ffffff);
+  .related-products {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem; 
+    padding: 20px;
+  }
+  
+  app-product-item {
+    flex: 1 1 200px; 
+    max-width: 250px; 
+  }
+}
+
+
+

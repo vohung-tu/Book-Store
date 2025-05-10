@@ -1,0 +1,11 @@
+<nav class="breadcrumb-wrapper">
+  <ng-container *ngFor="let item of items; let last = last">
+    <ng-container *ngIf="!last">
+      <a [routerLink]="item.url" class="breadcrumb-link">{{ item.label }}</a>
+      <span class="breadcrumb-separator">></span>
+    </ng-container>
+    <ng-container *ngIf="last">
+      <span class="breadcrumb-current">{{ item.label }}</span>
+    </ng-container>
+  </ng-container>
+</nav>

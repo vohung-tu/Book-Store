@@ -1,9 +1,14 @@
 <div class="contact-container">
   <!-- Header -->
+  <app-breadcrumb
+    [items]="[
+      { label: 'Trang chủ', url: '/' },
+      { label: 'Liên Hệ' }
+    ]">
+  </app-breadcrumb>
   <div class="contact-header">
     <!-- <img src="assets/images/bg_breadcrumb.jpg" alt=""> -->
     <h1 style="color: black;">Liên Hệ Chúng Tôi</h1>
-    <p><a href="/">Trang chủ</a> / Contact</p>
   </div>
 
   <!-- Thông tin liên hệ -->

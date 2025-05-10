@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { BooksService } from '../../service/books.service';
 import { BookDetails } from '../../model/books-details.model';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -14,6 +14,15 @@ import { RippleModule } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
 import { FavoritePageService } from '../../service/favorite-page.service';
 import { RatingModule } from 'primeng/rating';
+import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
+import { ProductItemComponent } from '../product-item/product-item.component';
+import { AuthService } from '../../service/auth.service';
+import { FormsModule } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { ToggleButtonModule } from 'primeng/togglebutton';
+import { TextareaModule } from 'primeng/textarea';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-detail',
@@ -28,10 +37,18 @@ import { RatingModule } from 'primeng/rating';
     ButtonModule,
     ToastModule,
     RippleModule,
-    RatingModule
+    RatingModule,
+    BreadcrumbComponent,
+    ProductItemComponent,
+    FormsModule,
+    DialogModule,
+    InputTextModule,
+    TextareaModule,
+    ToggleButtonModule
   ],
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.scss'],
+  encapsulation: ViewEncapsulation.None,
   providers: [MessageService]
 })
 
@@ -39,16 +56,26 @@ export class DetailComponent implements OnInit{
   @Input() book!: BookDetails;
   isFavorite = false; // Trạng thái yêu thích
   books: BookDetails | undefined;
+  relatedBooks: BookDetails[] = [];
   quantity: number = 1;
   showDialog = false;
   @ViewChild('cartDialog') cartDialog!: TemplateRef<any>; // Trỏ đến dialog template trong HTML
+  showReviewDialog = false;
+
+  review = {
+    rating: 0,
+    name: '',
+    anonymous: false,
+    comment: ''
+  };
 
   constructor(
     private route: ActivatedRoute,
     private bookService: BooksService,
     private cartService: CartService,
     private favoriteService: FavoritePageService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -59,8 +86,15 @@ export class DetailComponent implements OnInit{
         this.fetchBookDetails(id);
         this.bookService.getBookById(id).subscribe(book => {
           this.book = book;
+          this.loadRelatedBooks(book.categoryName);
         });
       }
+    });
+  }
+
+  loadRelatedBooks(categoryName: string) {
+    this.bookService.getProductsByCategory(categoryName).subscribe(allBooks => {
+      this.relatedBooks = allBooks.filter(b => b._id !== this.books?._id); // loại trừ sách đang xem
     });
   }
 
@@ -73,6 +107,27 @@ export class DetailComponent implements OnInit{
   openReviewDialog() {
     console.log('abc');
   } 
+
+  submitReview() {
+    const payload = {
+      rating: this.review.rating,
+      name: this.review.anonymous ? 'Ẩn danh' : this.review.name,
+      comment: this.review.comment,
+      productId: '123abc' // thay bằng ID sản phẩm hiện tại
+    };
+
+    this.http.post('http://localhost:3000/reviews', payload).subscribe({
+      next: (res) => {
+        console.log('Đánh giá đã được gửi:', res);
+        this.showReviewDialog = false;
+        this.review = { rating: 0, name: '', anonymous: false, comment: '' };
+      },
+      error: (err) => {
+        console.error('Lỗi gửi đánh giá:', err);
+      }
+    });
+  }
+
   // Hàm tăng số lượng
   increaseQty(): void {
     this.cartService.updateQuantity(this.book._id, 1);

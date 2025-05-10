@@ -22,6 +22,7 @@ import { DividerModule } from 'primeng/divider';
 import { CascadeSelectModule } from 'primeng/cascadeselect';
 import { DropdownModule } from 'primeng/dropdown';
 import { CartService } from '../../service/cart.service';
+import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 export interface DiscountCode {
   code: string;
   minOrderAmount?: number;
@@ -49,7 +50,8 @@ export interface DiscountCode {
     ButtonModule,
     InputNumberModule,
     DividerModule,
-    DropdownModule
+    DropdownModule,
+    BreadcrumbComponent
   ],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss']

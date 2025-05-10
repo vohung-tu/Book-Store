@@ -31,6 +31,9 @@ export class Book {
 
   @Prop({ required: true })
   categoryName: string;
+
+  @Prop({ required: true })
+  quantity: number;
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);

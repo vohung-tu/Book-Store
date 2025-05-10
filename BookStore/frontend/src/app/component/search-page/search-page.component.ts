@@ -4,7 +4,6 @@ import { BooksService } from '../../service/books.service';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProductItemComponent } from '../product-item/product-item.component';
-import { NormalizeStringPipe } from '../../pipes/normalize-string.pipe';
 
 @Component({
   selector: 'app-search',
@@ -34,17 +33,6 @@ export class SearchPageComponent implements OnInit{
     private bookService: BooksService
   ) {}
 
-  // ngOnInit() {
-  //   this.route.queryParams.subscribe(params => {
-  //     this.keyword = params['keyword'] || '';
-  //     if (this.keyword) {
-  //       this.bookService.searchBooks(this.keyword).subscribe(res => {
-  //         this.products = res;
-  //         this.applyFilter();
-  //       });
-  //     }
-  //   });
-  // }
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.keyword = params['keyword'] || '';

@@ -12,6 +12,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
 import { AuthService } from '../../service/auth.service';
+import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-cart',
@@ -26,7 +27,8 @@ import { AuthService } from '../../service/auth.service';
     TableModule,
     PaginatorModule,
     CheckboxModule,
-    ButtonModule
+    ButtonModule,
+    BreadcrumbComponent
     
   ],
   templateUrl: './cart.component.html',

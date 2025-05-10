@@ -21,7 +21,7 @@
     <!-- Button Detail -->
   <p-button
     class="detail-btn"
-    [routerLink]="['/details', book.id]"
+    [routerLink]="['/details', book._id || book.id]"
     pButton
     icon="pi pi-info-circle"
     [text]="true"

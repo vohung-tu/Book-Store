@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
@@ -23,6 +24,7 @@ import { TooltipModule } from 'primeng/tooltip';
     ToastModule,
     CheckboxModule,
     TooltipModule,
+    DropdownModule
   ],
   templateUrl: './admin-product.component.html',
   styleUrls: ['./admin-product.component.scss']
@@ -45,14 +47,36 @@ export class AdminProductComponent {
     discount_percent: 0,
     publishedDate: '',
     categoryName: '',
+    quantity: 0,
     coverImage: ''
   };
+
+  categories = [
+    { label: 'Sách Trong Nước', value: 'sach-trong-nuoc' },
+    { label: 'Truyện tranh - Manga', value: 'manga' },
+    { label: 'VPP - Dụng cụ học tập', value: 'vpp-dung-cu-hoc-sinh' },
+    { label: 'Đồ chơi', value: 'do-choi' },
+    { label: 'Làm đẹp', value: 'lam-dep' }
+  ];
+
+  categoryMap: { [key: string]: string } = {
+    'sach-trong-nuoc': 'Sách Trong Nước',
+    'manga': 'Truyện tranh - Manga',
+    'vpp-dung-cu-hoc-sinh': 'VPP - Dụng cụ học tập',
+    'do-choi': 'Đồ chơi',
+    'lam-dep': 'Làm đẹp'
+  };
+  
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.fetchProducts();
     this.filteredProducts = this.products;
+  }
+
+  getCategoryLabel(slug: string): string {
+    return this.categoryMap[slug] || slug;
   }
 
   fetchProducts() {
@@ -144,6 +168,7 @@ export class AdminProductComponent {
       discount_percent: 0,
       publishedDate: '', 
       categoryName: '', 
+      quantity: 0,
       coverImage: ''
     };
   }
