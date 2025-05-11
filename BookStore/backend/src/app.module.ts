@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { OrdersModule } from './order/order/order.module';
 import { AdminModule } from './admin/admin.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { AdminModule } from './admin/admin.module';
     MongooseModule.forRoot('mongodb+srv://hungtu:123456%40@bookstorepam.lzrno.mongodb.net/book_store_pam?retryWrites=true&w=majority&appName=BookstorePam'),
     UsersModule,
     OrdersModule,
-    AdminModule
+    AdminModule,
+    ReviewModule
   ],
   controllers: [AppController],
   providers: [AppService],

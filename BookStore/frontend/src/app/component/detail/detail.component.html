@@ -64,6 +64,7 @@
   <div class="book-detail-3">
     <h3>Đánh giá sản phẩm</h3>
     <div class="rating-summary">
+      
       <div class="average-score">
         <div class="score">0<span>/5</span></div>
         <p-rating [readonly]="true" [stars]="5"></p-rating>
@@ -89,31 +90,40 @@
       </div>
 
       <!-- Dialog đánh giá -->
-      <p-dialog header="VIẾT ĐÁNH GIÁ SẢN PHẨM" [(visible)]="showReviewDialog" [modal]="true" [style]="{ width: '600px' }"
+      <p-dialog header="VIẾT ĐÁNH GIÁ SẢN PHẨM" [(visible)]="showReviewDialog" [modal]="true" [style]="{ width: '800px' }"
       class="review-dialog">
 
-        <div class="p-d-flex p-jc-center p-mb-3">
+        <div class="rating-dialog">
           <p-rating [(ngModel)]="review.rating"></p-rating>
         </div>
 
-        <div class="p-fluid p-formgrid p-grid">
-          <div class="p-field p-col-8">
+        <div class="review-input-name">
+          <div class="p-field-name p-col-8">
             <input pInputText type="text" placeholder="Nhập tên sẽ hiển thị khi đánh giá" [(ngModel)]="review.name" />
-          </div>
-          <div class="p-field p-col-4 p-d-flex p-ai-center p-jc-end">
-            <p-toggleButton [(ngModel)]="review.anonymous" onLabel="anonymous" offLabel="Hiện tên"></p-toggleButton>
+            <p-toggleButton [(ngModel)]="review.anonymous" onLabel="Anonymous" offLabel="Username"></p-toggleButton>
           </div>
 
-          <div class="p-field p-col-12">
-            <textarea pTextarea rows="4" placeholder="Nhập nhận xét của bạn về sản phẩm" [(ngModel)]="review.comment"></textarea>
-          </div>
+        </div>
+        <div class="p-field-comment">
+          <textarea pTextarea rows="4" placeholder="Nhập nhận xét của bạn về sản phẩm" [(ngModel)]="review.comment" style="width: 100%; border-radius: 10px; height: 200px;"></textarea>
         </div>
 
         <div class="p-d-flex p-jc-between">
           <button pButton label="Hủy" class="p-button-text" (click)="showReviewDialog = false"></button>
-          <button pButton label="Gửi nhận xét" class="p-button-danger" (click)="submitReview()"></button>
+          <button pButton label="Gửi nhận xét" class="p-button-danger-outline" (click)="submitReview()"></button>
         </div>
       </p-dialog>
+
+    </div>
+    <div class="review-list">
+      <p *ngIf="reviews.length === 0">Chưa có đánh giá nào.</p>
+      <div *ngFor="let r of reviews" class="review-item">
+        <strong>{{ r.name }}</strong>
+        <p-rating [(ngModel)]="r.rating" [readonly]="true"></p-rating>
+        <p>{{ r.comment }}</p>
+        <small>{{ r.createdAt | date:'short' }}</small>
+        <hr />
+      </div>
     </div>
   </div>
 

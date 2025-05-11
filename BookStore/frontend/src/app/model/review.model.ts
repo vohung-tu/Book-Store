@@ -1,4 +1,4 @@
-export class CreateReviewDto {
+export interface Review {
   productId: string;
   name: string;
   comment: string;

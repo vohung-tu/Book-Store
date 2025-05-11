@@ -23,6 +23,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { TextareaModule } from 'primeng/textarea';
 import { HttpClient } from '@angular/common/http';
+import { ReviewService } from '../../service/review.service';
+import { Review } from '../../model/review.model';
 
 @Component({
   selector: 'app-detail',
@@ -61,12 +63,23 @@ export class DetailComponent implements OnInit{
   showDialog = false;
   @ViewChild('cartDialog') cartDialog!: TemplateRef<any>; // Trỏ đến dialog template trong HTML
   showReviewDialog = false;
+  reviews: Review[] = [];
 
-  review = {
-    rating: 0,
+  review: Review = {
+    productId: '', // gán từ input hoặc route
     name: '',
+    comment: '',
+    rating: 0,
     anonymous: false,
-    comment: ''
+  };
+  averageRating = 0;
+  totalReviews = 0;
+  ratingCounts = {
+    5: 0,
+    4: 0,
+    3: 0,
+    2: 0,
+    1: 0,
   };
 
   constructor(
@@ -75,7 +88,7 @@ export class DetailComponent implements OnInit{
     private cartService: CartService,
     private favoriteService: FavoritePageService,
     private messageService: MessageService,
-    private http: HttpClient
+    private reviewService: ReviewService
   ) {}
 
   ngOnInit(): void {
@@ -109,22 +122,48 @@ export class DetailComponent implements OnInit{
   } 
 
   submitReview() {
-    const payload = {
-      rating: this.review.rating,
-      name: this.review.anonymous ? 'Ẩn danh' : this.review.name,
-      comment: this.review.comment,
-      productId: '123abc' // thay bằng ID sản phẩm hiện tại
-    };
+    if (this.review.anonymous) {
+      this.review.name = 'Ẩn danh';
+    }
 
-    this.http.post('http://localhost:3000/reviews', payload).subscribe({
-      next: (res) => {
-        console.log('Đánh giá đã được gửi:', res);
+    if (this.book.id) {
+      this.review.productId = this.book.id;
+    }
+
+    this.reviewService.submitReview(this.review).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Gửi đánh giá thành công',
+        });
         this.showReviewDialog = false;
-        this.review = { rating: 0, name: '', anonymous: false, comment: '' };
+        this.resetForm();
+        this.getReviews(); // gọi lại nếu hiển thị danh sách
       },
       error: (err) => {
-        console.error('Lỗi gửi đánh giá:', err);
-      }
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Lỗi',
+          detail: 'Không thể gửi đánh giá',
+        });
+        console.error(err);
+      },
+    });
+  }
+
+  resetForm() {
+    this.review = {
+      productId: this.review.productId,
+      name: '',
+      comment: '',
+      rating: 0,
+      anonymous: false,
+    };
+  }
+
+  getReviews() {
+    this.reviewService.getReviews(this.review.productId).subscribe(data => {
+      this.reviews = data;
     });
   }
 

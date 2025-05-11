@@ -219,17 +219,30 @@
       }
     }
     .review-dialog {
-      .p-dialog {
-        border-radius: 12px;
+      .rating-dialog{
+        padding-bottom: 10px;
+        p-rating {
+          justify-content: center;
+          
+        }
       }
-      .p-dialog-header {
-        font-weight: bold;
-        font-size: 18px;
-        text-align: center;
+      .review-input-name {
+        padding-bottom: 20px;
+        .p-field-name {
+          display: flex;
+          input {
+            width: 100%;
+
+          }
+        }
+        .p-field-comment {
+          border-radius: 5px;
+        }
       }
-      .p-rating .pi-star {
-        font-size: 1.5rem;
-        color: #f59e0b; // vàng đẹp
+      .p-d-flex{
+        float: right;
+        padding-top: 20px;
+        
       }
       
     }
