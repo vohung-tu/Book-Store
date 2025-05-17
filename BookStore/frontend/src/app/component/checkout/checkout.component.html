@@ -116,7 +116,12 @@
 
         <div class="flex-1 items-center" style="display: flex;">
           <p-radiobutton name="payment-zl" value="payment" [(ngModel)]="orderInfo.payment" inputId="ingredient3" [disabled]="true" />
-          <label for="ingredient3" class="ml-2">Thanh toán qua ZaloPay</label>
+          <label for="ingredient3" class="ml-2">Thanh toán qua VNPay</label>
+          <button pButton label="Thanh toán VNPAY" icon="pi pi-credit-card"
+            class="vnpay-btn"
+            (click)="payWithVnpay()"
+            [disabled]="!orderInfo.name || !orderInfo.phone || !orderInfo.address || selectedBooks.length === 0">
+          </button>
         </div>
 
         <div class="flex-1 items-center" style="display: flex;">
@@ -158,7 +163,7 @@
         </div>
         <div class="line">
           <strong>Phí vận chuyển:</strong>
-          <p>{{ shippingFee | number:'1.3-3' }} đ</p>
+          <p>{{ shippingFee | number:'1.3-3'}} đ</p>
         </div>
         <p-divider />
         <div class="line total">

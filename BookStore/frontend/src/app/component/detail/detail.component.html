@@ -92,26 +92,53 @@
       <!-- Dialog đánh giá -->
       <p-dialog header="VIẾT ĐÁNH GIÁ SẢN PHẨM" [(visible)]="showReviewDialog" [modal]="true" [style]="{ width: '800px' }"
       class="review-dialog">
+        <ng-container *ngIf="authService.isLoggedIn(); else guestMessage">
 
-        <div class="rating-dialog">
-          <p-rating [(ngModel)]="review.rating"></p-rating>
-        </div>
-
-        <div class="review-input-name">
-          <div class="p-field-name p-col-8">
-            <input pInputText type="text" placeholder="Nhập tên sẽ hiển thị khi đánh giá" [(ngModel)]="review.name" />
-            <p-toggleButton [(ngModel)]="review.anonymous" onLabel="Anonymous" offLabel="Username"></p-toggleButton>
+          <div class="rating-dialog">
+            <p-rating [(ngModel)]="review.rating"></p-rating>
           </div>
 
-        </div>
-        <div class="p-field-comment">
-          <textarea pTextarea rows="4" placeholder="Nhập nhận xét của bạn về sản phẩm" [(ngModel)]="review.comment" style="width: 100%; border-radius: 10px; height: 200px;"></textarea>
-        </div>
+          <div class="review-input-name">
+            <div class="p-field-name p-col-8">
+              <input pInputText type="text" placeholder="Nhập tên sẽ hiển thị khi đánh giá" [(ngModel)]="review.name" />
+              <p-toggleButton [(ngModel)]="review.anonymous" onLabel="Anonymous" offLabel="Username"></p-toggleButton>
+            </div>
 
-        <div class="p-d-flex p-jc-between">
-          <button pButton label="Hủy" class="p-button-text" (click)="showReviewDialog = false"></button>
-          <button pButton label="Gửi nhận xét" class="p-button-danger-outline" (click)="submitReview()"></button>
-        </div>
+          </div>
+          <div class="p-field-comment">
+            <textarea pTextarea rows="4" placeholder="Nhập nhận xét của bạn về sản phẩm" [(ngModel)]="review.comment" style="width: 100%; border-radius: 10px; height: 200px;"></textarea>
+          </div>
+          <!-- Thêm upload hình ảnh và video -->
+          <div class="p-mt-3">
+            <label>Thêm hình ảnh:</label>
+            <input type="file" accept="image/*" (change)="onFileSelected($event, 'image')" />
+
+            <div *ngIf="imagePreview" class="p-mt-2">
+              <img [src]="imagePreview" alt="Ảnh đánh giá" style="max-width: 200px;" />
+            </div>
+          </div>
+
+          <div class="p-mt-3">
+            <label>Thêm video ngắn (tối đa 10s):</label>
+            <input type="file" accept="video/*" (change)="onFileSelected($event, 'video')" />
+
+            <div *ngIf="videoPreview" class="p-mt-2">
+              <video [src]="videoPreview" controls style="max-width: 300px;"></video>
+            </div>
+          </div>
+
+          <div class="p-d-flex p-jc-between">
+            <button pButton label="Hủy" class="p-button-text" (click)="showReviewDialog = false"></button>
+            <button pButton label="Gửi nhận xét" class="p-button-danger-outline" (click)="submitReview()"></button>
+          </div>
+        </ng-container>
+
+        <ng-template #guestMessage>
+          <div class="p-text-center" style="padding: 2rem;">
+            <p class="text-danger">Chỉ có thành viên mới có thể viết nhận xét.</p>
+            <a routerLink="/signin">Đăng nhập</a> hoặc <a routerLink="/signup">Đăng ký</a> để tiếp tục.
+          </div>
+        </ng-template>
       </p-dialog>
 
     </div>
@@ -123,8 +150,16 @@
         <p>{{ r.comment }}</p>
         <small>{{ r.createdAt | date:'short' }}</small>
         <hr />
+        <!-- <div *ngIf="r.image">
+          <img [src]="r.image" alt="Ảnh đánh giá" style="max-width: 200px;" />
+        </div>
+
+        <div *ngIf="r.video">
+          <video [src]="r.video" controls style="max-width: 300px;"></video>
+        </div> -->
       </div>
     </div>
+
   </div>
 
   <!-- Div 4: Sản phẩm liên quan -->

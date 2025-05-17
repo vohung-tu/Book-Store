@@ -64,6 +64,11 @@ export class DetailComponent implements OnInit{
   @ViewChild('cartDialog') cartDialog!: TemplateRef<any>; // Trỏ đến dialog template trong HTML
   showReviewDialog = false;
   reviews: Review[] = [];
+  imageFile: File | null = null;
+  videoFile: File | null = null;
+  imagePreview: string | null = null;
+  videoPreview: string | null = null;
+  selectedFiles: File[] = [];
 
   review: Review = {
     productId: '', // gán từ input hoặc route
@@ -88,7 +93,8 @@ export class DetailComponent implements OnInit{
     private cartService: CartService,
     private favoriteService: FavoritePageService,
     private messageService: MessageService,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -100,6 +106,7 @@ export class DetailComponent implements OnInit{
         this.bookService.getBookById(id).subscribe(book => {
           this.book = book;
           this.loadRelatedBooks(book.categoryName);
+          this.getReviewsByProductId(id);
         });
       }
     });
@@ -117,9 +124,34 @@ export class DetailComponent implements OnInit{
     });
   }
 
-  openReviewDialog() {
-    console.log('abc');
-  } 
+  getReviewsByProductId(productId: string) {
+    this.reviewService.getReviews(productId).subscribe({
+      next: (reviews) => {
+        this.reviews = reviews;
+      },
+      error: (err) => {
+        console.error('Lỗi lấy đánh giá:', err);
+      }
+    });
+  }
+
+  onFileSelected(event: Event, type: 'image' | 'video') {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (type === 'image') {
+      this.imageFile = file;
+      this.imagePreview = URL.createObjectURL(file);
+    } else if (type === 'video') {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Video quá lớn hoặc dài, chỉ hỗ trợ video ngắn tối đa 10s (~10MB)');
+        return;
+      }
+      this.videoFile = file;
+      this.videoPreview = URL.createObjectURL(file);
+    }
+  }
 
   submitReview() {
     if (this.review.anonymous) {
@@ -166,6 +198,19 @@ export class DetailComponent implements OnInit{
       this.reviews = data;
     });
   }
+
+  openReviewDialog() {
+  if (!this.authService.isLoggedIn()) {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Thông báo',
+      detail: 'Chỉ có thành viên mới có thể viết nhận xét. Vui lòng đăng nhập hoặc đăng ký.'
+    });
+    return;
+  }
+
+  this.showReviewDialog = true;
+}
 
   // Hàm tăng số lượng
   increaseQty(): void {

@@ -18,6 +18,7 @@ import { AddressBookComponent } from './component/address-book/address-book.comp
 import { AdminOrderComponent } from './admin/admin-order/admin-order.component';
 import { SearchPageComponent } from './component/search-page/search-page.component';
 import { LayoutUserComponent } from './component/user-info/layout-user/layout-user.component';
+import { VnpayReturnComponent } from './component/checkout/vnpay-return/vnpay-return.component';
 
 const routes: Routes = [
   { 
@@ -110,7 +111,9 @@ const routes: Routes = [
   },
   { path: 'search',
     loadComponent: () =>
-      import('./component/search-page/search-page.component').then(m => m.SearchPageComponent) }
+      import('./component/search-page/search-page.component').then(m => m.SearchPageComponent)
+  },
+  { path: 'vnpay-return', component: VnpayReturnComponent }
 ];
 
 export default routes;

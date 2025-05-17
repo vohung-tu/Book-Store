@@ -22,6 +22,12 @@ export class Review {
 
   @Prop({ default: Date.now })
   createdAt: Date;
+
+  @Prop([String])
+  images: string[]; // URLs to uploaded images
+
+  @Prop([String])
+  videos: string[]; // URLs to uploaded videos
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

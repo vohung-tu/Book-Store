@@ -69,8 +69,8 @@
         <td>{{ product.title }}</td>
         <td>{{ product.author }}</td>
         <td>{{ product.description }}</td>
-        <td>{{ product.price | number:'1.3-3'  }}</td>
-        <td>{{ product.flashsale_price | number:'1.3-3' }}</td>
+        <td>{{ product.price }}</td>
+        <td>{{ product.flashsale_price }}</td>
         <td>{{ product.discount_percent }}%</td>
         <td>{{ product.publishedDate | date: 'dd/MM/yyyy' }}</td>
         <td>{{ getCategoryLabel(product.categoryName) }}</td>

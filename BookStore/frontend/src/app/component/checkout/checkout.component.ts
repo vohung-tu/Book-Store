@@ -23,6 +23,7 @@ import { CascadeSelectModule } from 'primeng/cascadeselect';
 import { DropdownModule } from 'primeng/dropdown';
 import { CartService } from '../../service/cart.service';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
+
 export interface DiscountCode {
   code: string;
   minOrderAmount?: number;
@@ -118,6 +119,7 @@ export class CheckoutComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private orderService: OrderService,
+    private http: HttpClient,
     private cartService: CartService
   ) {}
 
@@ -164,6 +166,22 @@ export class CheckoutComponent implements OnInit {
       0
     );
     this.discountedAmount = this.totalAmount;
+  }
+
+  payWithVnpay() {
+    const orderId = Date.now().toString().slice(-8);// hoặc sinh theo hệ thống
+    const amount = (this.discountedAmount + this.shippingFee) * 10;
+
+    this.http.get<{ url: string }>('http://localhost:3000/vnpay/create-payment-url', {
+      params: {
+        amount: amount.toString(),
+        orderId,
+      }
+    }).subscribe((res) => {
+      if (res.url) {
+        window.location.href = res.url; // chuyển hướng tới VNPay
+      }
+    });
   }
 
   submitOrder() {
