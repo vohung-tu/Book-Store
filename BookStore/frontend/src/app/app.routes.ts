@@ -19,6 +19,8 @@ import { AdminOrderComponent } from './admin/admin-order/admin-order.component';
 import { SearchPageComponent } from './component/search-page/search-page.component';
 import { LayoutUserComponent } from './component/user-info/layout-user/layout-user.component';
 import { VnpayReturnComponent } from './component/checkout/vnpay-return/vnpay-return.component';
+import { AdminAuthorComponent } from './admin/admin-author/admin-author.component';
+import { AuthorDetailsComponent } from './component/author-details/author-details.component';
 
 const routes: Routes = [
   { 
@@ -107,13 +109,22 @@ const routes: Routes = [
         component: AdminOrderComponent,
         title: 'Admin Order'
       },
+      {
+        path: 'author',
+        component: AdminAuthorComponent,
+        title: 'Admin Author'
+      },
     ],
   },
   { path: 'search',
     loadComponent: () =>
       import('./component/search-page/search-page.component').then(m => m.SearchPageComponent)
   },
-  { path: 'vnpay-return', component: VnpayReturnComponent }
+  { path: 'vnpay-return', component: VnpayReturnComponent },
+  {
+    path: 'author/:id', // id hoặc slug
+    component: AuthorDetailsComponent
+  }
 ];
 
 export default routes;

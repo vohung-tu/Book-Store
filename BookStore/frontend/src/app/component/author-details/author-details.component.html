@@ -1,0 +1,19 @@
+<app-breadcrumb
+  [items]="[
+    { label: 'Trang chủ', url: '/' },
+    { label: 'Tác giả' }
+  ]">
+</app-breadcrumb>
+<div class="author-details" *ngIf="author">
+  <div class="info-1">
+    <img
+      [src]="'http://localhost:3000' + author.avatar"
+      alt="avatar"
+      class="avatar-img"
+    />
+  </div>
+  <div class="info-2">
+    <h2>{{ author.name }}</h2>
+    <p>{{ author.description }}</p>
+  </div>
+</div>

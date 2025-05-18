@@ -22,7 +22,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { TextareaModule } from 'primeng/textarea';
-import { HttpClient } from '@angular/common/http';
+import { User } from '../../model/users-details.model';
 import { ReviewService } from '../../service/review.service';
 import { Review } from '../../model/review.model';
 
@@ -53,8 +53,7 @@ import { Review } from '../../model/review.model';
   encapsulation: ViewEncapsulation.None,
   providers: [MessageService]
 })
-
-export class DetailComponent implements OnInit{
+export class DetailComponent implements OnInit {
   @Input() book!: BookDetails;
   isFavorite = false; // Trạng thái yêu thích
   books: BookDetails | undefined;
@@ -65,10 +64,10 @@ export class DetailComponent implements OnInit{
   showReviewDialog = false;
   reviews: Review[] = [];
   imageFile: File | null = null;
-  videoFile: File | null = null;
   imagePreview: string | null = null;
-  videoPreview: string | null = null;
   selectedFiles: File[] = [];
+  currentUserId: User | null = null; // gán từ AuthService hoặc localStorage
+  hasReviewed = false;
 
   review: Review = {
     productId: '', // gán từ input hoặc route
@@ -76,16 +75,12 @@ export class DetailComponent implements OnInit{
     comment: '',
     rating: 0,
     anonymous: false,
+    image: '',
+    userId: '' // thêm trường userId để lưu người đánh giá
   };
   averageRating = 0;
   totalReviews = 0;
-  ratingCounts = {
-    5: 0,
-    4: 0,
-    3: 0,
-    2: 0,
-    1: 0,
-  };
+  ratingCounts: { [key: number]: number } = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
 
   constructor(
     private route: ActivatedRoute,
@@ -98,7 +93,7 @@ export class DetailComponent implements OnInit{
   ) {}
 
   ngOnInit(): void {
-    // Lắng nghe sự thay đổi của tham số 'id' trong URL
+    this.currentUserId = this.authService.getCurrentUser();
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -110,6 +105,29 @@ export class DetailComponent implements OnInit{
         });
       }
     });
+  }
+
+  calculateRatingCounts() {
+    // Reset
+    this.ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+    for (const review of this.reviews) {
+      const rating = review.rating;
+      if (this.ratingCounts[rating] !== undefined) {
+        this.ratingCounts[rating]++;
+      }
+    }
+  }
+
+  calculateAverageRating() {
+    const totalReviews = this.reviews.length;
+    if (totalReviews === 0) {
+      this.averageRating = 0;
+      return;
+    }
+
+    const totalStars = this.reviews.reduce((sum, r) => sum + r.rating, 0);
+    this.averageRating = totalStars / totalReviews;
   }
 
   loadRelatedBooks(categoryName: string) {
@@ -128,6 +146,9 @@ export class DetailComponent implements OnInit{
     this.reviewService.getReviews(productId).subscribe({
       next: (reviews) => {
         this.reviews = reviews;
+        this.checkUserReviewed();
+        this.calculateRatingCounts();
+        this.calculateAverageRating();
       },
       error: (err) => {
         console.error('Lỗi lấy đánh giá:', err);
@@ -135,7 +156,15 @@ export class DetailComponent implements OnInit{
     });
   }
 
-  onFileSelected(event: Event, type: 'image' | 'video') {
+  checkUserReviewed() {
+    if (!this.currentUserId) {
+      this.hasReviewed = false;
+      return;
+    }
+    this.hasReviewed = this.reviews.some(r => r.userId === this.currentUserId?._id);
+  }
+
+  onFileSelected(event: Event, type: 'image') {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -143,23 +172,38 @@ export class DetailComponent implements OnInit{
     if (type === 'image') {
       this.imageFile = file;
       this.imagePreview = URL.createObjectURL(file);
-    } else if (type === 'video') {
-      if (file.size > 10 * 1024 * 1024) {
-        alert('Video quá lớn hoặc dài, chỉ hỗ trợ video ngắn tối đa 10s (~10MB)');
-        return;
-      }
-      this.videoFile = file;
-      this.videoPreview = URL.createObjectURL(file);
     }
   }
 
+  get totalRatings(): number {
+    return Object.values(this.ratingCounts).reduce((a, b) => a + b, 0);
+  }
+
+  getPercent(star: number): number {
+    const total = this.totalRatings;
+    return total === 0 ? 0 : (this.ratingCounts[star] / total) * 100;
+  }
+
   submitReview() {
+    if (this.hasReviewed) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Thông báo',
+        detail: 'Bạn chỉ được đánh giá một lần cho sản phẩm này.'
+      });
+      return;
+    }
+
     if (this.review.anonymous) {
       this.review.name = 'Ẩn danh';
     }
 
-    if (this.book.id) {
-      this.review.productId = this.book.id;
+    if (this.book._id) {
+      this.review.productId = this.book._id;
+    }
+
+    if (this.currentUserId) {
+      this.review.userId = this.currentUserId._id;
     }
 
     this.reviewService.submitReview(this.review).subscribe({
@@ -170,7 +214,7 @@ export class DetailComponent implements OnInit{
         });
         this.showReviewDialog = false;
         this.resetForm();
-        this.getReviews(); // gọi lại nếu hiển thị danh sách
+        this.getReviewsByProductId(this.review.productId); // load lại đánh giá mới
       },
       error: (err) => {
         this.messageService.add({
@@ -190,27 +234,23 @@ export class DetailComponent implements OnInit{
       comment: '',
       rating: 0,
       anonymous: false,
+      image: '',
+      userId: ''
     };
   }
 
-  getReviews() {
-    this.reviewService.getReviews(this.review.productId).subscribe(data => {
-      this.reviews = data;
-    });
-  }
-
   openReviewDialog() {
-  if (!this.authService.isLoggedIn()) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Thông báo',
-      detail: 'Chỉ có thành viên mới có thể viết nhận xét. Vui lòng đăng nhập hoặc đăng ký.'
-    });
-    return;
-  }
+    if (!this.authService.isLoggedIn()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Thông báo',
+        detail: 'Chỉ có thành viên mới có thể viết nhận xét. Vui lòng đăng nhập hoặc đăng ký.'
+      });
+      return;
+    }
 
-  this.showReviewDialog = true;
-}
+    this.showReviewDialog = true;
+  }
 
   // Hàm tăng số lượng
   increaseQty(): void {

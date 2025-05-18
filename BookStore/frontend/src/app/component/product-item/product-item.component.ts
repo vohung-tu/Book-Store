@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BookDetails } from '../../model/books-details.model';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -8,6 +8,10 @@ import { MessageService } from 'primeng/api';
 import { RippleModule } from 'primeng/ripple';
 import { FavoritePageService } from '../../service/favorite-page.service';
 import { CartService } from '../../service/cart.service';
+import { RatingModule } from 'primeng/rating';
+import { FormsModule } from '@angular/forms';
+import { ReviewService } from '../../service/review.service';
+import { Review } from '../../model/review.model';
 
 @Component({
   selector: 'app-product-item',
@@ -17,23 +21,48 @@ import { CartService } from '../../service/cart.service';
     RouterModule,
     ToastModule,
     ButtonModule,
-    RippleModule
+    RippleModule,
+    RatingModule,
+    FormsModule
+    
   ],
   templateUrl: './product-item.component.html',
   styleUrls: ['./product-item.component.scss'],
   providers: [MessageService]
 })
-export class ProductItemComponent {
+export class ProductItemComponent implements OnInit{
   @Input() book!: BookDetails;
-  isFavorite = false;
   @Output() showToast = new EventEmitter<any>();
+  isFavorite = false;
+  averageRating = 0;
+  reviews: Review[] = [];
+
+  review: Review = {
+    productId: '', // gán từ input hoặc route
+    name: '',
+    comment: '',
+    rating: 0,
+    anonymous: false,
+    image: '',
+    userId: ''
+  };
 
   constructor(
     private favoriteService: FavoritePageService,
-    private messageService: MessageService,
-    private cartService: CartService
+    private cartService: CartService,
+    private reviewService: ReviewService
   ) {}
 
+  ngOnInit(): void {
+    if (this.book && this.book._id) {
+      this.reviewService.getReviews(this.book._id).subscribe(data => {
+        this.reviews = data;
+        const total = this.reviews.length;
+        const sum = this.reviews.reduce((acc, review) => acc + review.rating, 0);
+        this.averageRating = total > 0 ? sum / total : 0;
+      });
+    }
+  }
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
     if (this.isFavorite) {

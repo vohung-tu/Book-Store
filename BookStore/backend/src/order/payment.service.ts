@@ -8,7 +8,7 @@ export class VnpayService {
     const vnp_TmnCode = 'DK40Q8CI';
     const vnp_HashSecret = '42UVDXJJIS9UDHI5FOKD256NWKVFKBOF';
     const vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-    const vnp_ReturnUrl = 'http://localhost:4200/vnpay-return';
+    const vnp_ReturnUrl = 'https://e4fb-171-226-151-242.ngrok-free.app/vnpay-return';
 
     const date = new Date();
     const createDate = `${date.getFullYear()}${(date.getMonth() + 1)
@@ -32,36 +32,37 @@ export class VnpayService {
       vnp_TxnRef: orderId,
       vnp_OrderInfo: `Thanh toan don hang #${orderId}`,
       vnp_OrderType: 'other',
-      vnp_Amount: (Math.round(order.amount * 100)).toString(), // ✅ CHUẨN
+      vnp_Amount: (order.amount * 100).toString(),
       vnp_ReturnUrl: vnp_ReturnUrl,
       vnp_CreateDate: createDate,
     };
 
-    // Optional: Thêm bankCode nếu có
     if (order.bankCode) {
       vnp_Params['vnp_BankCode'] = order.bankCode;
     }
 
-    // B1: Sắp xếp theo key a-z
-    const sortedParams = Object.fromEntries(
-      Object.entries(vnp_Params).sort(([a], [b]) => a.localeCompare(b))
-    );
+    // B1: Sắp xếp params
+    const sortedParams = Object.keys(vnp_Params)
+      .sort()
+      .reduce((acc, key) => {
+        acc[key] = vnp_Params[key];
+        return acc;
+      }, {} as Record<string, string>);
 
-    // B2: Tạo chuỗi signData KHÔNG encode key, CHỈ encode value
-    const signData = Object.entries(sortedParams)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('&');
+    // B2: Tạo chuỗi signData (không encode key, chỉ encode value)
+    const signData = qs.stringify(sortedParams, { encode: false });
 
     // B3: Tạo secureHash
     const hmac = crypto.createHmac('sha512', vnp_HashSecret);
     const signed = hmac.update(signData, 'utf-8').digest('hex');
 
-    // B4: Thêm vào params
+    // B4: Gắn hash vào params
     sortedParams['vnp_SecureHash'] = signed;
 
-    // B5: Tạo final URL với qs.stringify
-    const paymentUrl = `${vnp_Url}?${qs.stringify(sortedParams, { encode: true })}`;
+    // B5: Tạo URL (lúc này mới encode value)
+    const paymentUrl = `${vnp_Url}?` + qs.stringify(sortedParams, { encode: true });
 
+    // ✅ Debug log
     console.log('✅ signData:', signData);
     console.log('✅ secureHash:', signed);
     console.log('✅ paymentUrl:', paymentUrl);

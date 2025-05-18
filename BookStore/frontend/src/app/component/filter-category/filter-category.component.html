@@ -1,0 +1,19 @@
+<div class="filter-panel" style="display: flex; gap: 1rem; align-items: center;">
+  <label>Phân loại theo giá:</label>
+  <p-dropdown 
+    [options]="priceOptions" 
+    [(ngModel)]="selectedPrice" 
+    optionLabel="label" 
+    placeholder="Chọn giá"
+    (onChange)="onPriceChange($event)"
+    [showClear]="false"
+  ></p-dropdown>
+
+  <label>Nhà xuất bản:</label>
+<p-dropdown 
+  [options]="publishers"
+  [(ngModel)]="selectedPublisher"
+  placeholder="Chọn nhà xuất bản"
+  (onChange)="onPublisherChange($event)">
+</p-dropdown>
+</div>

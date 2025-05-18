@@ -8,6 +8,9 @@ export class Review {
   @Prop({ required: true })
   productId: string;
 
+  @Prop({ required: true })
+  userId: string;
+
   @Prop()
   name: string;
 

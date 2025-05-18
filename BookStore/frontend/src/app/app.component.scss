@@ -1,4 +1,3 @@
-
 html, body {
   height: 100%;
   margin: 0;
@@ -25,9 +24,9 @@ html, body {
 
 .back-to-top {
   position: fixed;
-  bottom: 40px;
+  bottom: 30px;
   right: 30px;
-  z-index: 1000;
-  opacity: 0.9;
-  transition: opacity 0.3s ease;
+  z-index: 999;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.3s ease-in-out;
 }

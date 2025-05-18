@@ -93,7 +93,7 @@
 }
 // top - right - bottom - left 
 .newest-col {
-  margin: 20px 150px 20px 150px;
+  margin: 20px 100px 20px 100px;
   padding: 10px;
   border-radius: 10px;
   background: #BE5985;
@@ -163,6 +163,43 @@ p-tab:hover {
     }
   }
 }
+.introduce-bookstore {
+  display: flex;
+  padding-bottom: 20px;
+  .intro-1 {
+    width: 50%;
+    padding-left: 100px;
+    h1 {
+      color: #BE5985;
+    }
+    
+    h4 {
+      color: #BE5985;
+      font-style: italic;
+    }
+
+    .pamtech-description {
+      display: block;
+      line-height: 1.8;
+      text-align: justify;
+      margin: 0;
+      padding-right: 16px ;
+    }
+    .more {
+      color: #BE5985 !important;
+      line-height: 1.8;
+    }
+  }
+  .intro-2 {
+    width: 50%;
+  }
+}
+
+.custom-divider {
+  width: 90%;
+  margin: 50px 100px;
+  border-top: 3px solid #BE5985;
+}
 
 .benefits-container {
   display: flex;
@@ -196,5 +233,57 @@ p-tab:hover {
       margin: 0;
       font-size: 14px;
     }
+  }
+}
+.author-title {
+  padding-left: 100px;
+  color: #BE5985;
+  font-weight: bold;
+}
+
+::ng-deep .custom-carousel .p-carousel-content {
+  padding: 2rem 1rem;
+}
+
+::ng-deep .custom-carousel .p-carousel-item {
+  display: flex;
+  justify-content: center;
+}
+
+.author-card {
+  text-align: center;
+  padding: 1rem;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  .author-item {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+    img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      display: block;
+      border-radius: 50%;
+    }
+  }
+
+  .author-name {
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+    color: #BE5985;
+  }
+
+  .author-name-link {
+    text-decoration: none;
   }
 }

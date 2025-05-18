@@ -73,13 +73,13 @@ export class CheckoutComponent implements OnInit {
       code: 'GIAM10',
       discountType: 'percentage',
       value: 10,
-      minOrderAmount: 500,
+      minOrderAmount: 500000,
     },
     {
       code: 'GIAM50K',
       discountType: 'fixed',
-      value: 50,
-      minOrderAmount: 300,
+      value: 50000,
+      minOrderAmount: 300000,
     },
     {
       code: 'MANGAONLY',
@@ -102,7 +102,7 @@ export class CheckoutComponent implements OnInit {
     selected: 'other_provinces',  // This will hold the selected shipping method
   };
   selectedCountryCode: string = "+84"; // Mặc định Việt Nam
-  shippingFee = 25;
+  shippingFee = 25000;
   countryCodes = [
     { code: "+1", name: "🇺🇸 US" },
     { code: "+44", name: "🇬🇧 UK" },
@@ -169,8 +169,8 @@ export class CheckoutComponent implements OnInit {
   }
 
   payWithVnpay() {
-    const orderId = Date.now().toString().slice(-8);// hoặc sinh theo hệ thống
-    const amount = (this.discountedAmount + this.shippingFee) * 10;
+    const orderId = Date.now().toString();// hoặc sinh theo hệ thống
+    const amount = (this.discountedAmount + this.shippingFee);
 
     this.http.get<{ url: string }>('http://localhost:3000/vnpay/create-payment-url', {
       params: {
@@ -316,7 +316,7 @@ export class CheckoutComponent implements OnInit {
   
     if (discount.minOrderAmount && applicableAmount < discount.minOrderAmount) {
       this.discountedAmount = this.totalAmount;
-      this.discountMessage = `Đơn hàng cần tối thiểu ${discount.minOrderAmount.toLocaleString()}000đ để áp dụng mã.`;
+      this.discountMessage = `Đơn hàng cần tối thiểu ${discount.minOrderAmount.toLocaleString()}đ để áp dụng mã.`;
       this.isDiscountValid = false;
       return;
     }

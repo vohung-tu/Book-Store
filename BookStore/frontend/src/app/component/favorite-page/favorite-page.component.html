@@ -12,9 +12,9 @@
         <h3>{{ book.title }}</h3>
       </a>
         <p>Tác giả: {{ book.author }}</p>
-        <h4 class="price">Giá: {{ book.flashsale_price | number:'1.3-3' }} đ</h4>
+        <h4 class="price">Giá: {{ book.flashsale_price }} đ</h4>
         <div class="discount" >
-          <h5> {{ book.price | number:'1.3-3' }} đ </h5> 
+          <h5> {{ book.price }} đ </h5> 
           <div class="discount-badge">-{{ book.discount_percent }}%</div>
         </div>
     </div>

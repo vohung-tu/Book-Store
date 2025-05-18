@@ -1,6 +1,11 @@
 <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
 <h2>Sản phẩm thuộc danh mục: {{ this.formatCategory(this.categoryName) }}</h2>
 
+<!-- <app-product-filter 
+  (priceFilter)="onPriceFilter()"
+  (publisherFilter)="onPublisherFilter()">
+</app-product-filter> -->
+
 <div class="product-container" *ngIf="products.length > 0; else noProducts">
   <app-product-item
     *ngFor="let product of products"

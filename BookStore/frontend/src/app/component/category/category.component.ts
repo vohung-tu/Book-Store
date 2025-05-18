@@ -6,6 +6,7 @@ import { BookDetails } from '../../model/books-details.model';
 import { CategoryFormatPipe } from '../../pipes/category-format.pipe';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 import { ProductItemComponent } from '../product-item/product-item.component';
+import { FilterCategoryComponent } from '../filter-category/filter-category.component';
 
 @Component({
   selector: 'app-category',
@@ -24,6 +25,10 @@ export class CategoryComponent implements OnInit {
   categoryName: string = '';
   products: BookDetails[] = [];
   breadcrumbItems: any[] = [];
+  filteredProducts: BookDetails[] = [];
+
+  selectedPrice = '';
+  selectedPublisher = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -67,5 +72,34 @@ export class CategoryComponent implements OnInit {
       default: return name;
     }
   }
-  
+  onPriceFilter(price: string) {
+    this.selectedPrice = price;
+    this.applyFilters();
+  }
+
+  onPublisherFilter(publisher: string) {
+    this.selectedPublisher = publisher;
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    this.filteredProducts = this.products.filter(product => {
+      const matchesPrice = this.filterByPrice(product);
+      const matchesPublisher = this.selectedPublisher
+        ? product.author === this.selectedPublisher
+        : true;
+
+      return matchesPrice && matchesPublisher;
+    });
+  }
+
+  filterByPrice(product: BookDetails): boolean {
+    const price = product.flashsale_price || product.price;
+    if (!this.selectedPrice) return true;
+    if (this.selectedPrice === 'low') return price < 100000;
+    if (this.selectedPrice === 'medium') return price >= 100000 && price <= 300000;
+    if (this.selectedPrice === 'high') return price > 300000;
+    return true;
+  }
+
 }

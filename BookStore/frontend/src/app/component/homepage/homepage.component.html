@@ -37,7 +37,7 @@
     
     <div class="flashsale-col">
       <div class="flashsale-col-1">
-        <p-carousel [value]="books" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
+        <p-carousel [value]="books" [numVisible]="5" [numScroll]="5" [circular]="false" [autoplayInterval]="3000" [responsiveOptions]="responsiveOptions" [showIndicators]="false">
           <ng-template let-book pTemplate="item">
             <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
           </ng-template>
@@ -55,7 +55,7 @@
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel value="0">
-          <p-carousel [value]="sachThamKhao" [numVisible]="5" [numScroll]="2" [circular]="false" [responsiveOptions]="responsiveOptions">
+          <p-carousel [value]="sachThamKhao" [numVisible]="5" [numScroll]="2" [circular]="false" [responsiveOptions]="responsiveOptions" [showIndicators]="false">
             <ng-template let-book pTemplate="item">
               <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
             </ng-template>
@@ -71,10 +71,60 @@
       </p-tabpanels>
     </p-tabs>
   </div>
-  <!-- blog -->
+  <p-divider class="custom-divider"></p-divider>
+  <div class="introduce-bookstore">
+    <div class="intro-1">
+      <h1>Về chúng tôi Pam Tech</h1>
+      <h4>Sách là thế giới vô hạn mở ra tầm nhìn của con người</h4>
+      <p class="pamtech-description">Chào mừng bạn đến với Pam Tech – nơi những cuốn sách hay gặp gỡ người yêu tri thức! Tại đây, bạn không chỉ tìm thấy sách, mà còn tìm thấy cảm hứng, sự sáng tạo và cả những món quà học tập dễ thương cho mọi lứa tuổi.
+      Pam Tech là nhà sách hiện đại kết hợp giữa công nghệ và tri thức, mang đến trải nghiệm mua sắm sách tiện lợi, nhanh chóng và đáng tin cậy. Chúng tôi tự hào cung cấp hàng ngàn đầu sách đa dạng cùng các sản phẩm học tập, văn phòng phẩm và đồ chơi giáo dục chất lượng cao.
+      </p>
+        <a class="more"> Xem thêm</a>
+      </div>
+    <div class="intro-2">
+      <img src="assets/images/aboutUs.jpg" alt="">
+    </div>
+  </div>
+
+  <p-divider class="custom-divider"></p-divider>
+  <!-- các tác giả -->
+  <div class="author-title">
+    <h1>Các tác giả nổi bật</h1>
+  </div>
+
+  <p-carousel 
+    [value]="authors" 
+    [numVisible]="6" 
+    [numScroll]="1" 
+    [circular]="true" 
+    [autoplayInterval]="3000" 
+    [responsiveOptions]="responsiveOptions"
+    [showIndicators]="false"
+    styleClass="custom-carousel"
+  >
+    <ng-template let-author pTemplate="item">
+      <div class="author-card">
+        <a [routerLink]="['/author', author._id]" class="author-item">
+          <img 
+            *ngIf="author.avatar" 
+            [src]="'http://localhost:3000' + author.avatar" 
+            alt="{{ author.name }}"
+            class="author-avatar"
+          />
+        </a>
+        <a [routerLink]="['/author', author._id]" class="author-name-link">
+          <h4 class="author-name">{{ author.name }}</h4>
+        </a>
+      </div>
+    </ng-template>
+  </p-carousel>
+
+  <p-divider class="custom-divider"></p-divider>
+
+    <!-- blog -->
   <div class="blog-section">
     <div class="blog-header">
-      <h2>BLOG</h2>
+      <h2>Blog của Pam</h2>
     </div>
   
     <div class="blog-container">
@@ -88,7 +138,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- benefit -->
   <div class="benefits-container" >
     <div class="benefit-item">

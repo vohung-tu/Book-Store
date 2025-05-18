@@ -1,0 +1,74 @@
+<div class="admin-authors">
+  <h2>Quản lý Tác giả</h2>
+  <button pButton label="Thêm tác giả" icon="pi pi-plus" (click)="openAddDialog()"></button>
+
+    <!-- Dialog thêm tác giả -->
+  <p-dialog header="Thêm Tác giả" [(visible)]="showAddDialog" [modal]="true" [style]="{width: '500px'}">
+    <div class="p-fluid">
+      <div class="p-field">
+        <label for="name">Tên tác giả</label>
+        <input id="name" type="text" pInputText [(ngModel)]="newAuthor.name" />
+      </div>
+      <div class="p-field">
+        <label for="description">Mô tả</label>
+        <textarea id="description" rows="3" pInputTextarea [(ngModel)]="newAuthor.description"></textarea>
+      </div>
+      <div class="p-field">
+        <label for="avatar">Avatar</label>
+        <input
+          id="avatar"
+          type="file"
+          accept="image/*"
+          (change)="onImageSelected($event)"
+        />
+        <img
+          *ngIf="previewImage"
+          [src]="previewImage"
+          alt="preview"
+          width="100"
+          class="preview-img"
+          style="margin-top: 10px; border-radius: 50%;"
+        />
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="showAddDialog = false"></button>
+      <button pButton label="Lưu" icon="pi pi-check" (click)="addAuthor()"></button>
+    </ng-template>
+  </p-dialog>
+
+  <p-table [value]="authors" [paginator]="true" [rows]="5" [responsiveLayout]="'scroll'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Ảnh đại diện</th>
+        <th>Tên tác giả</th>
+        <th>Mô tả</th>
+        <th>Ngày cập nhật</th>
+        <th>Hành động</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-author>
+      <tr>
+        <td>
+          <img
+            *ngIf="author.avatar"
+            [src]="'http://localhost:3000' + author.avatar"
+            (error)="author.avatar = null"
+            alt="avatar"
+            width="50"
+            height="50"
+            style="border-radius: 50%; object-fit: cover;"
+          />
+        </td>
+        <td>{{ author.name }}</td>
+        <td>{{ author.description }}</td>
+        <td>{{ author.dateUpdate | date: 'dd/MM/yyyy HH:mm' }}</td>
+        <td>
+          <button pButton icon="pi pi-pencil" (click)="updateAuthor(author)" class="p-button-rounded p-button-warning p-button-sm"></button>
+          <button pButton icon="pi pi-trash" (click)="onDelete(author._id!)" class="p-button-rounded p-button-danger p-button-sm"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+</div>

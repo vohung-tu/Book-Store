@@ -21,10 +21,10 @@
         <h2>{{ books.title }}</h2>
 
         <div class="book-info">
-          <h4 class="price">{{ books.flashsale_price | number:'1.3-3' }} đ</h4>
+          <h4 class="price">{{ books.flashsale_price  }} đ</h4>
 
           <div class="discount">
-            <h5>{{ books.price | number:'1.3-3' }} đ</h5>
+            <h5>{{ books.price }} đ</h5>
             <div class="discount-badge">-{{ books.discount_percent }}%</div>
           </div>
 
@@ -65,19 +65,17 @@
     <h3>Đánh giá sản phẩm</h3>
     <div class="rating-summary">
       
-      <div class="average-score">
-        <div class="score">0<span>/5</span></div>
-        <p-rating [readonly]="true" [stars]="5"></p-rating>
-        <div class="rating-count">(0 đánh giá)</div>
-      </div>
-  
-      <div class="rating-breakdown">
+      <div class="score">{{ averageRating }}<span>/5</span></div>
+        <p-rating [readonly]="true" [stars]="5" [(ngModel)]="averageRating"></p-rating>
+        <div class="rating-count">({{ reviews.length }} đánh giá)</div>
+
+      <div class="rating-breakdown" *ngIf="totalRatings > 0">
         <div class="rating-bar" *ngFor="let star of [5, 4, 3, 2, 1]">
           <span class="label">{{ star }} sao</span>
           <div class="bar">
-            <div class="fill" [style.width.%]="0"></div>
+            <div class="fill" [style.width.%]="getPercent(star)"></div>
           </div>
-          <span class="percent">0%</span>
+          <span class="percent">{{ getPercent(star) | number:'1.0-0' }}%</span>
         </div>
       </div>
   
@@ -118,18 +116,9 @@
             </div>
           </div>
 
-          <div class="p-mt-3">
-            <label>Thêm video ngắn (tối đa 10s):</label>
-            <input type="file" accept="video/*" (change)="onFileSelected($event, 'video')" />
-
-            <div *ngIf="videoPreview" class="p-mt-2">
-              <video [src]="videoPreview" controls style="max-width: 300px;"></video>
-            </div>
-          </div>
-
           <div class="p-d-flex p-jc-between">
             <button pButton label="Hủy" class="p-button-text" (click)="showReviewDialog = false"></button>
-            <button pButton label="Gửi nhận xét" class="p-button-danger-outline" (click)="submitReview()"></button>
+            <button [disabled]="hasReviewed" pButton label="Gửi nhận xét" class="p-button-danger-outline" (click)="submitReview()"></button>
           </div>
         </ng-container>
 
@@ -150,13 +139,9 @@
         <p>{{ r.comment }}</p>
         <small>{{ r.createdAt | date:'short' }}</small>
         <hr />
-        <!-- <div *ngIf="r.image">
+        <div *ngIf="r.image">
           <img [src]="r.image" alt="Ảnh đánh giá" style="max-width: 200px;" />
         </div>
-
-        <div *ngIf="r.video">
-          <video [src]="r.video" controls style="max-width: 300px;"></video>
-        </div> -->
       </div>
     </div>
 

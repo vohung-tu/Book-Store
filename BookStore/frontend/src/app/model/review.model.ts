@@ -5,4 +5,6 @@ export interface Review {
   rating: number;
   anonymous: boolean;
   createdAt?: Date;
+  image: string;
+  userId: string;
 }

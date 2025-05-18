@@ -1,3 +1,5 @@
+import { Review } from "./review.model";
+
 export interface BookDetails {
   id?: string,
   _id:string,
@@ -10,5 +12,6 @@ export interface BookDetails {
   coverImage: string, //link
   publishedDate: Date,
   quantity?: number,
-  categoryName: string 
+  categoryName: string,
+  reviews?: Review[];
 }

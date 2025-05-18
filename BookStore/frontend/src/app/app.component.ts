@@ -1,34 +1,42 @@
 import { Component, HostListener } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { NavbarComponent } from './component/navbar/navbar.component';
 import { FooterComponent } from './component/footer/footer.component';
-import { NgIf } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
-    NgIf,
-    RouterOutlet, 
+    RouterOutlet,
+    CommonModule,
     NavbarComponent,
     FooterComponent,
-    ButtonModule
-
+    ButtonModule,
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss'] // Sửa đây
 })
 export class AppComponent {
-  showBackToTop = false;
+  showBackToTop = false; // Mặc định false
+
   constructor(public router: Router) {}
+
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    this.showBackToTop = window.pageYOffset > 100;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.showBackToTop = scrollTop > 100;
+    // console.log('ScrollTop:', scrollTop, 'showBackToTop:', this.showBackToTop);
   }
 
-  scrollToTop(): void {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  scrollToTop() {
+    const mainContent = document.querySelector('.main-content');
+    if(mainContent) {
+      mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   isAdminPage(): boolean {
@@ -40,5 +48,4 @@ export class AppComponent {
     const url = this.router.url;
     return url.startsWith('/signin') || url.startsWith('/signup');
   }
-  
 }

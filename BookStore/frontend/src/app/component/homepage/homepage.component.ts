@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Inject, OnDestroy, OnInit, Output, PLATFORM_ID, ViewChild } from '@angular/core';
 import { interval, Subscription, takeWhile } from 'rxjs';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -7,11 +7,15 @@ import { RouterModule } from '@angular/router';
 import { BookDetails } from '../../model/books-details.model';
 import { BooksService } from '../../service/books.service';
 import { CarouselModule } from 'primeng/carousel';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TabsModule } from 'primeng/tabs';
 import { ProductItemComponent } from '../product-item/product-item.component';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { DividerModule } from 'primeng/divider';
+import { ButtonModule } from 'primeng/button';
+import { Author } from '../../model/author.model';
+import { AuthorService } from '../../service/author.service';
 
 @Component({
   selector: 'app-homepage',
@@ -26,7 +30,9 @@ import { ToastModule } from 'primeng/toast';
     TabsModule,
     CarouselModule,
     ProductItemComponent,
-    ToastModule
+    ToastModule,
+    DividerModule,
+    ButtonModule
   ],
   styleUrls: ['./homepage.component.scss'],
   providers: [MessageService]
@@ -34,6 +40,7 @@ import { ToastModule } from 'primeng/toast';
 export class HomepageComponent implements OnInit, OnDestroy {
   constructor(
     private bookService: BooksService,
+    private authorService: AuthorService,
     private messageService: MessageService
   ) {}
   intervalId: any;
@@ -41,6 +48,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
   selectedBook?: BookDetails;
   sachThamKhao: BookDetails[] = [];
   sachTrongNuoc: BookDetails[] = [];
+  authors: Author[] = [];
   // Đặt thời gian kết thúc flash sale trong vòng 1 ngày kể từ bây giờ
   flashSaleStart = new Date('2025-04-20T18:00:00');
   flashSaleEnd   = new Date('2025-04-22T18:00:00');
@@ -83,9 +91,10 @@ export class HomepageComponent implements OnInit, OnDestroy {
   private timerSubscription?: Subscription;
 
   ngOnInit(): void {
-    // Cập nhật đếm ngược mỗi giây
-    // this.startCountdown();
-    console.log(this.flashSaleEnd);
+    this.authorService.getAuthors().subscribe(data => {
+      this.authors = data;
+    });
+
     this.responsiveOptions = [
       {
           breakpoint: '1400px',
