@@ -6,25 +6,20 @@
     ]">
   </app-breadcrumb>
 
-  <!-- PHẦN TRÁI VÀ PHẢI -->
   <div class="book-details-row">
-
-    <!-- Div 1: Ảnh và thông tin cơ bản -->
     <div class="book-detail-1">
-      <!-- Cột trái: Ảnh bìa -->
       <div class="book-detail-left">
         <img [src]="books.coverImage" [alt]="books.title" />
       </div>
 
-      <!-- Cột phải: Thông tin sách -->
       <div class="book-detail-right">
         <h2>{{ books.title }}</h2>
 
         <div class="book-info">
-          <h4 class="price">{{ books.flashsale_price  }} đ</h4>
+          <h4 class="price">{{ books.flashsale_price | dotSeparator }} đ</h4>
 
           <div class="discount">
-            <h5>{{ books.price }} đ</h5>
+            <h5>{{ books.price | dotSeparator }} đ</h5>
             <div class="discount-badge">-{{ books.discount_percent }}%</div>
           </div>
 
@@ -48,7 +43,6 @@
       </div>
     </div>
 
-    <!-- Div 2: Mô tả chi tiết -->
     <div class="book-detail-2">
       <h3>Mô tả sản phẩm</h3>
       <p class="detailed-description">{{ books.description || 'Không có mô tả chi tiết.' }}</p>

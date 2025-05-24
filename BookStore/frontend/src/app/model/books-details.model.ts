@@ -1,3 +1,4 @@
+import { Author } from "./author.model";
 import { Review } from "./review.model";
 
 export interface BookDetails {
@@ -5,7 +6,7 @@ export interface BookDetails {
   _id:string,
   title: string,
   description: string,
-  author: string,
+  author: Author,
   price: number,
   flashsale_price?: number,
   discount_percent?: number,

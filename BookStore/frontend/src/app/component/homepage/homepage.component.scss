@@ -19,8 +19,8 @@
   flex-direction: column;
   align-items: center;
   img {
-    max-width: 100%;
-    height: auto;
+    max-width: 392px;
+    height: 156px;
     border-radius: 10px;
   }
 }
@@ -53,7 +53,7 @@
     margin-left: 90px;
   }
   
-  .flash-sale-countdown h2,
+  .flash-sale-countdown h1,
   .flash-sale-countdown p {
     color: #fff;
     margin: 0;
@@ -285,5 +285,42 @@ p-tab:hover {
 
   .author-name-link {
     text-decoration: none;
+  }
+}
+.featured-books {
+  .featured-title {
+    h1 {
+      padding-left: 100px;
+      color: #BE5985;
+    }
+  }
+  .featured-body {
+    padding-left: 100px;
+    padding-right: 100px;
+  }
+}
+.new-release-books {
+  .new-release-title {
+    h1 {
+      padding-left: 100px;
+      color: #BE5985;
+    }
+  }
+  .new-release-body {
+    padding-left: 100px;
+    padding-right: 100px;
+  }
+}
+
+.incomming-release-books {
+  .incomming-release-title {
+    h1 {
+      padding-left: 100px;
+      color: #BE5985;
+    }
+  }
+  .incomming-release-body {
+    padding-left: 100px;
+    padding-right: 100px;
   }
 }

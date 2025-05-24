@@ -29,3 +29,44 @@
     }
   }
 }
+.books-list {
+  padding: 20px 100px 100px 100px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+  gap: 20px;
+}
+.book-of-author {
+  padding-left:100px;
+}
+.book-item {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 15px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.book-item:hover {
+  transform: translateY(-5px);
+}
+
+.book-content {
+  display: flex;
+  align-items: center; /* Căn giữa theo chiều dọc */
+  gap: 15px; /* Khoảng cách giữa ảnh và nội dung */
+}
+
+.book-img {
+  width: 200px; 
+  height: auto;
+  border-radius: 5px;
+}
+
+.book-info {
+  flex: 1; /* Nội dung chiếm phần còn lại */
+}
+
+.detailed-description {
+  font-size: 14px;
+  color: #555;
+}

@@ -56,7 +56,8 @@ export class AdminProductComponent {
     { label: 'Truyện tranh - Manga', value: 'manga' },
     { label: 'VPP - Dụng cụ học tập', value: 'vpp-dung-cu-hoc-sinh' },
     { label: 'Đồ chơi', value: 'do-choi' },
-    { label: 'Làm đẹp', value: 'lam-dep' }
+    { label: 'Làm đẹp', value: 'lam-dep' },
+    { label: 'Sách tham khảo', value: 'sach-tham-khao' }
   ];
 
   categoryMap: { [key: string]: string } = {
@@ -64,7 +65,8 @@ export class AdminProductComponent {
     'manga': 'Truyện tranh - Manga',
     'vpp-dung-cu-hoc-sinh': 'VPP - Dụng cụ học tập',
     'do-choi': 'Đồ chơi',
-    'lam-dep': 'Làm đẹp'
+    'lam-dep': 'Làm đẹp',
+    'sach-tham-khao': 'Sách tham khảo'
   };
   
 

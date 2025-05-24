@@ -17,3 +17,21 @@
     <p>{{ author.description }}</p>
   </div>
 </div>
+<h2 class="book-of-author">Sách của {{ author.name }}</h2>
+<div class="books-list" *ngIf="booksByAuthor.length > 0; else noBooks">
+  <div *ngFor="let book of booksByAuthor" class="book-item">
+    <div class="book-content">
+      <img [src]="book.coverImage" alt="{{ book.title }}" class="book-img" />
+      <div class="book-info">
+        <h3>{{ book.title }}</h3>
+        <p><strong>Giá:</strong> {{ book.price | currency: 'VND' }}</p>
+        <p class="detailed-description">{{ book.description }}</p>
+        <button pButton label="Chi tiết" [routerLink]="['/details', book._id]"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #noBooks>
+  <p>Không có sách nào của tác giả này.</p>
+</ng-template>

@@ -25,6 +25,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { User } from '../../model/users-details.model';
 import { ReviewService } from '../../service/review.service';
 import { Review } from '../../model/review.model';
+import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 
 @Component({
   selector: 'app-detail',
@@ -46,7 +47,8 @@ import { Review } from '../../model/review.model';
     DialogModule,
     InputTextModule,
     TextareaModule,
-    ToggleButtonModule
+    ToggleButtonModule,
+    DotSeparatorPipe
   ],
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.scss'],

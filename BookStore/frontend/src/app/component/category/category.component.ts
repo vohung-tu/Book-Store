@@ -86,7 +86,7 @@ export class CategoryComponent implements OnInit {
     this.filteredProducts = this.products.filter(product => {
       const matchesPrice = this.filterByPrice(product);
       const matchesPublisher = this.selectedPublisher
-        ? product.author === this.selectedPublisher
+        ? product.author.name === this.selectedPublisher
         : true;
 
       return matchesPrice && matchesPublisher;

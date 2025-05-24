@@ -16,6 +16,8 @@ import { DividerModule } from 'primeng/divider';
 import { ButtonModule } from 'primeng/button';
 import { Author } from '../../model/author.model';
 import { AuthorService } from '../../service/author.service';
+import { ReviewService } from '../../service/review.service';
+import { IncomingMessage } from 'http';
 
 @Component({
   selector: 'app-homepage',
@@ -41,7 +43,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
   constructor(
     private bookService: BooksService,
     private authorService: AuthorService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private reviewService: ReviewService
   ) {}
   intervalId: any;
   books: BookDetails[] = [];
@@ -49,10 +52,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
   sachThamKhao: BookDetails[] = [];
   sachTrongNuoc: BookDetails[] = [];
   authors: Author[] = [];
-  // Đặt thời gian kết thúc flash sale trong vòng 1 ngày kể từ bây giờ
-  flashSaleStart = new Date('2025-04-20T18:00:00');
-  flashSaleEnd   = new Date('2025-04-22T18:00:00');
-  saleActive = false; // true khi đã sang thời gian sale
 
   days = 0;
   hours = 0;
@@ -86,7 +85,9 @@ export class HomepageComponent implements OnInit, OnDestroy {
     },
   ];
   responsiveOptions: any[] | undefined;
-
+  featuredBooks: BookDetails[] = [];
+  newReleaseBooks: BookDetails[] = [];
+  incommingReleaseBooks: BookDetails[] = [];
   
   private timerSubscription?: Subscription;
 
@@ -123,7 +124,41 @@ export class HomepageComponent implements OnInit, OnDestroy {
       this.sachThamKhao = this.books.filter(book => book.categoryName === 'sach-tham-khao');
       this.sachTrongNuoc = this.books.filter(book => book.categoryName === 'sach-trong-nuoc');
 
+      const today = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30); // Lấy ngày 30 ngày trước
 
+      this.newReleaseBooks = this.books.filter(book => {
+        const publishedDate = new Date(book.publishedDate);
+        return publishedDate >= thirtyDaysAgo && publishedDate <= today;
+      });
+      const daysLater = new Date();
+      daysLater.setDate(today.getDate() + 70); // Ngày 60 ngày sau
+
+      this.incommingReleaseBooks = this.books.filter(book => {
+        const publishedDate = new Date(book.publishedDate);
+        return publishedDate > today && publishedDate <= daysLater;
+      });
+
+      console.log("Danh sách sách sắp ra mắt:", this.incommingReleaseBooks);
+
+      // Dùng Promise.all để chờ tất cả requests `getReviews()` hoàn thành
+      const reviewRequests = this.books.map(book =>
+        this.reviewService.getReviews(book._id).toPromise().then(reviews => {
+          book.reviews = reviews;
+        })
+      );
+
+      Promise.all(reviewRequests).then(() => {
+        // Khi tất cả reviews đã được cập nhật, lọc các sách có rating >= 4
+        this.featuredBooks = this.books.filter(book => {
+          const averageRating = book.reviews?.length
+            ? book.reviews.reduce((sum, review) => sum + review.rating, 0) / book.reviews.length
+            : 0;
+
+          return averageRating >= 4;
+        });
+      });
     });
   }
 
@@ -133,45 +168,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
       console.log('Chi tiết sách:', data);
     });
   }
-
-  startCountdown(): void {
-    console.log('Start countdown called');
-    this.timerSubscription = interval(1000).subscribe(() => {
-      const now = Date.now();
-
-      if (now < this.flashSaleStart.getTime()) {
-        // Chưa đến giờ bắt đầu
-        this.saleActive = false;
-        this.updateTime(this.flashSaleStart.getTime() - now);
-      }
-      else if (now < this.flashSaleEnd.getTime()) {
-        // Đang trong thời gian sale
-        this.saleActive = true;
-        this.updateTime(this.flashSaleEnd.getTime() - now);
-      }
-      else {
-        // Sale đã kết thúc
-        this.setTimeValues(0);
-        this.timerSubscription?.unsubscribe();
-      }
-    });
-  }
-
-  private updateTime(distance: number) {
-    this.days    = Math.floor(distance / (1000 * 60 * 60 * 24));
-    distance %= (1000 * 60 * 60 * 24);
-
-    this.hours   = Math.floor(distance / (1000 * 60 * 60));
-    distance %= (1000 * 60 * 60);
-
-    this.minutes = Math.floor(distance / (1000 * 60));
-    this.seconds = Math.floor((distance % (1000 * 60)) / 1000);
-  }
-  
-  private setTimeValues(value: number): void {
-    this.days = this.hours = this.minutes = this.seconds = value;
-  }
-    
   
   ngOnDestroy(): void {
     this.timerSubscription?.unsubscribe();

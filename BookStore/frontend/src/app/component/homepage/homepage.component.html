@@ -2,37 +2,20 @@
   <p-toast position="top-right" key="tr"></p-toast>
 
   <div class="content-ads-1">
-    <img class="img-ads" src="assets/images/ads_1.jpg" alt="">
+    <img class="img-ads" src="assets/images/thang5.png" alt="">
     <div class="content-ads-2">
       <a routerLink="/">
         <img src="assets/images/ads_2.png" alt="">
       </a>
       <a href="">
-        <img class="img-ads" src="assets/images/ads_3.jpg" alt="">
+        <img class="img-ads" src="assets/images/coupon.webp" alt="">
       </a>
     </div>
   </div>
 
   <div class="container-flashsale">
     <div class="flash-sale-countdown">
-      <h2>Flash Sale</h2>
-      <p *ngIf="!saleActive">Bắt đầu sau:</p>
-      <p *ngIf=" saleActive">Kết thúc sau:</p>
-    
-      <div class="countdown-timer">
-        <span class="time">
-          {{ days }}<small>Days</small>
-        </span>
-        <span class="time">
-          {{ hours }}<small>Hours</small>
-        </span>
-        <span class="time">
-          {{ minutes }}<small>Minutes</small>
-        </span>
-        <span class="time">
-          {{ seconds }}<small>Seconds</small>
-        </span>
-      </div>
+      <h1>Tủ sách nhỏ của Pam</h1>
     </div>    
     
     <div class="flashsale-col">
@@ -46,10 +29,56 @@
     </div>
   </div>
 
+  <p-divider class="custom-divider"></p-divider>
+
+  <div class="featured-books">
+    <div class="featured-title">
+      <h1>Tủ sách nổi bật</h1>
+    </div> 
+    <div class="featured-body">
+      <p-carousel *ngIf="featuredBooks.length > 0" [value]="featuredBooks" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
+        <ng-template let-book pTemplate="item">
+          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
+        </ng-template>
+      </p-carousel>
+    </div>
+  </div>
+  
+  <p-divider class="custom-divider"></p-divider>
+  
+  <div class="new-release-books">
+      <div class="new-release-title">
+        <h1>Sách mới ra</h1>
+      </div> 
+      <div class="new-release-body">
+        <p-carousel *ngIf="newReleaseBooks.length > 0" [value]="newReleaseBooks" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
+          <ng-template let-book pTemplate="item">
+            <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
+          </ng-template>
+        </p-carousel>
+      </div>
+    </div>
+  
+  <p-divider class="custom-divider"></p-divider>
+
+  <div class="incomming-release-books">
+    <div class="incomming-release-title">
+      <h1>Sách sắp ra mắt</h1>
+    </div> 
+    <div class="incomming-release-body">
+      <p-carousel *ngIf="incommingReleaseBooks.length > 0" [value]="incommingReleaseBooks" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
+        <ng-template let-book pTemplate="item">
+          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
+        </ng-template>
+      </p-carousel>
+    </div>
+  </div>
+  
+  <p-divider class="custom-divider"></p-divider>
+
   <div class="newest-col">
     <p-tabs value="0" >
       <p-tablist>
-          <!-- <p-tab value="0">Sách Mới Về</p-tab> -->
           <p-tab value="0">Sách Tham Khảo</p-tab>
           <p-tab value="1">Sách Trong Nước</p-tab>
       </p-tablist>
