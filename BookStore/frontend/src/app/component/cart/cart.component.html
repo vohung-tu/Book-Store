@@ -4,15 +4,15 @@
     { label: 'Giỏ hàng' }
   ]">
 </app-breadcrumb>
-<h1 style="text-align: center; color: black;">GIỎ HÀNG</h1>
+<h1 style="text-align: center; color: #16a34a;">GIỎ HÀNG</h1>
 
 <!-- Giỏ hàng có sản phẩm -->
 <div class="cart-container" *ngIf="(cart$ | async) as cartData">
   <ng-container *ngIf="cartData.length > 0">
     
     <div class="delete-all-container" *ngIf="selectedBooks.length > 0">
-      <button class="delete-all-btn" (click)="removeAllSelected()" mat-button>XÓA TẤT CẢ</button>
-      <button class="deselect-all-btn" (click)="deselectAll()" mat-button>BỎ CHỌN TẤT CẢ</button>
+      <p-button variant="outlined" severity="danger" label="XÓA TẤT CẢ" size="large" (click)="removeAllSelected()"></p-button>
+      <p-button variant="outlined" severity="success" label="BỎ CHỌN TẤT CẢ" size="large" (click)="deselectAll()" ></p-button>
     </div>
 
     <p-table
@@ -48,7 +48,7 @@
           </td>
           <td>
             <span class="discount-price">
-              {{ book.flashsale_price || book.price }} đ
+              {{ (book.flashsale_price || book.price) |  dotSeparator  }} đ
             </span>
           </td>
           <td>
@@ -57,7 +57,7 @@
             <button mat-button (click)="increaseQuantity(book)">+</button>
           </td>
           <td class="total-price">
-            {{ (book.flashsale_price || book.price) * (book.quantity || 1)}} đ
+            {{ (book.flashsale_price || book.price) * (book.quantity || 1) | dotSeparator}} đ
           </td>
           <td>
             <button class="delete-btn" (click)="removeItem(book._id)">
@@ -69,8 +69,12 @@
     </p-table>
 
     <div class="cart-summary">
-      <h3>Thành tiền: {{ totalPrice }} đ</h3>
-      <p-button [rounded]="true" variant="outlined" severity="success" label="Thanh toán" size="large" (click)="goToCheckout()"></p-button>
+      <div class="price-now">
+        <h3>Tổng tiền:</h3>
+        <span >{{ totalPrice | dotSeparator }} đ</span>
+      </div>
+      <p-divider></p-divider>
+      <p-button class="pay-btn" severity="success" label="THANH TOÁN" size="large" (click)="goToCheckout()"></p-button>
     </div>
   </ng-container>
 </div>

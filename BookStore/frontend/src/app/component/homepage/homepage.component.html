@@ -37,7 +37,7 @@
     
     <div class="flashsale-col">
       <div class="flashsale-col-1">
-        <p-carousel [value]="books" [numVisible]="5" [numScroll]="5" [circular]="false" [autoplayInterval]="3000" [responsiveOptions]="responsiveOptions" [showIndicators]="false">
+        <p-carousel [value]="books" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
           <ng-template let-book pTemplate="item">
             <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
           </ng-template>
@@ -55,14 +55,14 @@
       </p-tablist>
       <p-tabpanels>
         <p-tabpanel value="0">
-          <p-carousel [value]="sachThamKhao" [numVisible]="5" [numScroll]="2" [circular]="false" [responsiveOptions]="responsiveOptions" [showIndicators]="false">
+          <p-carousel [value]="sachThamKhao" [numVisible]="5" [numScroll]="3" [circular]="false" [responsiveOptions]="responsiveOptions">
             <ng-template let-book pTemplate="item">
               <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
             </ng-template>
           </p-carousel>
         </p-tabpanel>
         <p-tabpanel value="1">
-          <p-carousel [value]="sachTrongNuoc" [numVisible]="4" [numScroll]="2" [circular]="false" [responsiveOptions]="responsiveOptions">
+          <p-carousel [value]="sachTrongNuoc" [numVisible]="4" [numScroll]="3" [circular]="false" [responsiveOptions]="responsiveOptions">
             <ng-template let-book pTemplate="item">
               <app-product-item [book]="book"></app-product-item>
             </ng-template>
@@ -97,7 +97,6 @@
     [numVisible]="6" 
     [numScroll]="1" 
     [circular]="true" 
-    [autoplayInterval]="3000" 
     [responsiveOptions]="responsiveOptions"
     [showIndicators]="false"
     styleClass="custom-carousel"

@@ -32,9 +32,14 @@ button[pButton] {
 .p-fluid {
   display: flex;
   flex-direction: column;
+  width: 700px;
   gap: 1rem;
 }
-
+.country-select {
+  display: flex;
+  justify-content: space-between; 
+  gap: 30px;
+}
 label {
   font-weight: 500;
 }
@@ -56,7 +61,20 @@ input {
   }
   button {
     white-space: nowrap;
+    background-color: #BE5985;
+    border-radius: 5px;
+    border: none;
   }
+}
+.add-address {
+  button {
+    background-color: #BE5985;
+    border-radius: 5px;
+    border: none;
+  }
+}
+.p-radiobutton-icon {
+   background-color: #BE5985;
 }
 
 p-dialog {
@@ -119,11 +137,11 @@ p-dialog {
     display: flex;
     padding: 3px 8px;
     margin-left: 16px;
-    background-color: rgba(36, 137, 244, 0.2);
+    background-color: rgba(244, 36, 164, 0.2);
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    color: #2489F4;
+    color: #BE5985;
     font-size: 12px;
   }
   .separated-btn-address-book {

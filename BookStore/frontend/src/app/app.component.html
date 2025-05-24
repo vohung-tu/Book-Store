@@ -9,13 +9,5 @@
     <router-outlet></router-outlet>
   </div>
 
-  <p-button
-    *ngIf="showBackToTop"
-    icon="pi pi-arrow-up"
-    (click)="scrollToTop()"
-    styleClass="p-button-rounded p-button-secondary back-to-top"
-    label="Top"
-  ></p-button>
-
   <app-footer *ngIf="!isAdminPage() && !isAuthPage()"></app-footer>
 </div>

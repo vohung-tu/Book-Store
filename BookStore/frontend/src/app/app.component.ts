@@ -19,25 +19,8 @@ import { ButtonModule } from 'primeng/button';
   styleUrls: ['./app.component.scss'] // Sửa đây
 })
 export class AppComponent {
-  showBackToTop = false; // Mặc định false
 
   constructor(public router: Router) {}
-
-  @HostListener('window:scroll', [])
-  onWindowScroll(): void {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    this.showBackToTop = scrollTop > 100;
-    // console.log('ScrollTop:', scrollTop, 'showBackToTop:', this.showBackToTop);
-  }
-
-  scrollToTop() {
-    const mainContent = document.querySelector('.main-content');
-    if(mainContent) {
-      mainContent.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
 
   isAdminPage(): boolean {
     const url = this.router.url;

@@ -14,13 +14,14 @@ import { LayoutComponent } from './admin/layout/layout.component';
 import { AdminUserComponent } from './admin/admin-user/admin-user.component';
 import { AdminProductComponent } from './admin/admin-product/admin-product.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
-import { AddressBookComponent } from './component/address-book/address-book.component';
 import { AdminOrderComponent } from './admin/admin-order/admin-order.component';
 import { SearchPageComponent } from './component/search-page/search-page.component';
 import { LayoutUserComponent } from './component/user-info/layout-user/layout-user.component';
 import { VnpayReturnComponent } from './component/checkout/vnpay-return/vnpay-return.component';
 import { AdminAuthorComponent } from './admin/admin-author/admin-author.component';
 import { AuthorDetailsComponent } from './component/author-details/author-details.component';
+import { UserOrderComponent } from './component/user-info/user-order/user-order.component';
+import { AddressBookComponent } from './component/user-info/address-book/address-book.component';
 
 const routes: Routes = [
   { 
@@ -57,7 +58,8 @@ const routes: Routes = [
     component: UserInfoComponent,
     children: [
       { path: '', component: LayoutUserComponent }, // Mặc định hiện thông tin user
-      { path: 'address-book', component: AddressBookComponent }
+      { path: 'address-book', component: AddressBookComponent },
+      { path: 'user-order', component: UserOrderComponent }
     ]
   },
   {

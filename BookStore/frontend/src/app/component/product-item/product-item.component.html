@@ -2,9 +2,9 @@
   <img [src]="book.coverImage" alt="{{ book.title }}" />
   <h3>{{ book.title }}</h3>
   <p>Tác giả: {{ book.author }}</p>
-  <h4>Giá: {{ book.flashsale_price }} đ</h4>
+  <h4>Giá: {{ book.flashsale_price | dotSeparator  }} đ</h4>
   <div class="discount">
-    <h5> {{ book.price | number }} đ </h5> 
+    <h5>{{ book.price | dotSeparator }} đ</h5>
     <div class="discount-badge">-{{ book.discount_percent }}%</div>
   </div>
   <div class="rating" style="display: flex;" *ngIf="reviews.length > 0">

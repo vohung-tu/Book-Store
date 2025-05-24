@@ -59,23 +59,19 @@ export class SigninComponent implements OnInit{
   onSubmit() {
     if (this.signinForm.valid) {
       const { email, password } = this.signinForm.value;
-  
+
       this.authService.signin({ email, password }).subscribe(
         (res) => {
           const user = res.user;
           const returnUrl = this.route.snapshot.queryParams['returnUrl'];
-  
+
           localStorage.setItem('token', res.token);
           localStorage.setItem('user', JSON.stringify(user));
-  
-          if (user.role === 'admin') {
-            this.router.navigate(['/admin/dashboard']);
-          } else if (returnUrl) {
-            this.router.navigateByUrl(returnUrl);
-          } else {
-            this.router.navigate(['/home']);
-          }
-          this.errorMessage = null; // Xóa lỗi nếu đăng nhập thành công
+
+          // Điều hướng: returnUrl > /home
+          this.router.navigateByUrl(returnUrl || '/home');
+
+          this.errorMessage = null;
         },
         (err) => {
           console.error('Đăng nhập thất bại', err);
@@ -84,4 +80,5 @@ export class SigninComponent implements OnInit{
       );
     }
   }
+
 }

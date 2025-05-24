@@ -12,6 +12,7 @@ import { RatingModule } from 'primeng/rating';
 import { FormsModule } from '@angular/forms';
 import { ReviewService } from '../../service/review.service';
 import { Review } from '../../model/review.model';
+import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 
 @Component({
   selector: 'app-product-item',
@@ -23,7 +24,8 @@ import { Review } from '../../model/review.model';
     ButtonModule,
     RippleModule,
     RatingModule,
-    FormsModule
+    FormsModule,
+    DotSeparatorPipe
     
   ],
   templateUrl: './product-item.component.html',

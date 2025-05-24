@@ -35,17 +35,19 @@
           <button pButton type="button" icon="pi pi-trash"  [outlined]="true" [rounded]="true" severity="danger" (click)="onDeleteAddress(i)"></button>
         </div>
       </div>
-      <div class="address-value">{{ address.value }}</div>
+      <div class="address-value"><h3>Địa chỉ: {{ address.value }}</h3></div>
     </li>
   </ul>
 
-  <button 
+  <div class="add-address">
+    <button 
     pButton 
     type="button" 
     label="Thêm địa chỉ" 
     icon="pi pi-plus" 
     (click)="openAddAddressDialog()">
   </button>
+  </div>
 </div>
 
 <p-dialog header="Thêm địa chỉ" [(visible)]="displayAddAddressDialog">
@@ -58,6 +60,17 @@
     
     <label for="newAddress">Địa chỉ mới:</label>
     <input type="text" id="newAddress" [(ngModel)]="newAddress" />
+
+    <label for="countries">Quốc gia:</label>
+    <p-select [options]="countries" [(ngModel)]="selectedCountry" optionLabel="name" placeholder="---" class="w-full md:w-56" />
+
+    <div class="country-select">
+      <p-select [options]="cities" [(ngModel)]="selectedCity" optionLabel="Name" placeholder="Tỉnh Thành" class="w-full md:w-56" (onChange)="onCityChange()" />
+
+      <p-select [options]="districts" [(ngModel)]="selectedDistrict" optionLabel="Name" placeholder="Quận Huyện" class="w-full md:w-56" (onChange)="onDistrictChange()" />
+
+      <p-select [options]="wards" [(ngModel)]="selectedWard" optionLabel="Name" placeholder="Phường Xã" class="w-full md:w-56" />
+    </div>
   </div>
   <div class="dialog-buttons">
     <button pButton label="Lưu" icon="pi pi-check" (click)="addAddress()"></button>
@@ -74,6 +87,17 @@
 
     <label for="editValue">Địa chỉ:</label>
     <input type="text" id="editValue" [(ngModel)]="editAddressData.value" />
+
+    <label for="countries">Quốc gia:</label>
+    <p-select [options]="countries" [(ngModel)]="selectedCountry" optionLabel="name" placeholder="---" class="w-full md:w-56" />
+
+    <div class="country-select">
+      <p-select [options]="cities" [(ngModel)]="selectedCity" optionLabel="Name" placeholder="Tỉnh Thành" class="w-full md:w-56" (onChange)="onCityChange()" />
+
+      <p-select [options]="districts" [(ngModel)]="selectedDistrict" optionLabel="Name" placeholder="Quận Huyện" class="w-full md:w-56" (onChange)="onDistrictChange()" />
+
+      <p-select [options]="wards" [(ngModel)]="selectedWard" optionLabel="Name" placeholder="Phường Xã" class="w-full md:w-56" />
+    </div>
 
     <div class="p-field-checkbox">
       <p-checkbox [(ngModel)]="editAddressData.isDefault" inputId="editIsDefault"></p-checkbox>

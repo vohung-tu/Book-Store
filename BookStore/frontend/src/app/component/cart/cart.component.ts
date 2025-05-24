@@ -13,6 +13,8 @@ import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
 import { AuthService } from '../../service/auth.service';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
+import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
+import { DividerModule } from 'primeng/divider';
 
 @Component({
   selector: 'app-cart',
@@ -28,7 +30,9 @@ import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
     PaginatorModule,
     CheckboxModule,
     ButtonModule,
-    BreadcrumbComponent
+    BreadcrumbComponent,
+    DotSeparatorPipe,
+    DividerModule
     
   ],
   templateUrl: './cart.component.html',

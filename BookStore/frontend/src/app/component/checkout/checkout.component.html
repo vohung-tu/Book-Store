@@ -25,10 +25,10 @@
           <img [src]="book.coverImage" alt="product" class="product-img" />
           {{ book.title }}
         </td>
-        <td>{{ book.flashsale_price || book.price }} đ</td>
+        <td>{{ (book.flashsale_price || book.price) | dotSeparator }} đ</td>
         <td style="text-align: center;">{{ book.quantity || 1 }}</td>
         <td class="total-price">
-          {{ (book.flashsale_price || book.price) * (book.quantity || 1)  }} đ
+          {{ (book.flashsale_price || book.price) * (book.quantity || 1) | dotSeparator }} đ
         </td>
       </tr>
     </ng-template>
@@ -103,8 +103,8 @@
 
         <div *ngIf="orderInfo.payment === 'payment'" class="ml-6">
           <p><strong>Thông tin chuyển khoản:</strong></p>
-          <p>Ngân hàng: Vietcombank</p>
-          <p>Số tài khoản: 123456789</p>
+          <p>Ngân hàng: NCB</p>
+          <p>Số tài khoản: 9704198526191432198</p>
           <p>Chủ tài khoản: Nguyễn Văn A</p>
           <p>Nội dung chuyển khoản: [Mã đơn hàng]</p>
         </div>
@@ -114,7 +114,7 @@
           <label for="ingredient2" class="ml-2">Thanh toán qua VNPAY-QR</label>
         </div>
 
-        <div class="flex-1 items-center" style="display: flex;">
+        <div class="flex-1 items-center" style="display: flex; justify-content: space-between;">
           <p-radiobutton name="payment-zl" value="payment" [(ngModel)]="orderInfo.payment" inputId="ingredient3" [disabled]="true" />
           <label for="ingredient3" class="ml-2">Thanh toán qua VNPay</label>
           <button pButton label="Thanh toán VNPAY" icon="pi pi-credit-card"
@@ -159,16 +159,16 @@
       <div class="price-summary">
         <div class="line">
           <strong>Tạm tính:</strong>
-          <p>{{ discountedAmount  }} đ</p>
+          <p>{{ discountedAmount | dotSeparator }} đ</p>
         </div>
         <div class="line">
           <strong>Phí vận chuyển:</strong>
-          <p>{{ shippingFee }} đ</p>
+          <p>{{ shippingFee  | dotSeparator  }} đ</p>
         </div>
         <p-divider />
         <div class="line total">
           <strong>Tổng tiền:</strong>
-          <p>{{ (discountedAmount + shippingFee) }} đ</p>
+          <p>{{ (discountedAmount + shippingFee) | dotSeparator }} đ</p>
         </div>
       </div>
       

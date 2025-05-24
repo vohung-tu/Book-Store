@@ -1,5 +1,5 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, Query, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { VnpayService } from './payment.service';
 
 @Controller('vnpay')
@@ -7,12 +7,21 @@ export class VnpayController {
   constructor(private readonly vnpayService: VnpayService) {}
 
   @Get('create-payment-url')
-  createPaymentUrl(@Query() query: any, @Res() res: Response) {
-    const url = this.vnpayService.createPaymentUrl({
-      amount: Number(query.amount),
-      orderId: query.orderId,
-    });
+  createPaymentUrl(@Query() query: any, @Req() req: Request, @Res() res: Response) {
+    const clientIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket.remoteAddress ||
+      '127.0.0.1';
 
-    return res.json({ url }); // Trả về JSON hoặc redirect tùy frontend cần
+    const url = this.vnpayService.createPaymentUrl(
+      {
+        amount: Number(query.amount),
+        orderId: query.orderId,
+        bankCode: query.bankCode, // optional
+      },
+      clientIp,
+    );
+
+    return { url: url };
   }
 }

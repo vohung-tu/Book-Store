@@ -23,6 +23,7 @@ import { CascadeSelectModule } from 'primeng/cascadeselect';
 import { DropdownModule } from 'primeng/dropdown';
 import { CartService } from '../../service/cart.service';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
+import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 
 export interface DiscountCode {
   code: string;
@@ -52,7 +53,8 @@ export interface DiscountCode {
     InputNumberModule,
     DividerModule,
     DropdownModule,
-    BreadcrumbComponent
+    BreadcrumbComponent,
+    DotSeparatorPipe
   ],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss']
@@ -169,20 +171,25 @@ export class CheckoutComponent implements OnInit {
   }
 
   payWithVnpay() {
-    const orderId = Date.now().toString();// hoặc sinh theo hệ thống
-    const amount = (this.discountedAmount + this.shippingFee);
+  const orderId = Date.now().toString(); // tạo mã đơn hàng
+  const amount = this.discountedAmount + this.shippingFee;
 
-    this.http.get<{ url: string }>('http://localhost:3000/vnpay/create-payment-url', {
-      params: {
-        amount: amount.toString(),
-        orderId,
-      }
-    }).subscribe((res) => {
+  this.http.get<{ url: string }>('http://localhost:3000/vnpay/create-payment-url', {
+    params: {
+      amount: amount.toString(),
+      orderId,
+    }
+  }).subscribe({
+    next: (res) => {
       if (res.url) {
-        window.location.href = res.url; // chuyển hướng tới VNPay
+        window.location.href = res.url; // ✅ chuyển hướng tới VNPay
       }
-    });
-  }
+    },
+    error: (err) => {
+      console.error('Lỗi khi gọi create-payment-url:', err);
+    }
+  });
+}
 
   submitOrder() {
     if (!this.userInfo?._id || !this.orderInfo.address) return;
@@ -284,8 +291,8 @@ export class CheckoutComponent implements OnInit {
     if (this.selectedAddress === 'other') {
       // Thêm địa chỉ mới vào mảng địa chỉ
       this.addresses.push({ value: this.orderInfo.address, isDefault: false });
-    }
-
+    }  
+ 
     // Gọi hàm updateAddress để gửi các địa chỉ mới lên backend
     this.authService.updateAddress(userId, this.addresses).subscribe(response => {
       console.log('Địa chỉ đã được cập nhật', response);
