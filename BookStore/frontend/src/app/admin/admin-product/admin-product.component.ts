@@ -10,6 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 
 @Component({
   selector: 'app-admin-product',
@@ -24,7 +25,8 @@ import { TooltipModule } from 'primeng/tooltip';
     ToastModule,
     CheckboxModule,
     TooltipModule,
-    DropdownModule
+    DropdownModule,
+    DotSeparatorPipe
   ],
   templateUrl: './admin-product.component.html',
   styleUrls: ['./admin-product.component.scss']
@@ -57,7 +59,8 @@ export class AdminProductComponent {
     { label: 'VPP - Dụng cụ học tập', value: 'vpp-dung-cu-hoc-sinh' },
     { label: 'Đồ chơi', value: 'do-choi' },
     { label: 'Làm đẹp', value: 'lam-dep' },
-    { label: 'Sách tham khảo', value: 'sach-tham-khao' }
+    { label: 'Sách tham khảo', value: 'sach-tham-khao' },
+    { label: 'Sách ngoại văn', value: 'sach-ngoai-van' }
   ];
 
   categoryMap: { [key: string]: string } = {
@@ -66,7 +69,8 @@ export class AdminProductComponent {
     'vpp-dung-cu-hoc-sinh': 'VPP - Dụng cụ học tập',
     'do-choi': 'Đồ chơi',
     'lam-dep': 'Làm đẹp',
-    'sach-tham-khao': 'Sách tham khảo'
+    'sach-tham-khao': 'Sách tham khảo',
+    'sach-ngoai-van': 'Sách ngoại văn'
   };
   
 

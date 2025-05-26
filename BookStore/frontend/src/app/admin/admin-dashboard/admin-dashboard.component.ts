@@ -3,6 +3,11 @@ import { ChangeDetectorRef, Component, effect, inject, OnInit, PLATFORM_ID } fro
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { OrderService } from '../../service/order.service';
+import { AuthService } from '../../service/auth.service';
+import { ReviewService } from '../../service/review.service';
+
+import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -11,20 +16,65 @@ import { ProgressBarModule } from 'primeng/progressbar';
     CardModule,
     ChartModule,
     ProgressBarModule,
-    CommonModule
+    CommonModule,
+    DotSeparatorPipe
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
 })
-export class AdminDashboardComponent {
-  products = [
-    { name: 'Space T-Shirt', category: 'Clothing', percentage: 50, color: 'orange-bar', colorHex: '#f97316' },
-    { name: 'Portal Sticker', category: 'Accessories', percentage: 16, color: 'cyan-bar', colorHex: '#06b6d4' },
-    { name: 'Supernova Sticker', category: 'Accessories', percentage: 67, color: 'pink-bar', colorHex: '#ec4899' },
-    { name: 'Wonders Notebook', category: 'Office', percentage: 35, color: 'green-bar', colorHex: '#22c55e' },
-    { name: 'Mat Black Case', category: 'Accessories', percentage: 75, color: 'purple-bar', colorHex: '#a855f7' },
-    { name: 'Robots T-Shirt', category: 'Clothing', percentage: 40, color: 'teal-bar', colorHex: '#14b8a6' },
-  ];
-  constructor() {}
+export class AdminDashboardComponent implements OnInit {
+
+  totalOrders: number = 0;
+  totalUsers: number = 0;
+  totalRevenue: number = 0;
+  totalComments: number = 0;
+  monthlyRevenue: number[] = [];
+  revenueChartData: any;
+  revenueChartOptions: any;
+  chart: any;
+  constructor(
+    private orderService: OrderService,
+    private authService: AuthService,
+    private reviewService: ReviewService
+  ) {}
+  ngOnInit(): void {
+    this.orderService.getOrders().subscribe(orders => {
+      this.totalOrders = orders.length;
+      this.totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+      // Tạo dữ liệu doanh thu theo từng tháng
+      const monthlyData: { [key: string]: number } = {};
+      orders.forEach(order => {
+        const month = new Date(order.orderDate).toLocaleString('default', { month: 'short' });
+        monthlyData[month] = (monthlyData[month] || 0) + order.total;
+      });
+
+      this.revenueChartData = {
+        labels: Object.keys(monthlyData),
+        datasets: [
+          {
+            label: 'Xu hướng doanh thu',
+            data: Object.values(monthlyData),
+            fill: true,
+            borderColor: '#4CAF50',
+            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+            tension: 0.4
+          }
+        ]
+      };
+
+      this.revenueChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false
+      };
+    });
+
+    this.authService.getTotalUsers().subscribe(total => {
+      this.totalUsers = total;
+    });
+    
+    this.reviewService.getAllReviews().subscribe(reviews => {
+      this.totalComments = reviews.length;
+    });
+  }
 
 }

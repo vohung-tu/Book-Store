@@ -23,6 +23,8 @@ import { DotSeparatorPipe } from '../../../pipes/dot-separator.pipe';
 export class UserOrderComponent implements OnInit{
   product$: Observable<Product[]>
   orders: Order[] = [];
+  filteredOrders: Order[] = [];
+  selectedTab = 0;
   tabs = [
     { value: 0, title: 'Tất cả', content: 'Danh sách tất cả đơn hàng' },
     { value: 1, title: 'Chờ thanh toán', content: 'Danh sách đơn hàng chờ thanh toán' },
@@ -48,23 +50,44 @@ export class UserOrderComponent implements OnInit{
       const currentUserId = currentUser._id;
       this.orderService.getOrders().subscribe((orders) => {
         this.orders = orders.filter(order => order.userId === currentUserId);
+        this.filterOrdersByTab(); // Lọc dữ liệu ngay khi load
       });
     } else {
       console.error('Không tìm thấy thông tin user');
     }
   }
+  filterOrdersByTab(): void {
+    console.log("Tab hiện tại:", this.selectedTab); // Kiểm tra giá trị tab
+  console.log("Danh sách đơn hàng trước khi lọc:", this.orders);
+    if (this.selectedTab === 0) {
+      this.filteredOrders = this.orders; // Hiển thị tất cả đơn hàng
+    } else {
+      const statusMap: { [key: number]: string } = {
+        1: 'Chờ thanh toán',
+        2: 'Đang xử lý',
+        3: 'Đang giao',
+        4: 'Hoàn tất',
+        5: 'Bị hủy',
+        6: 'Đổi trả'
+      };
+
+      const selectedStatus = statusMap[this.selectedTab];
+      this.filteredOrders = this.orders.filter(order => order.status === selectedStatus);
+    }
+  }
+  
   getOrderCountByStatus(status: number): number {
     if (status === 0) {
       return this.orders.length; // Tất cả
     }
 
     const statusMap: { [key: number]: string } = {
-      1: 'pending',
-      2: 'processing',
-      3: 'shipping',
-      4: 'completed',
-      5: 'cancelled',
-      6: 'returned'
+      1: 'Chờ thanh toán',
+      2: 'Đang xử lý',
+      3: 'Đang giao',
+      4: 'Hoàn tất',
+      5: 'Bị hủy',
+      6: 'Đổi trả'
     };
 
     return this.orders.filter(order => order.status === statusMap[status]).length;

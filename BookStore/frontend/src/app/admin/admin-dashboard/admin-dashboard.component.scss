@@ -76,22 +76,18 @@ p-card.shadow {
   font-weight: 500;
 }
 
-/* Custom bar colors */
-::ng-deep .orange-bar .p-progressbar-value {
-  background-color: #f97316 !important;
+.chart-container {
+  width: 100%;
+  max-width: 600px;
+  min-height: 300px;
+  margin: auto;
 }
-::ng-deep .cyan-bar .p-progressbar-value {
-  background-color: #06b6d4 !important;
+
+.p-chart {
+  width: 100%;
+  height: 100%;
 }
-::ng-deep .pink-bar .p-progressbar-value {
-  background-color: #ec4899 !important;
-}
-::ng-deep .green-bar .p-progressbar-value {
-  background-color: #22c55e !important;
-}
-::ng-deep .purple-bar .p-progressbar-value {
-  background-color: #a855f7 !important;
-}
-::ng-deep .teal-bar .p-progressbar-value {
-  background-color: #14b8a6 !important;
+
+canvas {
+  height: 300px !important;
 }

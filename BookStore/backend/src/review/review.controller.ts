@@ -19,6 +19,13 @@ export class ReviewController {
     return await this.reviewService.findByProductId(productId);
   }
 
+  @Get()
+  async findReviews(@Query('productId') productId?: string) {
+    if (productId) {
+      return await this.reviewService.findByProductId(productId);
+    }
+    return await this.reviewService.findAll(); // ✅ Trả về tất cả bình luận
+  }
   @Post()
   @UseInterceptors(
     FilesInterceptor('media', 5, {
@@ -40,7 +47,6 @@ export class ReviewController {
     @Body() body: any,
   ): Promise<Review> {
     const images = files.filter(f => f.mimetype.startsWith('image/')).map(f => f.path);
-    const videos = files.filter(f => f.mimetype.startsWith('video/')).map(f => f.path);
-    return this.reviewService.create({ ...body, images, videos });
+    return this.reviewService.create({ ...body, images });
   }
 }

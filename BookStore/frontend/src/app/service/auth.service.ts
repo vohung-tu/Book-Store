@@ -1,6 +1,6 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, EMPTY, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, EMPTY, map, Observable, of, tap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { Address, User } from '../model/users-details.model';
 import { Router } from '@angular/router';
@@ -159,5 +159,12 @@ export class AuthService {
     return this.http.patch<User>(`${this.API_URL}/${userId}/address`, { address: addresses }, {
       headers: { Authorization: `Bearer ${token}` }
     });
+  }
+
+  getTotalUsers(): Observable<number> {
+    return this.http.get<User[]>(`${this.API_URL}`).pipe(
+      tap(users => console.log("Danh sách users:", users)), // Kiểm tra dữ liệu trả về
+      map(users => users.length) // Trả về tổng số lượng users
+    );
   }
 }

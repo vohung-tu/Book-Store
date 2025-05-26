@@ -1,4 +1,4 @@
-<p-tabs value="0">
+<p-tabs [(value)]="selectedTab" (ngModelChange)="filterOrdersByTab()">
   <div class="header">
     <h2>Danh sách Đơn Hàng</h2>
   </div>
@@ -7,17 +7,18 @@
       <p-tab [value]="tab.value"> {{ tab.title }} ({{ getOrderCountByStatus(tab.value) }})</p-tab>
     }
   </p-tablist>
+
   <p-tabpanels>
     @for (tab of tabs; track tab.value) {
       <p-tabpanel [value]="tab.value">
         <h3 class="m-0">{{ tab.content }}</h3>
-
       </p-tabpanel>
     }
-    <div *ngFor="let order of orders" class="order-container">
+
+    <div *ngFor="let order of filteredOrders" class="order-container">
       <div class="order-code">
         <h3>#{{ order._id }}</h3>
-      <p>{{ order.createdAt | date: 'short' }}</p>
+        <p>{{ order.createdAt | date: 'short' }}</p>
       </div>
 
       <p-table [value]="order.products" [tableStyle]="{'table-layout': 'fixed', 'width': '100%'}">
@@ -42,10 +43,6 @@
         </ng-template>
       </p-table>
       <h3 style="text-align: right; margin-top: 10px;"> Tổng tiền: {{ order.total | dotSeparator }}</h3>
-
     </div>
-
   </p-tabpanels>
 </p-tabs>
-
-

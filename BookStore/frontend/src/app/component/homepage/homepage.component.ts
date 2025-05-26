@@ -133,16 +133,13 @@ export class HomepageComponent implements OnInit, OnDestroy {
         return publishedDate >= thirtyDaysAgo && publishedDate <= today;
       });
       const daysLater = new Date();
-      daysLater.setDate(today.getDate() + 70); // Ngày 60 ngày sau
+      daysLater.setDate(today.getDate() + 70);
 
       this.incommingReleaseBooks = this.books.filter(book => {
         const publishedDate = new Date(book.publishedDate);
         return publishedDate > today && publishedDate <= daysLater;
       });
 
-      console.log("Danh sách sách sắp ra mắt:", this.incommingReleaseBooks);
-
-      // Dùng Promise.all để chờ tất cả requests `getReviews()` hoàn thành
       const reviewRequests = this.books.map(book =>
         this.reviewService.getReviews(book._id).toPromise().then(reviews => {
           book.reviews = reviews;

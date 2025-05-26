@@ -70,6 +70,7 @@ export class DetailComponent implements OnInit {
   selectedFiles: File[] = [];
   currentUserId: User | null = null; // gán từ AuthService hoặc localStorage
   hasReviewed = false;
+  breadcrumbItems: any[] = [];
 
   review: Review = {
     productId: '', // gán từ input hoặc route
@@ -104,9 +105,27 @@ export class DetailComponent implements OnInit {
           this.book = book;
           this.loadRelatedBooks(book.categoryName);
           this.getReviewsByProductId(id);
+          this.breadcrumbItems = [
+            { label: 'Trang chủ', url: '/' },
+            { label: this.formatCategory(book.categoryName), url: `/category/${book.categoryName}` },
+            { label: book.title }
+          ];
         });
       }
     });
+  }
+
+  formatCategory(name: string): string {
+    switch (name) {
+      case 'sach-trong-nuoc': return 'Sách Trong Nước';
+      case 'truyen-tranh': return 'Truyện Tranh - Manga';
+      case 'sach-tham-khao': return 'Sách Tham Khảo';
+      case 'vpp-dung-cu-hoc-sinh': return 'VPP - Dụng cụ học tập';
+      case 'do-choi': return 'Đồ chơi';
+      case 'lam-dep': return 'Làm đẹp';
+      case 'sach-ngoai-van': return 'Sách ngoại văn';
+      default: return name;
+    }
   }
 
   calculateRatingCounts() {

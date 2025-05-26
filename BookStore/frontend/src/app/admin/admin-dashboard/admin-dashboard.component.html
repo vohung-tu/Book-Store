@@ -6,7 +6,7 @@
         <i class="pi pi-shopping-cart icon"></i>
       </div>
       <div class="card-body">
-        <h3 class="main-value">152</h3>
+        <h3 class="main-value"> {{ totalOrders }}</h3>
         <p class="additional-info">24 mới kể từ lần ghé thăm trước</p>
       </div>
     </p-card>
@@ -16,7 +16,7 @@
         <i class="pi pi-user icon"></i>
       </div>
       <div class="card-body">
-        <h3 class="main-value">12</h3>
+        <h3 class="main-value"> {{ totalUsers }}</h3>
         <p class="additional-info">24 mới kể từ lần ghé thăm trước</p>
       </div>
     </p-card>
@@ -26,7 +26,7 @@
         <i class="pi pi-dollar icon"></i>
       </div>
       <div class="card-body">
-        <h3 class="main-value">$152</h3>
+        <h3 class="main-value">{{ totalRevenue | dotSeparator }} VND</h3>
         <p class="additional-info">%52+ kể từ tháng trước</p>
       </div>
     </p-card>
@@ -36,31 +36,13 @@
         <i class="pi pi-shopping-cart icon"></i>
       </div>
       <div class="card-body">
-        <h3 class="main-value">152</h3>
+        <h3 class="main-value">{{ totalComments }}</h3>
         <p class="additional-info">Đã trả lời</p>
       </div>
     </p-card>
   </div>
-  <div class="card-progress">
-    <p-card header="Sản phẩm bán chạy nhất" class="shadow">
-      <div *ngFor="let product of products" class="product-row">
-        <div class="product-info">
-          <div class="product-name">{{ product.name }}</div>
-          <div class="product-category">{{ product.category }}</div>
-        </div>
-        <div class="product-stats">
-          <p-progressbar
-            [value]="product.percentage"
-            [style]="{ height: '15px', width: '100px' }"
-            [styleClass]="product.color"
-          ></p-progressbar>
-          <div class="product-percent" [ngStyle]="{ color: product.colorHex }">
-            %{{ product.percentage }}
-          </div>
-        </div>
-      </div>
-    </p-card>
+   <div class="chart-container">
+    <h2>Xu hướng doanh thu</h2>
+      <p-chart type="line" [data]="revenueChartData" [options]="revenueChartOptions"></p-chart>
   </div>
 </div>
-
-

@@ -3,10 +3,8 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { BooksService } from '../../service/books.service';
 import { CommonModule } from '@angular/common';
 import { BookDetails } from '../../model/books-details.model';
-import { CategoryFormatPipe } from '../../pipes/category-format.pipe';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 import { ProductItemComponent } from '../product-item/product-item.component';
-import { FilterCategoryComponent } from '../filter-category/filter-category.component';
 
 @Component({
   selector: 'app-category',
@@ -69,6 +67,7 @@ export class CategoryComponent implements OnInit {
       case 'vpp-dung-cu-hoc-sinh': return 'VPP - Dụng cụ học tập';
       case 'do-choi': return 'Đồ chơi';
       case 'lam-dep': return 'Làm đẹp';
+      case 'sach-ngoai-van': return 'Sách ngoại văn';
       default: return name;
     }
   }

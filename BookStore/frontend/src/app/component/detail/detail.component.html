@@ -1,11 +1,5 @@
 <div class="book-cover" *ngIf="books; else loading">
-  <app-breadcrumb
-    [items]="[
-      { label: 'Trang chủ', url: '/' },
-      { label: 'books.title' }
-    ]">
-  </app-breadcrumb>
-
+  <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
   <div class="book-details-row">
     <div class="book-detail-1">
       <div class="book-detail-left">
