@@ -11,6 +11,7 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
+import { Editor } from 'primeng/editor';
 
 @Component({
   selector: 'app-admin-product',
@@ -26,7 +27,8 @@ import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
     CheckboxModule,
     TooltipModule,
     DropdownModule,
-    DotSeparatorPipe
+    DotSeparatorPipe,
+    Editor
   ],
   templateUrl: './admin-product.component.html',
   styleUrls: ['./admin-product.component.scss']
@@ -39,6 +41,7 @@ export class AdminProductComponent {
   searchText: string = '';
   filteredProducts: any[] = [];
   selectedProducts: any[] = [];
+  text: string | undefined;
 
   newProduct = {
     title: '',
@@ -83,6 +86,18 @@ export class AdminProductComponent {
 
   getCategoryLabel(slug: string): string {
     return this.categoryMap[slug] || slug;
+  }
+
+  stripHtmlTags(html: string): string {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  }
+
+  formatDescription(html: string): string {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.innerText;
   }
 
   fetchProducts() {

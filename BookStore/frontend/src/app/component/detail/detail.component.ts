@@ -26,6 +26,8 @@ import { User } from '../../model/users-details.model';
 import { ReviewService } from '../../service/review.service';
 import { Review } from '../../model/review.model';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
+import { Author } from '../../model/author.model';
+import { AuthorService } from '../../service/author.service';
 
 @Component({
   selector: 'app-detail',
@@ -61,6 +63,7 @@ export class DetailComponent implements OnInit {
   books: BookDetails | undefined;
   relatedBooks: BookDetails[] = [];
   quantity: number = 1;
+  authors: Author[] = [];
   showDialog = false;
   @ViewChild('cartDialog') cartDialog!: TemplateRef<any>; // Trỏ đến dialog template trong HTML
   showReviewDialog = false;
@@ -92,10 +95,14 @@ export class DetailComponent implements OnInit {
     private favoriteService: FavoritePageService,
     private messageService: MessageService,
     private reviewService: ReviewService,
-    public authService: AuthService
+    public authService: AuthService,
+    private authorService: AuthorService
   ) {}
 
   ngOnInit(): void {
+    this.authorService.getAuthors().subscribe(data => {
+      this.authors = data;
+    });
     this.currentUserId = this.authService.getCurrentUser();
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -113,6 +120,15 @@ export class DetailComponent implements OnInit {
         });
       }
     });
+  }
+
+  stripHtmlTags(html: string): string {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  }
+  generateAuthorId(authorName: string): string {
+    return authorName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now();
   }
 
   formatCategory(name: string): string {

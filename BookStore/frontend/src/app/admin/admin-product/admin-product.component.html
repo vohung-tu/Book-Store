@@ -68,7 +68,7 @@
         <td><img [src]="product.coverImage" alt="cover" width="60" /></td>
         <td>{{ product.title }}</td>
         <td>{{ product.author }}</td>
-        <td>{{ product.description }}</td>
+        <td [innerHTML]="product.description" style="white-space: normal;"></td>
         <td>{{ product.price | dotSeparator }}</td>
         <td>{{ product.flashsale_price | dotSeparator }}</td>
         <td>{{ product.discount_percent }}%</td>
@@ -95,7 +95,8 @@
     </div>
     <div class="p-field">
       <label>Mô tả</label>
-      <input pInputText type="text" [(ngModel)]="productForm.description" />
+
+      <p-editor [(ngModel)]="productForm.description" [style]="{ height: '320px' }" />
     </div>
     <div class="p-field">
       <label>Giá gốc</label>

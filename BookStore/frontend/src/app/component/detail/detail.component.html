@@ -17,8 +17,18 @@
             <div class="discount-badge">-{{ books.discount_percent }}%</div>
           </div>
 
-          <p><strong>Tác giả:</strong> {{ books.author }}</p>
+          <p><strong>Tác giả:</strong> 
+            <a *ngIf="book?.author" [routerLink]="['/author', book.author._id]" class="author-href" target="_blank">
+              {{ book.author.name }}
+            </a>
+          </p>
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
+
+          <div class="book-stock">
+            <p>
+              Số lượng trong kho: <strong> {{ books.quantity && books.quantity > 0 ? books.quantity : 'Hết hàng' }}</strong>
+            </p>
+          </div>
         </div>
 
         <!-- Nút mua sách -->
@@ -39,12 +49,7 @@
 
     <div class="book-detail-2">
       <h3>Mô tả sản phẩm</h3>
-      <p class="detailed-description">{{ books.description || 'Không có mô tả chi tiết.' }}</p>
-      <div class="book-stock">
-        <p>
-          Số lượng trong kho: <strong> {{ books.quantity && books.quantity > 0 ? books.quantity : 'Hết hàng' }}</strong>
-        </p>
-      </div>
+      <p class="detailed-description" [innerHTML]="books.description || 'Không có mô tả chi tiết.'"></p>
     </div>
   </div>
 
