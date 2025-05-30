@@ -29,14 +29,55 @@
     background-color: #ffffff;
     border-radius: 8px;
     padding: 20px;
-    width: 600px;
+    width: 710px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 
+    .book-sub-images {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px; /* Khoảng cách giữa các ảnh */
+    }
+
+    .sub-image {
+      width: 70px;
+      height: 80px;
+      object-fit: cover; /* Cắt ảnh vừa khung mà không méo */
+      cursor: pointer;
+      position: relative;
+      border-radius: 4px;
+      transition: transform 0.2s ease;
+    }
+
+    .sub-image:hover {
+      transform: scale(1.05); /* Hiệu ứng phóng to nhẹ khi hover */
+    }
+
+    .sub-image.overlay {
+      position: relative;
+    }
+
+    .sub-image.overlay .overlay-text {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6); /* Màu nền đen mờ */
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      user-select: none; /* Không cho chọn text */
+    }
     .book-detail-left {
       flex: 0 0 180px;
 
-      img {
-        width: 100%;
+      .cover-img {
+        width: 350px;
+        height: 450px;
         border-radius: 4px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
@@ -109,11 +150,13 @@
     background-color: #fff;
     border-radius: 8px;
     padding: 20px;
-    width: 600px;
+    width: 710px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     max-width: 100%;
     overflow: hidden;
     word-wrap: break-word;
+    max-height: 600px; /* Điều chỉnh chiều cao phù hợp */
+    overflow-y: auto;
 
     h3 {
       margin-bottom: 10px;
@@ -127,12 +170,16 @@
     }
   }
 
+  .book-detail-2::-webkit-scrollbar {
+    display: none; /* Ẩn thanh cuộn */
+  }
+
   /* Book Detail 3: đánh giá */
   .book-detail-3 {
     background-color: #fff;
     padding: 24px;
     border-radius: 12px;
-    width: 1230px;
+    min-width: 1454px;
     margin: 40px auto 0;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   

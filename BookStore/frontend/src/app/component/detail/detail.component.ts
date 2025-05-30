@@ -74,6 +74,7 @@ export class DetailComponent implements OnInit {
   currentUserId: User | null = null; // gán từ AuthService hoặc localStorage
   hasReviewed = false;
   breadcrumbItems: any[] = [];
+  currentCoverImage: string | null = null;
 
   review: Review = {
     productId: '', // gán từ input hoặc route
@@ -142,6 +143,16 @@ export class DetailComponent implements OnInit {
       case 'sach-ngoai-van': return 'Sách ngoại văn';
       default: return name;
     }
+  }
+
+  changeCover(imgUrl: string) {
+    this.currentCoverImage = imgUrl;
+  }
+
+  get extraImagesCount(): number {
+    return this.books?.images && this.books.images.length > 4
+      ? this.books.images.length - 4
+      : 0;
   }
 
   calculateRatingCounts() {

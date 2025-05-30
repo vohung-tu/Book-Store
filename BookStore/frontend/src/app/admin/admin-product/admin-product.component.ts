@@ -44,6 +44,7 @@ export class AdminProductComponent {
   filteredProducts: any[] = [];
   selectedProducts: any[] = [];
   text: string | undefined;
+  imagesInput: string = ''; 
 
   newProduct = {
     title: '',
@@ -55,6 +56,7 @@ export class AdminProductComponent {
     publishedDate: '',
     categoryName: '',
     quantity: 0,
+    images: [] as string[],
     coverImage: ''
   };
 
@@ -159,12 +161,21 @@ export class AdminProductComponent {
   }
 
   saveProduct() {
+  // Tách các link ảnh phụ thành mảng
+    const imageLinks = this.imagesInput
+      .split('\n')
+      .map((url) => url.trim())
+      .filter((url) => !!url);
+
     if (this.isEditMode) {
       if (!this.editingProduct?.id) {
         console.error('Không có ID sản phẩm để cập nhật');
         return;
       }
-  
+
+      // Gán ảnh phụ vào sản phẩm đang chỉnh sửa
+      this.editingProduct.images = imageLinks;
+
       this.http.put(`http://localhost:3000/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
         next: () => {
           this.fetchProducts();
@@ -173,6 +184,9 @@ export class AdminProductComponent {
         error: (err) => console.error('Lỗi khi cập nhật sản phẩm', err)
       });
     } else {
+      // Gán ảnh phụ vào sản phẩm mới
+      this.newProduct.images = imageLinks;
+
       this.http.post(`http://localhost:3000/books`, this.newProduct).subscribe({
         next: () => {
           this.fetchProducts();
@@ -182,6 +196,7 @@ export class AdminProductComponent {
       });
     }
   }
+
 
   resetDialog() {
     this.displayAddDialog = false;
@@ -197,6 +212,7 @@ export class AdminProductComponent {
       publishedDate: '', 
       categoryName: '', 
       quantity: 0,
+      images: [] as string[],
       coverImage: ''
     };
   }

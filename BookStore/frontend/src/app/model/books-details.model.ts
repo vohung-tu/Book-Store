@@ -10,7 +10,8 @@ export interface BookDetails {
   price: number,
   flashsale_price?: number,
   discount_percent?: number,
-  coverImage: string, //link
+  coverImage: string,
+  images?: string[];
   publishedDate: Date,
   quantity?: number,
   categoryName: string,

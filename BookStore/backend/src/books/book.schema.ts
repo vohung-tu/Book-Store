@@ -26,6 +26,9 @@ export class Book {
 
   @Prop()
   coverImage: string;
+  
+  @Prop({ type: [String], default: [] })
+  images: string[];
 
   @Prop({ type: Date })
   publishedDate: Date;

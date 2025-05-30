@@ -57,6 +57,7 @@
         <th>Ngày phát hành</th>
         <th>Danh mục</th>
         <th>Số lượng</th>
+        <th>Ảnh phụ</th>
         <th>Tính năng</th>
       </tr>
     </ng-template>
@@ -83,6 +84,11 @@
         <td>{{ product.publishedDate | date: 'dd/MM/yyyy' }}</td>
         <td>{{ getCategoryLabel(product.categoryName) }}</td>
         <td>{{ product.quantity }}</td>
+        <td>
+          <ng-container *ngFor="let img of product.images">
+            <img [src]="img" alt="ảnh phụ" width="40" style="margin-right: 4px" />
+          </ng-container>
+        </td>
         <td>
           <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editProduct(product)"></button>
           <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" (click)="deleteProduct(product)"></button>
@@ -135,6 +141,13 @@
     <div class="p-field">
       <label>Số lượng</label>
       <input pInputText type="text" [(ngModel)]="productForm.quantity" />
+    </div>
+    <div class="p-field">
+      <label>Ảnh phụ (link)</label>
+      <textarea
+        [(ngModel)]="imagesInput"
+        placeholder="Nhập link ảnh, mỗi ảnh 1 dòng"
+      ></textarea>
     </div>
     <div class="p-field">
       <label>Ảnh bìa</label>
