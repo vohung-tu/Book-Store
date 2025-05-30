@@ -34,6 +34,8 @@ import { Editor } from 'primeng/editor';
   styleUrls: ['./admin-product.component.scss']
 })
 export class AdminProductComponent {
+  isExpanded = false;
+  expandedRows: { [key: number]: boolean } = {};
   products: any[] = [];
   displayAddDialog = false;
   editingProduct: any = null;
@@ -98,6 +100,11 @@ export class AdminProductComponent {
     const div = document.createElement('div');
     div.innerHTML = html;
     return div.innerText;
+  }
+  toggleExpand(index: number) {
+    console.log('Index:', index);
+    this.expandedRows[index] = !this.expandedRows[index];
+    console.log(this.expandedRows);
   }
 
   fetchProducts() {

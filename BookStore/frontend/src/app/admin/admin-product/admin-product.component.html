@@ -60,7 +60,7 @@
         <th>Tính năng</th>
       </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-product>
+    <ng-template pTemplate="body" let-product let-i="index">
       <tr [pSelectableRow]="product">
         <td>
           <p-tableCheckbox [value]="product"></p-tableCheckbox>
@@ -68,7 +68,15 @@
         <td><img [src]="product.coverImage" alt="cover" width="60" /></td>
         <td>{{ product.title }}</td>
         <td>{{ product.author }}</td>
-        <td [innerHTML]="product.description" style="white-space: normal;"></td>
+        <td>
+          <span [innerHTML]="product.description"
+            [ngStyle]="{'max-height': expandedRows[i] ? '100%' : '82px', 'overflow': expandedRows[i] ? 'visible' : 'hidden'}"
+            style="white-space: normal; max-width: 600px; word-wrap: break-word; display: block;">
+          </span>
+          <a class="expanded" (click)="toggleExpand(i)">
+            {{ expandedRows[i] ? 'Thu gọn' : 'Xem thêm' }}
+          </a>
+        </td>
         <td>{{ product.price | dotSeparator }}</td>
         <td>{{ product.flashsale_price | dotSeparator }}</td>
         <td>{{ product.discount_percent }}%</td>
@@ -76,7 +84,7 @@
         <td>{{ getCategoryLabel(product.categoryName) }}</td>
         <td>{{ product.quantity }}</td>
         <td>
-          <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editProduct(product)" ></button>
+          <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editProduct(product)"></button>
           <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" (click)="deleteProduct(product)"></button>
         </td>
       </tr>
@@ -86,7 +94,7 @@
 <p-dialog [header]="isEditMode ? 'Sửa sản phẩm' : 'Thêm sản phẩm'" [(visible)]="displayAddDialog" [modal]="true" [closable]="true" [style]="{ width: '600px' }">
   <div class="p-fluid">
     <div class="p-field">
-      <label>Tên sách</label>
+      <label>Tên sách</label> 
       <input pInputText type="text" [(ngModel)]="productForm.title" />
     </div>
     <div class="p-field">

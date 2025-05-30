@@ -69,7 +69,9 @@ export class SigninComponent implements OnInit{
           localStorage.setItem('user', JSON.stringify(user));
 
           // Điều hướng: returnUrl > /home
-          this.router.navigateByUrl(returnUrl || '/home');
+          this.router.navigateByUrl(returnUrl || '/home').then(() => {
+            window.location.reload()
+          });;
 
           this.errorMessage = null;
         },
