@@ -7,6 +7,8 @@ import { AuthController } from './auth.controller';
 import { UsersService } from '../users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../user.schema';
+import { AuthService } from './auth.service';
+import { MailService } from 'src/order/order/email.service';
 
 @Module({
   imports: [
@@ -18,7 +20,7 @@ import { User, UserSchema } from '../user.schema';
     }),
   ],
   controllers: [AuthController],
-  providers: [UsersService, JwtStrategy, RolesGuard],
+  providers: [UsersService, JwtStrategy, RolesGuard, AuthService, MailService],
   exports: [JwtModule],
 })
 export class AuthModule {}

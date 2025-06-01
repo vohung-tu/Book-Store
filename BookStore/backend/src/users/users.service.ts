@@ -5,14 +5,14 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserDocument } from './user.schema';
 import { SignupDto } from './dto/signup.dto';
-import { SigninDto } from './dto/signin.dto';
+import { v4 as uuidv4 } from 'uuid';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { ResetPasswordDto } from './dto/forgot-password.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    private jwtService: JwtService
   ) {}
 
   /** Đăng ký */
@@ -154,6 +154,27 @@ export class UsersService {
 
   async updatePasswordById(id: string, hashedPassword: string) {
     return this.userModel.updateOne({ _id: id }, { password: hashedPassword });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userModel.findOne({ email }).exec();
+  }
+
+  async setResetToken(userId: string, token: string, expires: Date) {
+    return this.userModel.updateOne(
+      { _id: userId },
+      {
+        resetPasswordToken: token,
+        resetPasswordExpires: expires,
+      }
+    );
+  }
+
+  async findByResetToken(token: string): Promise<User | null> {
+    return this.userModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() },
+    });
   }
 
 }

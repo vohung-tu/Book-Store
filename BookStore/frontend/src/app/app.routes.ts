@@ -15,7 +15,6 @@ import { AdminUserComponent } from './admin/admin-user/admin-user.component';
 import { AdminProductComponent } from './admin/admin-product/admin-product.component';
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminOrderComponent } from './admin/admin-order/admin-order.component';
-import { SearchPageComponent } from './component/search-page/search-page.component';
 import { LayoutUserComponent } from './component/user-info/layout-user/layout-user.component';
 import { VnpayReturnComponent } from './component/checkout/vnpay-return/vnpay-return.component';
 import { AdminAuthorComponent } from './admin/admin-author/admin-author.component';
@@ -23,6 +22,8 @@ import { AuthorDetailsComponent } from './component/author-details/author-detail
 import { UserOrderComponent } from './component/user-info/user-order/user-order.component';
 import { AddressBookComponent } from './component/user-info/address-book/address-book.component';
 import { ResetPasswordComponent } from './component/user-info/reset-password/reset-password.component';
+import { ForgotPasswordComponent } from './component/forgot-password/forgot-password.component';
+import { ResetPasswordLinkComponent } from './component/reset-password-link/reset-password-link.component';
 
 const routes: Routes = [
   { 
@@ -87,6 +88,16 @@ const routes: Routes = [
     path: 'address-book',
     component: AddressBookComponent,
     title: 'Sổ địa chỉ'
+  },
+  { 
+    path: 'forgot-password', 
+    component: ForgotPasswordComponent,
+    title: 'Quên MK' 
+  },
+  { 
+    path: 'reset-password-link', 
+    component: ResetPasswordLinkComponent,
+    title: 'Reset Password ' 
   },
   { path: 'admin', 
     component: LayoutComponent, 

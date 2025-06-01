@@ -3,10 +3,10 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { Order, OrderSchema } from "./order.schema";
 import { OrderController } from "./order.controller";
 import { OrderService } from "./order.service";
-import { EmailService } from "./email.service";
 import { ConfigModule } from '@nestjs/config';
 import { VnpayService } from "../payment.service";
 import { VnpayController } from "../payment.controller";
+import { MailService } from "./email.service";
 
 @Module({
     imports: [
@@ -14,6 +14,6 @@ import { VnpayController } from "../payment.controller";
       MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
     ],
     controllers: [OrderController, VnpayController],
-    providers: [OrderService, EmailService, VnpayService],
+    providers: [OrderService, MailService, VnpayService],
   })
   export class OrdersModule {}

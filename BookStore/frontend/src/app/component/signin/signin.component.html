@@ -30,7 +30,7 @@
       </div>
       <div class="forgot-password">
         <mat-checkbox style="display: flex;" formControlName="rememberMe">Ghi nhớ mật khẩu?</mat-checkbox>
-        <a class="signin-with">Quên mật khẩu</a>
+        <a href="/forgot-password">Quên mật khẩu?</a>
       </div>
       <button mat-raised-button type="submit" [disabled]="signinForm.invalid || (isLoading$ | async)">
         Đăng Nhập

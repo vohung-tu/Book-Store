@@ -1,13 +1,22 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthenticatedRequest } from './auth.interface';
 import { JwtAuthGuard } from './jwt.auth.guard';
 import { UsersService } from '../users.service';
-import { UpdatePasswordDto } from '../dto/update-password.dto';
+import { ResetPasswordDto } from '../dto/forgot-password.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+        private readonly authService: AuthService
+    ) {}
+
+    // @Post('reset-password-link')
+    // async resetPassword(@Body() dto: ResetPasswordDto) {
+    //     return this.authService.resetPasswordFromLink(dto);
+    // }
 
     @UseGuards(AuthGuard('jwt'))
     @Get('me')
@@ -59,5 +68,4 @@ export class AuthController {
 
         return updatedUser;
     }
-  
 }

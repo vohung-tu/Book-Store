@@ -6,6 +6,7 @@ import { JwtAuthGuard } from './auth/jwt.auth.guard';
 import { AuthService } from './auth/auth.service';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import * as bcrypt from 'bcrypt';
+import { ResetPasswordDto } from './dto/forgot-password.dto';
 
 @Controller('auth')
 export class UsersController {
@@ -98,5 +99,14 @@ export class UsersController {
     return { message: 'Cập nhật mật khẩu thành công' };
   }
 
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    return this.authService.handleForgotPassword(email);
+  }
+
+  @Post('reset-password-link')
+    async resetPassword(@Body() dto: ResetPasswordDto) {
+        return this.authService.resetPasswordFromLink(dto);
+    }
 
 }

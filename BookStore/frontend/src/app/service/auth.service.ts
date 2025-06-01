@@ -192,4 +192,15 @@ export class AuthService {
       map(users => users.length) // Trả về tổng số lượng users
     );
   }
+
+  requestPasswordReset(email: string) {
+    return this.http.post<{ message: string; resetToken?: string }>(
+      'http://localhost:3000/auth/forgot-password', // hoặc env
+      { email }
+    );
+  }
+
+  resetPassword(token: string, newPassword: string) {
+    return this.http.post(`${this.API_URL}/reset-password-link`, { token, newPassword });
+  }
 }

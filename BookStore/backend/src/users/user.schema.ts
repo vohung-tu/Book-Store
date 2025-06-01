@@ -15,6 +15,13 @@ export class User {
   password: string;
 
   @Prop()
+  resetPasswordToken?: string;
+
+  @Prop()
+  resetPasswordExpires?: Date;
+
+
+  @Prop()
   birth: Date;
 
   @Prop({ default: 'admin' })
