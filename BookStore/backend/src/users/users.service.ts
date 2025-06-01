@@ -1,11 +1,12 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserDocument } from './user.schema';
 import { SignupDto } from './dto/signup.dto';
 import { SigninDto } from './dto/signin.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -43,7 +44,7 @@ export class UsersService {
   }
 
   /** Tìm user theo ID */
-  async findById(userId: string): Promise<User> {
+  async findById(userId: string): Promise<UserDocument> {
     const user = await this.userModel.findById(userId).exec();
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
@@ -129,4 +130,30 @@ export class UsersService {
     await user.save();
     return user;
   }
+
+  async updatePassword(userId: string, payload: UpdatePasswordDto): Promise<any> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID người dùng không hợp lệ!');
+    }
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy người dùng!');
+    }
+
+    const isMatch = await bcrypt.compare(payload.currentPassword, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Mật khẩu hiện tại không đúng!');
+    }
+
+    user.password = await bcrypt.hash(payload.newPassword, 10);
+    await user.save();
+
+    return { message: 'Cập nhật mật khẩu thành công!' };
+  }
+
+  async updatePasswordById(id: string, hashedPassword: string) {
+    return this.userModel.updateOne({ _id: id }, { password: hashedPassword });
+  }
+
 }

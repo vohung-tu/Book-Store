@@ -1,10 +1,11 @@
-import { Body, Controller, Get, NotFoundException, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Patch, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthenticatedRequest } from './auth.interface';
 import { JwtAuthGuard } from './jwt.auth.guard';
 import { UsersService } from '../users.service';
+import { UpdatePasswordDto } from '../dto/update-password.dto';
 
-@Controller('auth') // <-- nghĩa là route này sẽ là /auth/...
+@Controller('auth')
 export class AuthController {
     constructor(private readonly usersService: UsersService) {}
 

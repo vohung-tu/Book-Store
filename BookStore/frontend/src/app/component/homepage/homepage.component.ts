@@ -126,7 +126,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
 
       const today = new Date();
       const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(today.getDate() - 30); // Lấy ngày 30 ngày trước
+      thirtyDaysAgo.setDate(today.getDate() - 60); 
 
       this.newReleaseBooks = this.books.filter(book => {
         const publishedDate = new Date(book.publishedDate);

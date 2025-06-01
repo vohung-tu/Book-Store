@@ -14,7 +14,7 @@
   </div>
   <div class="info-2">
     <h2>{{ author.name }}</h2>
-    <p>{{ author.description }}</p>
+    <span class="detailed-description-author" [innerHTML]="author.description || 'Không có mô tả chi tiết.'"></span>
   </div>
 </div>
 <h2 class="book-of-author">Sách của {{ author.name }}</h2>
@@ -25,7 +25,7 @@
       <div class="book-info">
         <h3>{{ book.title }}</h3>
         <p><strong>Giá:</strong> {{ book.price | currency: 'VND' }}</p>
-        <p class="detailed-description">{{ book.description }}</p>
+        <p class="detailed-description" [innerHTML]="book.description || 'Không có mô tả chi tiết.'"></p>
         <button pButton label="Chi tiết" [routerLink]="['/details', book._id]"></button>
       </div>
     </div>

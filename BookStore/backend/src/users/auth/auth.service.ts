@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { User } from "../user.schema";
+import { User, UserDocument } from "../user.schema";
 import { Model } from "mongoose";
 import { JwtService } from "@nestjs/jwt";
 import { SigninDto } from "../dto/signin.dto";
@@ -12,6 +12,10 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService
   ) {}
+
+  signToken(user: UserDocument) {
+    return this.jwtService.sign({ sub: user._id, role: user.role, email: user.email });
+  }
 
   async signin(dto: SigninDto): Promise<any> {
     const user = await this.userModel.findOne({ email: dto.email });
@@ -25,16 +29,7 @@ export class AuthService {
     }
 
     // Tạo token JWT
-    const token = this.jwtService.sign({ id: user._id, role: user.role, email: user.email });
-
-    return {
-      token,
-      user: {
-        _id: user._id,
-        email: user.email,
-        full_name: user.full_name,
-        role: user.role,
-      },
-    };
+    const token = this.signToken(user);
+    return { token, user };
   }
 }

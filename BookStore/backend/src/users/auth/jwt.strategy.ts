@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { User } from '../user.schema';
@@ -17,9 +17,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    console.log('JWT Payload:', payload);
-    // return { userId: payload.id, email: payload.email, role: payload.role };
-    const user = await this.userModel.findById(payload.id).select('-password');
+    console.log('JWT Payload:', payload); // 🔍 Kiểm tra token
+    
+    if (!payload.sub) {
+      throw new UnauthorizedException('Token không hợp lệ!');
+    }
+
+    const user = await this.userModel.findById(payload.sub).select('-password');
     return user;
   }
 }

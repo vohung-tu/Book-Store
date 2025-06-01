@@ -103,6 +103,7 @@ export class AdminProductComponent {
     div.innerHTML = html;
     return div.innerText;
   }
+  
   toggleExpand(index: number) {
     console.log('Index:', index);
     this.expandedRows[index] = !this.expandedRows[index];

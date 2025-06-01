@@ -73,7 +73,12 @@
         <!-- Nút mua sách -->
         <div class="purchase-buttons">
           <p-toast position="top-right" key="tr"></p-toast>
-          <p-button pRipple [rounded]="true" (click)="addToCart()" label="Thêm vào giỏ hàng" ></p-button>
+          <p-button 
+            pRipple 
+            [rounded]="true" 
+            (click)="addToCart()"
+            [disabled]="!books.quantity || books.quantity === 0" 
+            [label]="books.quantity && books.quantity > 0 ? 'Thêm vào giỏ hàng' : 'Hết hàng'"></p-button>
           <p-button 
             [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
             (click)="toggleFavorite()" 

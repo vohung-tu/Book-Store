@@ -22,6 +22,7 @@ import { AdminAuthorComponent } from './admin/admin-author/admin-author.componen
 import { AuthorDetailsComponent } from './component/author-details/author-details.component';
 import { UserOrderComponent } from './component/user-info/user-order/user-order.component';
 import { AddressBookComponent } from './component/user-info/address-book/address-book.component';
+import { ResetPasswordComponent } from './component/user-info/reset-password/reset-password.component';
 
 const routes: Routes = [
   { 
@@ -59,7 +60,8 @@ const routes: Routes = [
     children: [
       { path: '', component: LayoutUserComponent }, // Mặc định hiện thông tin user
       { path: 'address-book', component: AddressBookComponent },
-      { path: 'user-order', component: UserOrderComponent }
+      { path: 'user-order', component: UserOrderComponent },
+      { path: 'reset-pass', component: ResetPasswordComponent}
     ]
   },
   {

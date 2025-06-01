@@ -8,12 +8,14 @@ import { OrdersModule } from './order/order/order.module';
 import { AdminModule } from './admin/admin.module';
 import { ReviewModule } from './review/review.module';
 import { AuthorsModule } from './authors/authors.module';
+import { AuthModule } from './users/auth/auth.module';
 
 @Module({
   imports: [
     BooksModule,
     MongooseModule.forRoot('mongodb+srv://hungtu:123456%40@bookstorepam.lzrno.mongodb.net/book_store_pam?retryWrites=true&w=majority&appName=BookstorePam'),
     UsersModule,
+    AuthModule,
     OrdersModule,
     AdminModule,
     ReviewModule,

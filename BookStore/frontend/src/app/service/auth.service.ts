@@ -69,6 +69,31 @@ export class AuthService {
     );
   }
 
+  updatePassword(payload: {
+    userId: string;
+    currentPassword: string;
+    newPassword: string;
+  }): Observable<any> {
+    const token = localStorage.getItem('token');
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    // Chỉ gửi phần body cần thiết
+    const body = {
+      currentPassword: payload.currentPassword,
+      newPassword: payload.newPassword
+    };
+
+    return this.http.patch(
+      `${this.API_URL}/${payload.userId}/update-password`,
+      body,
+      { headers }
+    );
+  }
+
   setUsername(username: string) {
     this.usernameSubject.next(username);
   }

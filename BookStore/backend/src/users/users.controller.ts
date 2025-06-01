@@ -1,29 +1,17 @@
-import { Controller, Get, Post, Body, Param, Req, UseGuards, NotFoundException, Patch, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Req, UseGuards, NotFoundException, Patch, Delete, Put, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignupDto } from './dto/signup.dto';
 import { SigninDto } from './dto/signin.dto';
-import { AuthenticatedRequest } from './auth/auth.interface';
 import { JwtAuthGuard } from './auth/jwt.auth.guard';
 import { AuthService } from './auth/auth.service';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import * as bcrypt from 'bcrypt';
 
 @Controller('auth')
 export class UsersController {
   constructor(private readonly usersService: UsersService,
     private readonly authService: AuthService
   ) {}
-
-  // @Get('me')
-  // @UseGuards(JwtAuthGuard)
-  // async getProfile(@Req() req: any) {
-  //   const userId = req.user?._id;
-  //   return this.usersService.findById(userId);
-  // }
-  
-  // @Get('user-info')
-  // @UseGuards(JwtAuthGuard)
-  // async getUserInfo(@Req() req: AuthenticatedRequest) {
-  //   return req.user;
-  // }
 
   @Post('signup')
   async signup(@Body() dto: SignupDto) {
@@ -87,13 +75,28 @@ export class UsersController {
     return this.usersService.updateUser(id, body);
   }
 
-  // @Get(':id')
-  // async getUserById(@Param('id') id: string) {
-  //   const user = await this.usersService.findById(id);
-  //   if (!user) {
-  //     throw new NotFoundException(`Không tìm thấy user với ID: ${id}`);
-  //   }
-  //   return user;
-  // }
+  @Patch(':id/update-password')
+  async updatePassword(
+    @Param('id') id: string,
+    @Body() dto: UpdatePasswordDto,
+  ) {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy ID người dùng!');
+    }
+
+    const isMatch = await bcrypt.compare(dto.currentPassword, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Mật khẩu hiện tại không đúng!');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+
+    user.password = hashedPassword;
+    await user.save(); // không còn báo lỗi
+
+    return { message: 'Cập nhật mật khẩu thành công' };
+  }
+
 
 }

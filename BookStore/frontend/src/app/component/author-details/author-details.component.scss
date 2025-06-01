@@ -63,10 +63,20 @@
 }
 
 .book-info {
-  flex: 1; /* Nội dung chiếm phần còn lại */
+  flex: 1; 
+  overflow-y: auto;
+
 }
 
 .detailed-description {
+  white-space: pre-line;
+  word-break: break-all;
   font-size: 14px;
   color: #555;
+}
+
+.detailed-description-author {
+  white-space: pre-line;
+  word-break: break-word;
+  font-size: 18px;
 }

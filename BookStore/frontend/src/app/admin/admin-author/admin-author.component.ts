@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
+import { Editor } from 'primeng/editor';
 
 @Component({
   selector: 'app-admin-author',
@@ -15,12 +16,15 @@ import { DialogModule } from 'primeng/dialog';
     ButtonModule,
     CommonModule,
     FormsModule,
-    DialogModule
+    DialogModule,
+    Editor
   ],
   templateUrl: './admin-author.component.html',
   styleUrl: './admin-author.component.scss'
 })
 export class AdminAuthorComponent implements OnInit{
+  isExpanded = false;
+  expandedRows: { [key: number]: boolean } = {};
   authors: Author[] = [];
   showAddDialog = false;
   showEditDialog = false;
@@ -59,8 +63,14 @@ export class AdminAuthorComponent implements OnInit{
       reader.onload = () => {
         this.previewImage = reader.result;
       };
-      reader.readAsDataURL(file); // Convert image file to base64 string for preview
+      reader.readAsDataURL(file);
     }
+  }
+
+  toggleExpand(index: number) {
+    console.log('Index:', index);
+    this.expandedRows[index] = !this.expandedRows[index];
+    console.log(this.expandedRows);
   }
 
   addAuthor() {
@@ -85,8 +95,8 @@ export class AdminAuthorComponent implements OnInit{
     formData.append('description', this.newAuthor.description);
     formData.append('dateUpdate', new Date().toISOString());
 
-    if (this.newAuthor.avatar) {
-      formData.append('avatar', this.newAuthor.avatar);
+    if (this.newAuthor.avatar instanceof File) {
+      formData.append('avatar', this.newAuthor.avatar); // Chỉ thêm nếu có tệp mới
     }
 
     this.authorService.updateAuthor(id, formData).subscribe(() => {
@@ -94,6 +104,13 @@ export class AdminAuthorComponent implements OnInit{
       this.showEditDialog = false;
     });
   }
+
+  openEditDialog(author: Author) {
+    this.newAuthor = { ...author }; // Sao chép dữ liệu tác giả vào biến mới
+    this.previewImage = 'http://localhost:3000' + author.avatar; // Hiển thị ảnh cũ
+    this.showEditDialog = true;
+  }
+
 
   onDelete(id: string) {
     if (confirm('Bạn có chắc muốn xóa tác giả này?')) {
