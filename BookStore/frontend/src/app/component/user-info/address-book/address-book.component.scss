@@ -35,13 +35,21 @@ button[pButton] {
   width: 700px;
   gap: 1rem;
 }
-.country-select {
+.add-address {
   display: flex;
-  justify-content: space-between; 
-  gap: 30px;
+  label {
+    width: 20%;
+  }
+  p-select {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
 }
+
 label {
   font-weight: 500;
+  align-items: center;
 }
 
 input {
@@ -94,6 +102,11 @@ p-dialog {
   background-color: #f7f7f7;
 }
 
+::ng-deep .p-dialog {
+  .p-dialog-content {
+    padding-top: 20px !important;
+  }
+}
 .p-fluid input {
   width: 100%;
   padding: 8px;
@@ -103,7 +116,7 @@ p-dialog {
 }
 
 .p-fluid input:focus {
-  border-color: #007bff;
+  border-color: #BE5985;
   outline: none;
 }
 

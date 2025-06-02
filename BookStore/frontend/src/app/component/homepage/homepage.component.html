@@ -15,12 +15,12 @@
 
   <div class="container-flashsale">
     <div class="flash-sale-countdown">
-      <h1>Tủ sách nhỏ của Pam</h1>
+      <h1>Sách bán chạy</h1>
     </div>    
     
     <div class="flashsale-col">
       <div class="flashsale-col-1">
-        <p-carousel [value]="books" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
+        <p-carousel [value]="bestSellerBooks" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
           <ng-template let-book pTemplate="item">
             <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
           </ng-template>

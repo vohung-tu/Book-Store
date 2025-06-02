@@ -93,14 +93,15 @@ export class AddressBookComponent implements OnInit {
   }
 
   onCityChange(): void {
+    console.log('selectedCity', this.selectedCity);
     this.districts = this.selectedCity ? this.selectedCity.Districts : [];
-    this.selectedDistrict = null as any;
-    this.selectedWard = null as any;
+    this.selectedDistrict = undefined;
+    this.selectedWard = undefined;
   }
 
   onDistrictChange(): void {
     this.wards = this.selectedDistrict ? this.selectedDistrict.Wards : [];
-    this.selectedWard = null as any;
+    this.selectedWard = undefined;
   }
 
   private loadUser(): void {
@@ -170,60 +171,59 @@ export class AddressBookComponent implements OnInit {
     this.editAddressIndex = null;
   }
   
-
   onSaveEditedAddress() {
-  if (
-    this.editAddressIndex === null ||
-    !this.editAddressData.fullName.trim() ||
-    !this.editAddressData.phoneNumber ||
-    isNaN(this.editAddressData.phoneNumber) ||
-    !this.selectedCity ||
-    !this.selectedDistrict ||
-    !this.selectedWard
-  ) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Cảnh báo',
-      detail: 'Vui lòng điền đầy đủ thông tin địa chỉ.'
-    });
-    return;
-  }
-
-  // Tạo địa chỉ mới đầy đủ
-  const fullAddress = `${this.editAddressData.value.trim()}, ${this.selectedWard.Name}, ${this.selectedDistrict.Name}, ${this.selectedCity.Name}`;
-
-  // Cập nhật dữ liệu
-  this.user.address[this.editAddressIndex] = {
-    ...this.editAddressData,
-    value: fullAddress // Cập nhật địa chỉ mới đầy đủ
-  };
-
-  // Cập nhật địa chỉ mặc định nếu cần
-  if (this.editAddressData.isDefault) {
-    this.user.address.forEach(addr => addr.isDefault = false);
-    this.user.address[this.editAddressIndex].isDefault = true;
-  }
-
-  // Gửi lên server
-  this.authService.updateAddress(this.user._id, this.user.address).subscribe({
-    next: updatedUser => {
-      this.user = updatedUser;
-      localStorage.setItem('user', JSON.stringify(this.user));
-      this.authService.setCurrentUser(this.user);
-
-      this.defaultAddressIndex = this.user.address.findIndex(a => a.isDefault);
-      this.messageService.add({ severity: 'success', summary: 'Cập nhật', detail: 'Địa chỉ đã được lưu.' });
-
-      this.displayEditAddressDialog = false;
-      this.editAddressIndex = null;
-    },
-    error: err => {
-      console.error(err);
-      this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể lưu địa chỉ.' });
-      this.loadUser(); // rollback
+    if (
+      this.editAddressIndex === null ||
+      !this.editAddressData.fullName.trim() ||
+      !this.editAddressData.phoneNumber ||
+      isNaN(this.editAddressData.phoneNumber) ||
+      !this.selectedCity ||
+      !this.selectedDistrict ||
+      !this.selectedWard
+    ) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Cảnh báo',
+        detail: 'Vui lòng điền đầy đủ thông tin địa chỉ.'
+      });
+      return;
     }
-  });
-}
+
+    // // Tạo địa chỉ mới đầy đủ
+    // const fullAddress = `${this.editAddressData.value.trim()}, ${this.selectedWard.Name}, ${this.selectedDistrict.Name}, ${this.selectedCity.Name}`;
+
+    // // Cập nhật dữ liệu
+    // this.user.address[this.editAddressIndex] = {
+    //   ...this.editAddressData,
+    //   value: fullAddress // Cập nhật địa chỉ mới đầy đủ
+    // };
+
+    // Cập nhật địa chỉ mặc định nếu cần
+    if (this.editAddressData.isDefault) {
+      this.user.address.forEach(addr => addr.isDefault = false);
+      this.user.address[this.editAddressIndex].isDefault = true;
+    }
+
+    // Gửi lên server
+    this.authService.updateAddress(this.user._id, this.user.address).subscribe({
+      next: updatedUser => {
+        this.user = updatedUser;
+        localStorage.setItem('user', JSON.stringify(this.user));
+        this.authService.setCurrentUser(this.user);
+
+        this.defaultAddressIndex = this.user.address.findIndex(a => a.isDefault);
+        this.messageService.add({ severity: 'success', summary: 'Cập nhật', detail: 'Địa chỉ đã được lưu.' });
+
+        this.displayEditAddressDialog = false;
+        this.editAddressIndex = null;
+      },
+      error: err => {
+        console.error(err);
+        this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể lưu địa chỉ.' });
+        this.loadUser(); // rollback
+      }
+    });
+  }
 
   onDeleteAddress(index: number) {
     if (!confirm('Bạn chắc không?')) return;
@@ -252,80 +252,80 @@ export class AddressBookComponent implements OnInit {
 
   addAddress() {
   // Kiểm tra nếu các trường bắt buộc không hợp lệ
-  if (
-    !this.newAddress.trim() ||
-    !this.fullName.trim() ||
-    this.phoneNumber == null ||
-    isNaN(this.phoneNumber) ||
-    !this.selectedCity ||
-    !this.selectedDistrict ||
-    !this.selectedWard
-  ) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Cảnh báo',
-      detail: 'Vui lòng điền đầy đủ thông tin địa chỉ, bao gồm tỉnh, quận, phường.'
-    });
-    return;
-  }
-
-  // Xác định xem đây có phải là địa chỉ đầu tiên không
-  const isFirstAddress = this.user.address.length === 0;
-
-  // Tạo địa chỉ đầy đủ
-  const fullAddress = `${this.newAddress.trim()}, ${this.selectedWard.Name}, ${this.selectedDistrict.Name}, ${this.selectedCity.Name}`;
-
-  // Tạo đối tượng địa chỉ mới
-  const newAddressObj: Address = {
-    value: fullAddress, // Địa chỉ đầy đủ
-    isDefault: isFirstAddress,
-    fullName: this.fullName.trim(),
-    phoneNumber: this.phoneNumber
-  };
-
-  // Thêm địa chỉ vào danh sách
-  this.user.address.push(newAddressObj);
-
-  // Gửi mảng địa chỉ lên backend
-  this.authService.updateAddress(this.user._id, this.user.address).subscribe(
-    (response: any) => {
-      // Cập nhật lại user với response từ server
-      this.user = {
-        ...response,
-        address: response.address // backend trả về Address[]
-      };
-
-      // Tìm lại chỉ số địa chỉ mặc định
-      this.defaultAddressIndex = this.user.address.findIndex(a => a.isDefault);
-
-      // Lưu user mới vào localStorage
-      localStorage.setItem('user', JSON.stringify(this.user));
-
-      // Thông báo thành công
+    if (
+      !this.newAddress.trim() ||
+      !this.fullName.trim() ||
+      this.phoneNumber == null ||
+      isNaN(this.phoneNumber) ||
+      !this.selectedCity ||
+      !this.selectedDistrict ||
+      !this.selectedWard
+    ) {
       this.messageService.add({
-        severity: 'success',
-        summary: 'Thành công',
-        detail: 'Địa chỉ đã được thêm.'
+        severity: 'warn',
+        summary: 'Cảnh báo',
+        detail: 'Vui lòng điền đầy đủ thông tin địa chỉ, bao gồm tỉnh, quận, phường.'
       });
-
-      // Reset form và đóng dialog
-      this.displayAddAddressDialog = false;
-      this.newAddress = '';
-      this.fullName = '';
-      this.phoneNumber = undefined as any;
-      this.selectedCity = null as any;
-      this.selectedDistrict = null as any;
-      this.selectedWard = null as any;
-    },
-    () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Lỗi',
-        detail: 'Không thể thêm địa chỉ.'
-      });
+      return;
     }
-  );
-}
+
+    // Xác định xem đây có phải là địa chỉ đầu tiên không
+    const isFirstAddress = this.user.address.length === 0;
+
+    // Tạo địa chỉ đầy đủ
+    const fullAddress = `${this.newAddress.trim()}, ${this.selectedWard.Name}, ${this.selectedDistrict.Name}, ${this.selectedCity.Name}`;
+
+    // Tạo đối tượng địa chỉ mới
+    const newAddressObj: Address = {
+      value: fullAddress, // Địa chỉ đầy đủ
+      isDefault: isFirstAddress,
+      fullName: this.fullName.trim(),
+      phoneNumber: this.phoneNumber
+    };
+
+    // Thêm địa chỉ vào danh sách
+    this.user.address.push(newAddressObj);
+
+    // Gửi mảng địa chỉ lên backend
+    this.authService.updateAddress(this.user._id, this.user.address).subscribe(
+      (response: any) => {
+        // Cập nhật lại user với response từ server
+        this.user = {
+          ...response,
+          address: response.address // backend trả về Address[]
+        };
+
+        // Tìm lại chỉ số địa chỉ mặc định
+        this.defaultAddressIndex = this.user.address.findIndex(a => a.isDefault);
+
+        // Lưu user mới vào localStorage
+        localStorage.setItem('user', JSON.stringify(this.user));
+
+        // Thông báo thành công
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: 'Địa chỉ đã được thêm.'
+        });
+
+        // Reset form và đóng dialog
+        this.displayAddAddressDialog = false;
+        this.newAddress = '';
+        this.fullName = '';
+        this.phoneNumber = undefined as any;
+        this.selectedCity = undefined;
+        this.selectedDistrict = undefined;
+        this.selectedWard = undefined;
+      },
+      () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Lỗi',
+          detail: 'Không thể thêm địa chỉ.'
+        });
+      }
+    );
+  }
 
   
   setDefaultAddress(index: number) {

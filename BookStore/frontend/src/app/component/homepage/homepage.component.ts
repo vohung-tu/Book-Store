@@ -17,7 +17,6 @@ import { ButtonModule } from 'primeng/button';
 import { Author } from '../../model/author.model';
 import { AuthorService } from '../../service/author.service';
 import { ReviewService } from '../../service/review.service';
-import { IncomingMessage } from 'http';
 
 @Component({
   selector: 'app-homepage',
@@ -88,6 +87,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
   featuredBooks: BookDetails[] = [];
   newReleaseBooks: BookDetails[] = [];
   incommingReleaseBooks: BookDetails[] = [];
+  bestSellerBooks:  BookDetails[] = [];
   
   private timerSubscription?: Subscription;
 
@@ -157,6 +157,10 @@ export class HomepageComponent implements OnInit, OnDestroy {
         });
       });
     });
+
+    this.bookService.getBestSellers().subscribe((bestSellers) => {
+      this.bestSellerBooks = bestSellers;
+    });
   }
 
   getBookDetails(id: string): void {
@@ -177,5 +181,6 @@ export class HomepageComponent implements OnInit, OnDestroy {
       life: 3000
     });
   }
+  
 
 }

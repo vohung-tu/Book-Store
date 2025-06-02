@@ -344,4 +344,10 @@ export class DetailComponent implements OnInit {
        });
     }
   }
+
+  updateBookQuantity() {
+  this.bookService.getBookById(this.book._id).subscribe((updatedBook) => {
+    this.book.quantity = updatedBook.quantity; // 🔄 Cập nhật số lượng hiển thị
+  });
+}
 }

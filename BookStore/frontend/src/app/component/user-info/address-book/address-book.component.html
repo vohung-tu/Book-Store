@@ -52,25 +52,39 @@
 
 <p-dialog header="Thêm địa chỉ" [(visible)]="displayAddAddressDialog">
   <div class="p-fluid">
-    <label for="fullName">Họ tên:</label>
-    <input type="text" id="fullName" [(ngModel)]="fullName" />
-
-    <label for="phoneNumber">Số điện thoại:</label>
-    <input type="text" id="phoneNumber" [(ngModel)]="phoneNumber" />
-    
-    <label for="newAddress">Địa chỉ:</label>
-    <input type="text" id="newAddress" [(ngModel)]="newAddress" />
-
-    <label for="countries">Quốc gia:</label>
-    <p-select [options]="countries" [(ngModel)]="selectedCountry" optionLabel="name" placeholder="---" class="w-full md:w-56" />
-
-    <div class="country-select">
-      <p-select [options]="cities" [(ngModel)]="selectedCity" optionLabel="Name" placeholder="Tỉnh Thành" class="w-full md:w-56" (onChange)="onCityChange()" />
-
-      <p-select [options]="districts" [(ngModel)]="selectedDistrict" optionLabel="Name" placeholder="Quận Huyện" class="w-full md:w-56" (onChange)="onDistrictChange()" />
-
-      <p-select [options]="wards" [(ngModel)]="selectedWard" optionLabel="Name" placeholder="Phường Xã" class="w-full md:w-56" />
+    <div class="add-address">
+      <label for="fullName">Họ tên:</label>
+      <input type="text" id="fullName" [(ngModel)]="fullName" />
     </div>
+    <div class="add-address">
+      <label for="phoneNumber">Số điện thoại:</label>
+      <input type="text" id="phoneNumber" [(ngModel)]="phoneNumber" />
+    </div>
+
+    <div class="add-address">
+      <label for="countries">Quốc gia:</label>
+      <p-select [options]="countries" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" optionLabel="name" placeholder="---" />
+    </div>
+    
+    <div class="add-address">
+      <label for="cities">Tỉnh thành:</label>
+      <p-select [options]="cities" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Tỉnh Thành" class="w-full md:w-56" (onChange)="onCityChange()" />
+    </div>
+    <div class="add-address">
+      <label for="districts">Quận huyện:</label>
+      <p-select [options]="districts" [(ngModel)]="selectedDistrict" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Quận Huyện" class="w-full md:w-56" (onChange)="onDistrictChange()" />
+    </div>
+    <div class="add-address">
+      <label for="wards">Phường xã:</label>
+      <p-select [options]="wards" [(ngModel)]="selectedWard" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Phường Xã" class="w-full md:w-56" />
+    </div>
+    <div class="add-address">
+      <label for="newAddress">Địa chỉ:</label>
+      <input type="text" id="newAddress" [(ngModel)]="newAddress" />
+    </div>
+
+
+   
   </div>
   <div class="dialog-buttons">
     <button pButton label="Lưu" icon="pi pi-check" (click)="addAddress()"></button>
@@ -79,24 +93,50 @@
 </p-dialog>
 <p-dialog header="Chỉnh sửa địa chỉ" [(visible)]="displayEditAddressDialog" [modal]="true" [closable]="false">
   <div class="p-fluid">
-    <label for="editFullName">Họ tên:</label>
-    <input type="text" id="editFullName" [(ngModel)]="editAddressData.fullName" />
+    <div class="add-address">
+      <label for="editFullName">Họ tên:</label>
+      <input type="text" id="editFullName" [(ngModel)]="editAddressData.fullName" />
+    </div>
 
-    <label for="editPhoneNumber">Số điện thoại:</label>
-    <input type="number" id="editPhoneNumber" [(ngModel)]="editAddressData.phoneNumber" />
+    <div class="add-address">
+      <label for="editPhoneNumber">Số điện thoại:</label>
+      <input type="number" id="editPhoneNumber" [(ngModel)]="editAddressData.phoneNumber" />
+    </div>
 
-    <label for="editValue">Địa chỉ:</label>
-    <input type="text" id="editValue" [(ngModel)]="editAddressData.value" />
-
-    <label for="countries">Quốc gia:</label>
-    <p-select [options]="countries" [(ngModel)]="selectedCountry" optionLabel="name" placeholder="---" class="w-full md:w-56" />
-
-    <div class="country-select">
-      <p-select [options]="cities" [(ngModel)]="selectedCity" optionLabel="Name" placeholder="Tỉnh Thành" class="w-full md:w-56" (onChange)="onCityChange()" />
-
-      <p-select [options]="districts" [(ngModel)]="selectedDistrict" optionLabel="Name" placeholder="Quận Huyện" class="w-full md:w-56" (onChange)="onDistrictChange()" />
-
-      <p-select [options]="wards" [(ngModel)]="selectedWard" optionLabel="Name" placeholder="Phường Xã" class="w-full md:w-56" />
+    <div class="add-address">
+      <label for="countries">Quốc gia:</label>
+      <p-select [options]="countries" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" optionLabel="name" placeholder="---" class="w-full md:w-56" />
+    </div>
+    <div class="add-address">
+      <label for="cities">Tỉnh thành:</label>
+      <p-select 
+        [options]="cities" 
+        [(ngModel)]="selectedCity" 
+        optionLabel="Name" 
+        class="w-full md:w-56"
+        [ngModelOptions]="{standalone: true}"  />
+        
+    </div>
+    <div class="add-address">
+      <label for="districts">Quận huyện:</label>
+      <p-select [options]="districts" 
+        [(ngModel)]="selectedDistrict" 
+        optionLabel="Name"
+        class="w-full md:w-56"
+        />
+    </div>
+    <div class="add-address">
+      <label for="wards">Phường xã:</label>
+      <p-select 
+        [options]="wards" 
+        [(ngModel)]="selectedWard" 
+        optionLabel="Name"
+        class="w-full md:w-56"
+        [ngModelOptions]="{standalone: true}"/>
+    </div>
+     <div class="add-address">
+      <label for="editValue">Địa chỉ:</label>
+      <input type="text" id="editValue" [(ngModel)]="editAddressData.value" />
     </div>
 
     <div class="p-field-checkbox">

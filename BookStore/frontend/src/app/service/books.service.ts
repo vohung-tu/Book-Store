@@ -51,4 +51,9 @@ export class BooksService {
         )
       );
   }
+
+  getBestSellers(): Observable<BookDetails[]> {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/best-sellers`);
+  }
+
 }   

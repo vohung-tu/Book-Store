@@ -15,6 +15,8 @@ import { AuthService } from '../../service/auth.service';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 import { DividerModule } from 'primeng/divider';
+import { MessageService } from 'primeng/api';
+import { Toast } from 'primeng/toast';
 
 @Component({
   selector: 'app-cart',
@@ -32,11 +34,13 @@ import { DividerModule } from 'primeng/divider';
     ButtonModule,
     BreadcrumbComponent,
     DotSeparatorPipe,
-    DividerModule
+    DividerModule,
+    Toast,
     
   ],
   templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.scss']
+  styleUrls: ['./cart.component.scss'],
+  providers: [MessageService]
 })
 export class CartComponent implements OnInit {
   cart$: Observable<BookDetails[]>
@@ -46,7 +50,8 @@ export class CartComponent implements OnInit {
   constructor(
     private cartService: CartService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private messageService: MessageService
   ) {
     this.cart$ = this.cartService.getCart().pipe(
       map(cart => cart || [])
@@ -94,10 +99,13 @@ export class CartComponent implements OnInit {
   }
 
   goToCheckout() {
-    console.log('🔄 Chuyển sang trang thanh toán với giỏ hàng:', this.selectedBooks);
   
     if (this.selectedBooks.length === 0) {
-      alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán.');
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Chú ý',
+        detail: 'Vui lòng chọn ít nhất một sản phẩm để thanh toán.',
+      });
       return;
     }
   

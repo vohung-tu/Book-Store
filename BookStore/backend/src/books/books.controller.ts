@@ -25,7 +25,15 @@ export class BooksController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Book | null> {
+  async findOne(@Param('id') id: string): Promise<Book | Book[] | null> { // 🔄 Đổi kiểu trả về thành `Book | Book[] | null`
+    if (id === 'best-sellers') {
+      return this.booksService.getBestSellers(); // ✅ Gọi API đúng, không ép kiểu
+    }
+
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) { 
+      throw new BadRequestException('ID sách không hợp lệ!');
+    }
+
     return this.booksService.findOne(id);
   }
 
@@ -47,6 +55,11 @@ export class BooksController {
     }
 
     return this.booksService.findByCategory(categoryName);
+  }
+
+  @Get('/best-sellers')
+  async getBestSellers() {
+    return this.booksService.getBestSellers();
   }
 
 }

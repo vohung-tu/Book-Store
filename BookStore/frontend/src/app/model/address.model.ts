@@ -3,8 +3,5 @@ export interface Address {
   fullName: string;
   phone: string;
   addressLine: string;
-  province: string;
-  district: string;
-  ward: string;
   isDefault?: boolean;
 }

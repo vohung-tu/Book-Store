@@ -64,8 +64,8 @@
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
 
           <div class="book-stock">
-            <p>
-              Số lượng trong kho: <strong> {{ books.quantity && books.quantity > 0 ? books.quantity : 'Hết hàng' }}</strong>
+            <p *ngIf="book && book.quantity !== undefined">Số lượng trong kho: 
+              <strong>{{ book.quantity > 0 ? book.quantity : 'Hết hàng' }}</strong>
             </p>
           </div>
         </div>

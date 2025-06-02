@@ -4,17 +4,17 @@
     <h3>{{ currentUser.full_name }}</h3>  
   </div>
   <ul>
-    <li >
-      <a class="sidebar-btn" routerLink="/user-info" routerLinkActive="active">Thông tin cá nhân</a>
+    <li >,
+      <a class="sidebar-btn" routerLink="/user-info"routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Thông tin cá nhân</a>
     </li>
     <li>
-      <a label="Sổ địa chỉ" class="sidebar-btn" routerLink="/user-info/address-book">Sổ địa chỉ</a>
+      <a label="Sổ địa chỉ" class="sidebar-btn" routerLink="/user-info/address-book" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Sổ địa chỉ</a>
     </li>
     <li>
-      <a label="" class="sidebar-btn" routerLink="/user-info/user-order">Đơn hàng của tôi</a>
+      <a label="" class="sidebar-btn" routerLink="/user-info/user-order" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Đơn hàng của tôi</a>
     </li>
     <li>
-      <a label="" class="sidebar-btn" routerLink="/user-info/reset-pass">Đổi mật khẩu</a>
+      <a label="" class="sidebar-btn" routerLink="/user-info/reset-pass" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Đổi mật khẩu</a>
     </li>
   </ul>
 </div>

@@ -5,6 +5,7 @@
     { label: 'Thanh toán'}
   ]">
 </app-breadcrumb>
+
 <h1 class="text-center text-black">THANH TOÁN</h1>
 
 <!-- Hiển thị danh sách sản phẩm được chọn -->
@@ -42,21 +43,23 @@
         <!-- Họ và tên -->
         <label for="name">Họ và tên:</label>
         <input id="name" type="text" [(ngModel)]="orderInfo.name" name="name" required />
-      
+
         <label for="email">Email:</label>
-        <input id="email" type="email" [(ngModel)]="orderInfo.email" name="email" required [disabled]="true" />
-      
+        <input id="email" type="email" [(ngModel)]="orderInfo.email" name="email" required [disabled]="true" [ngModelOptions]="{standalone: true}" />
+
         <label for="phone">Số điện thoại:</label>
         <input id="phone" type="tel" [(ngModel)]="orderInfo.phone" name="phone" required />
-      
+
         <label for="addresses">Sổ địa chỉ:</label>
         <p-dropdown
           [options]="addresses"
           [(ngModel)]="selectedAddress"
+          name="selectedAddress"
           optionLabel="label"
           optionValue="value"
           placeholder="Chọn địa chỉ"
           (onChange)="onAddressChange($event)"
+          [ngModelOptions]="{standalone: true}"
         ></p-dropdown>
 
         <!-- Ô nhập địa chỉ khác -->
@@ -70,7 +73,7 @@
           placeholder="Chọn địa chỉ hoặc nhập địa chỉ khác"
           (input)="onAddressInput()"
         />
-        
+
         <label for="note">Ghi chú (tùy chọn):</label>
         <textarea id="note" rows="5" [(ngModel)]="orderInfo.note" name="note"></textarea>
       </form>
@@ -131,7 +134,7 @@
       </div>
 
       <div class="mt-4 " style="display: flex;">
-        <input type="text" pInputText [(ngModel)]="discountCode" placeholder="Nhập mã giảm giá" name="discountCode" />
+        <input type="text" pInputText [(ngModel)]="discountCode" placeholder="Nhập mã giảm giá" name="discountCode" [ngModelOptions]="{standalone: true}"/>
         <button pButton type="button" label="Áp dụng" icon="pi pi-check" class="custom-apply-btn" (click)="applyDiscountCode()"></button>
       </div>
       <div 
@@ -172,7 +175,7 @@
         </div>
       </div>
       
-      <button type="submit" class="pay-btn" [disabled]="!orderInfo.name || !orderInfo.email || !orderInfo.phone || !orderInfo.address" (click)="submitOrder()">
+      <button type="button" class="pay-btn" [disabled]="!orderInfo.name || !orderInfo.email || !orderInfo.phone || !orderInfo.address" (click)="submitOrder()">
         <strong>ĐẶT HÀNG</strong>
       </button>
     </div>

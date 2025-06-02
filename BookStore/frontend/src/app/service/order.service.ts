@@ -19,4 +19,8 @@ export class OrderService {
   getOrders(): Observable<Order[]> {
     return this.http.get<Order[]>(this.apiUrl);
   }
+
+  confirmPayment(orderId: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${orderId}/confirm-payment`, {});
+  }
 }

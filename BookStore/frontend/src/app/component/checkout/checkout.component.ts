@@ -24,6 +24,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CartService } from '../../service/cart.service';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
+import { BooksService } from '../../service/books.service';
 
 export interface DiscountCode {
   code: string;
@@ -70,6 +71,7 @@ export class CheckoutComponent implements OnInit {
   addresses: Address[] = [];
   selectedAddress: string = '';
   currentUser: any;
+  book: BookDetails = {} as BookDetails;
   discountCodes: DiscountCode[] = [
     {
       code: 'GIAM10',
@@ -105,12 +107,6 @@ export class CheckoutComponent implements OnInit {
   };
   selectedCountryCode: string = "+84"; // Mặc định Việt Nam
   shippingFee = 25000;
-  countryCodes = [
-    { code: "+1", name: "🇺🇸 US" },
-    { code: "+44", name: "🇬🇧 UK" },
-    { code: "+84", name: "🇻🇳 VN" },
-    { code: "+91", name: "🇮🇳 India" }
-  ];
   availableCoupons = [
     { code: 'GIAM10', description: 'Giảm 10% cho đơn hàng trên 500.000đ' },
     { code: 'GIAM50K', description: 'Giảm 50K cho đơn hàng trên 300.000đ' },
@@ -122,7 +118,8 @@ export class CheckoutComponent implements OnInit {
     private authService: AuthService,
     private orderService: OrderService,
     private http: HttpClient,
-    private cartService: CartService
+    private cartService: CartService,
+    private booksService: BooksService
   ) {}
 
   ngOnInit(): void {
@@ -229,17 +226,20 @@ export class CheckoutComponent implements OnInit {
       return;
     }
 
-    // Địa chỉ cuối cùng sẽ là address người dùng đã chọn
-    const finalAddress = this.selectedAddress === 'other' ? this.orderInfo.address : this.selectedAddress;
-
     const orderData = {
       userId: this.userInfo._id,
-      products: this.selectedBooks,
+      products: this.selectedBooks.map(book => ({
+        _id: book._id,
+        quantity: book.quantity,
+        title: book.title,
+        price: book.price,
+        flashsale_price: book.flashsale_price,
+        coverImage: book.coverImage,
+      })),
       name: this.orderInfo.name,
       email: this.orderInfo.email,
       phone: this.orderInfo.phone,
-      address: finalAddress,
-      note: this.orderInfo.note,
+      address: this.orderInfo.address,
       total: this.totalAmount,
       orderDate: new Date()
     };
@@ -247,6 +247,15 @@ export class CheckoutComponent implements OnInit {
     this.orderService.createOrder(orderData).subscribe({
       next: (response) => {
         alert('Đơn hàng đã được đặt thành công!');
+        // 🔽 Gọi API để cập nhật tồn kho
+        this.orderService.confirmPayment(response._id).subscribe({
+          next: () => {
+            this.updateBookQuantity(); // 🔄 Cập nhật UI
+          },
+          error: (err) => {
+            console.error('Lỗi cập nhật tồn kho:', err);
+          }
+        });
         localStorage.removeItem('cart');
         this.cartService.clearCart();
         this.router.navigate(['/']);
@@ -258,7 +267,12 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  
+  updateBookQuantity() {
+    this.booksService.getBookById(this.book.id!).subscribe((updatedBook) => {
+      this.book.quantity = updatedBook.quantity; // 🔄 Cập nhật số lượng sách
+    });
+  }
+
   onAddressChange(event: any) {
     if (!this.userInfo) return;
   
