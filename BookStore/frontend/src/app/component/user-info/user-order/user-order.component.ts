@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TabsModule } from 'primeng/tabs';
 import { Order, Product } from '../../../model/order.model';
 import { OrderService } from '../../../service/order.service';
@@ -20,76 +20,122 @@ import { DotSeparatorPipe } from '../../../pipes/dot-separator.pipe';
   templateUrl: './user-order.component.html',
   styleUrls: ['./user-order.component.scss']
 })
-export class UserOrderComponent implements OnInit{
-  product$: Observable<Product[]>
+export class UserOrderComponent implements OnInit, OnDestroy {
+  product$: Observable<Product[]>;
   orders: Order[] = [];
   filteredOrders: Order[] = [];
-  selectedTab = 0;
+  selectedTab: string = ''; 
+  isOrdersLoaded = false; // Kiểm soát việc gọi API nhiều lần
+
   tabs = [
-    { value: 0, title: 'Tất cả', content: 'Danh sách tất cả đơn hàng' },
-    { value: 1, title: 'Chờ thanh toán', content: 'Danh sách đơn hàng chờ thanh toán' },
-    { value: 2, title: 'Đang xử lý', content: 'Danh sách đơn hàng đang xử lý' },
-    { value: 3, title: 'Đang giao', content: 'Danh sách đơn hàng đang được vận chuyển' },
-    { value: 4, title: 'Hoàn tất', content: 'Danh sách đơn hàng đã hoàn tất' },
-    { value: 5, title: 'Bị hủy', content: 'Danh sách đơn hàng bị hủy' },
-    { value: 6, title: 'Đổi trả', content: 'Danh sách đơn hàng đổi trả' }
+    { value: '', title: 'Tất cả', content: 'Tất cả đơn hàng' },
+    { value: 'pending', title: 'Chờ thanh toán', content: 'Đơn hàng chờ thanh toán' },
+    { value: 'processing', title: 'Đang xử lý', content: 'Đơn hàng đang xử lý' },
+    { value: 'shipping', title: 'Đang giao', content: 'Đơn hàng đang được vận chuyển' },
+    { value: 'completed', title: 'Hoàn tất', content: 'Đơn hàng đã hoàn tất' },
+    { value: 'cancelled', title: 'Bị hủy', content: 'Đơn hàng bị hủy' },
+    { value: 'returned', title: 'Đổi trả', content: 'Đơn hàng đổi trả' }
   ];
+
+  // Sử dụng trackBy cho tabs
+  trackByValue(index: number, item: any): any {
+    return item.value;
+  }
+
+  // Lắng nghe sự kiện storage (nếu có cập nhật từ nơi khác)
+  private storageEventListener = (event: StorageEvent) => {
+    if (event.key === 'orderUpdated') {
+      console.log('Phát hiện đơn hàng được cập nhật, tải lại đơn hàng...');
+      this.reloadOrders();
+    }
+  };
+
   constructor(
     private orderService: OrderService,
     private authService: AuthService
   ) {
+    // Sản phẩm của đơn hàng nếu cần sử dụng riêng
     this.product$ = this.orderService.getOrders().pipe(
       map(orders => orders.flatMap(order => order.products))
     );
-
   }
-  
+
   ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', this.storageEventListener);
+    }
+    // Chỉ gọi API 1 lần
+    this.loadUserOrders();
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('storage', this.storageEventListener);
+    }
+  }
+
+  // Hàm reload (có thể được gọi qua sự kiện storage) sẽ bỏ qua kiểm tra isOrdersLoaded
+  reloadOrders() {
+    console.log('Reloading user orders...');
     const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
       const currentUserId = currentUser._id;
       this.orderService.getOrders().subscribe((orders) => {
+        console.log('Orders fetched (reload):', orders.length);
         this.orders = orders.filter(order => order.userId === currentUserId);
-        this.filterOrdersByTab(); // Lọc dữ liệu ngay khi load
+        this.filterOrdersByTab();
+      });
+    }
+  }
+
+  loadUserOrders() {
+    if (this.isOrdersLoaded) {
+      console.log('Orders already loaded, skipping duplicate fetch.');
+      return;
+    }
+
+    console.log('Loading user orders...');
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      const currentUserId = currentUser._id;
+      this.orderService.getOrders().subscribe((orders) => {
+        console.log('Orders fetched:', orders.length);
+        this.orders = orders.filter(order => order.userId === currentUserId);
+        this.isOrdersLoaded = true;
+        this.filterOrdersByTab();
       });
     } else {
       console.error('Không tìm thấy thông tin user');
     }
   }
-  filterOrdersByTab(): void {
-    console.log("Tab hiện tại:", this.selectedTab); // Kiểm tra giá trị tab
-  console.log("Danh sách đơn hàng trước khi lọc:", this.orders);
-    if (this.selectedTab === 0) {
-      this.filteredOrders = this.orders; // Hiển thị tất cả đơn hàng
-    } else {
-      const statusMap: { [key: number]: string } = {
-        1: 'Chờ thanh toán',
-        2: 'Đang xử lý',
-        3: 'Đang giao',
-        4: 'Hoàn tất',
-        5: 'Bị hủy',
-        6: 'Đổi trả'
-      };
 
-      const selectedStatus = statusMap[this.selectedTab];
-      this.filteredOrders = this.orders.filter(order => order.status === selectedStatus);
-    }
+  // trackBy function cho order trong ngFor
+  trackByOrder(index: number, order: Order): string {
+    return order._id;
   }
-  
-  getOrderCountByStatus(status: number): number {
-    if (status === 0) {
-      return this.orders.length; // Tất cả
-    }
 
-    const statusMap: { [key: number]: string } = {
-      1: 'Chờ thanh toán',
-      2: 'Đang xử lý',
-      3: 'Đang giao',
-      4: 'Hoàn tất',
-      5: 'Bị hủy',
-      6: 'Đổi trả'
-    };
+  // Khi chọn tab, cập nhật selectedTab (sử dụng lowercase để so sánh)
+  selectTab(tabValue: string): void {
+    this.selectedTab = tabValue.toLowerCase();
+    console.log('Selected Tab:', this.selectedTab);
+    this.filterOrdersByTab();
+  }
 
-    return this.orders.filter(order => order.status === statusMap[status]).length;
+  // Lọc đơn hàng theo selectedTab
+  filterOrdersByTab(): void {
+    console.log('Filtering orders...');
+    // Nếu SelectedTab rỗng thì hiển thị tất cả
+    this.filteredOrders = !this.selectedTab 
+      ? [...this.orders] 
+      : this.orders.filter(order => order.status.toLowerCase() === this.selectedTab);
+    
+    console.log('Filtered Orders count:', this.filteredOrders.length);
+  }
+
+  // Tính số đơn theo trạng thái (sử dụng lowercase để so sánh)
+  getOrderCountByStatus(status: string): number {
+    return status 
+      ? this.orders.filter(order => order.status.toLowerCase() === status.toLowerCase()).length 
+      : this.orders.length;
   }
 }

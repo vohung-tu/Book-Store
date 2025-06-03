@@ -1,48 +1,59 @@
-<p-tabs [(value)]="selectedTab" (ngModelChange)="filterOrdersByTab()">
-  <div class="header">
-    <h2>Danh sách Đơn Hàng</h2>
-  </div>
+<p-tabs [(value)]="selectedTab">
   <p-tablist>
-    @for (tab of tabs; track tab.value) {
-      <p-tab [value]="tab.value"> {{ tab.title }} ({{ getOrderCountByStatus(tab.value) }})</p-tab>
-    }
+    <!-- Mỗi tab gọi selectTab (không gọi thêm filterOrdersByTab ở đây) -->
+    <p-tab *ngFor="let tab of tabs; trackBy: trackByValue" (click)="selectTab(tab.value)">
+      {{ tab.title }} ({{ getOrderCountByStatus(tab.value) }})
+    </p-tab>
   </p-tablist>
 
   <p-tabpanels>
-    @for (tab of tabs; track tab.value) {
-      <p-tabpanel [value]="tab.value">
-        <h3 class="m-0">{{ tab.content }}</h3>
-      </p-tabpanel>
-    }
+    <!-- Duyệt qua mảng tabs, nhưng chỉ panel nào ứng với selectedTab mới render nội dung -->
+    <p-tabpanel *ngFor="let tab of tabs; trackBy: trackByValue">
+      <ng-container *ngIf="selectedTab === tab.value">
+        <h3>{{ tab.content }}</h3>
+        <div>
+          <ng-container *ngIf="filteredOrders && filteredOrders.length > 0; else noOrders">
+            <div *ngFor="let order of filteredOrders; trackBy: trackByOrder" class="order-container">
+              <div class="order-code">
+                <h3>#{{ order._id }}</h3>
+                <p>{{ order.createdAt | date: 'short' }}</p>
+              </div>
 
-    <div *ngFor="let order of filteredOrders" class="order-container">
-      <div class="order-code">
-        <h3>#{{ order._id }}</h3>
-        <p>{{ order.createdAt | date: 'short' }}</p>
-      </div>
+              <p-table [value]="order.products" [tableStyle]="{'table-layout': 'fixed', 'width': '100%'}">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th style="width: 10%"></th>
+                    <th style="width: 50%">Sản phẩm</th>
+                    <th style="width: 10%">SL</th>
+                    <th style="width: 10%">Giá gốc</th>
+                    <th style="width: 10%">Giá KM</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-product>
+                  <tr>
+                    <td><img [src]="product.coverImage" width="50px"></td>
+                    <td>{{ product.title }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td>{{ product.price | dotSeparator }}</td>
+                    <td>{{ product.flashsale_price | dotSeparator }}</td>
+                  </tr>
+                </ng-template>
+              </p-table>
 
-      <p-table [value]="order.products" [tableStyle]="{'table-layout': 'fixed', 'width': '100%'}">
-        <ng-template pTemplate="header">
-          <tr>
-            <th style="width: 10%"></th>
-            <th style="width: 50%">Sản phẩm</th>
-            <th style="width: 10%">SL</th>
-            <th style="width: 10%">Giá gốc</th>
-            <th style="width: 10%">Giá KM</th>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-product>
-          <tr>
-            <td><img [src]="product.coverImage" width="50px"></td>
-            <td>{{ product.title }}</td>
-            <td>{{ product.quantity }}</td>
-            <td>{{ product.price | dotSeparator }}</td>
-            <td>{{ product.flashsale_price | dotSeparator }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
-      <h3 style="text-align: right; margin-top: 10px;"> Tổng tiền: {{ order.total | dotSeparator }}</h3>
-    </div>
+              <h3 style="text-align: right; margin-top: 10px;">
+                Tổng tiền: {{ order.total | dotSeparator }}
+              </h3>
+            </div>
+          </ng-container>
+        </div>
+      </ng-container>
+    </p-tabpanel>
   </p-tabpanels>
 </p-tabs>
+
+<!-- Template hiển thị khi không có đơn hàng nào -->
+<ng-template #noOrders>
+  <p style="text-align: center; font-size: 1.2rem; font-weight: bold;">
+    Không có đơn hàng nào trong trạng thái này.
+  </p>
+</ng-template>
