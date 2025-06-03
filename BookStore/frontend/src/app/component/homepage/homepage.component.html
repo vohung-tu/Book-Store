@@ -68,7 +68,7 @@
     <div class="incomming-release-body">
       <p-carousel *ngIf="incommingReleaseBooks.length > 0" [value]="incommingReleaseBooks" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
         <ng-template let-book pTemplate="item">
-          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
+          <app-product-item [book]="book" [isUpcomingRelease]="true" (showToast)="handleToast($event)"></app-product-item>
         </ng-template>
       </p-carousel>
     </div>

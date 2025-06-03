@@ -23,4 +23,8 @@ export class OrderService {
   confirmPayment(orderId: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${orderId}/confirm-payment`, {});
   }
+
+  updateOrderStatus(orderId: string, status: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${orderId}/status`, { status });
+  }
 }

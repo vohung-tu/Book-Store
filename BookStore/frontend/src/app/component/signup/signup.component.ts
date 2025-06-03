@@ -1,6 +1,6 @@
 import { NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, AsyncValidatorFn, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,6 +11,9 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AuthService } from '../../service/auth.service';
+import { catchError, debounceTime, map, of, switchMap } from 'rxjs';
+import { MessageService } from 'primeng/api';
+import {   ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-signup',
@@ -25,10 +28,12 @@ import { AuthService } from '../../service/auth.service';
     MatButtonModule,
     MatCheckboxModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    ToastModule
   ],
   templateUrl: './signup.component.html',
-  styleUrls: ['./signup.component.scss']
+  styleUrls: ['./signup.component.scss'],
+  providers: [MessageService]
 })
 export class SignupComponent {
   signupForm!: FormGroup;
@@ -37,20 +42,21 @@ export class SignupComponent {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService) {
-    this.signupForm = this.fb.group({
-      full_name: ['', Validators.required],
-      username: ['', [Validators.required, Validators.minLength(4)]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      re_password: ['', Validators.required],
-      birth: ['', Validators.required],        // Ngày sinh
-      address: [''],                        // Địa chỉ
-      email: ['', [Validators.required, Validators.email]],
-      phone_number: ['', Validators.required],
-    }, {
-      validators: this.passwordMatchValidator // Kiểm tra mật khẩu khớp
-    });
-  }
+    private authService: AuthService,
+    private messageService: MessageService) {
+      this.signupForm = this.fb.group({
+        full_name: ['', Validators.required],
+        username: ['', [Validators.required, Validators.minLength(4)]],
+        password: ['', [Validators.required, Validators.minLength(6),this.passwordStrengthValidator]],
+        re_password: ['', Validators.required],
+        birth: [''],        // Ngày sinh
+        address: ['', Validators.required],                        // Địa chỉ
+        email: ['', [Validators.required, Validators.email], [this.emailTakenValidator()]],
+        phone_number: ['', Validators.required],
+      }, {
+        validators: this.passwordMatchValidator // Kiểm tra mật khẩu khớp
+      });
+    }
 
   // Hàm kiểm tra mật khẩu có khớp không
   passwordMatchValidator(form: FormGroup) {
@@ -58,6 +64,35 @@ export class SignupComponent {
     const re_password = form.get('re_password')?.value; 
     //?. cho phép gọi .value chỉ khi form.get('password') không phải null/undefined. Nếu form.get('password') là null, nó sẽ không báo lỗi, thay vào đó trả về undefined.
     return password === re_password ? null : { passwordMismatch: true };
+  }
+
+  emailTakenValidator(): AsyncValidatorFn {
+    return (control: AbstractControl) => {
+      return of(control.value).pipe(
+        debounceTime(500), // đợi người dùng dừng gõ
+        switchMap(email =>
+          this.authService.checkEmailExists(email).pipe(
+            map(isTaken => (isTaken ? { emailTaken: true } : null)),
+            catchError(() => of(null)) // nếu lỗi server, không chặn
+          )
+        )
+      );
+    };
+  }
+
+  passwordStrengthValidator(control: AbstractControl) {
+    const value = control.value;
+    if (!value) return null;
+
+    const hasUpperCase = /[A-Z]/.test(value);
+    const hasLowerCase = /[a-z]/.test(value);
+    const hasNumber = /\d/.test(value);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+    const validLength = value.length >= 6;
+
+    const passwordValid = hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar && validLength;
+
+    return passwordValid ? null : { weakPassword: true };
   }
 
   // Submit form
@@ -77,8 +112,12 @@ export class SignupComponent {
       };
   
       this.authService.signup(userData).subscribe(
-        (res) => alert('Đăng ký thành công'),
-        (err) => alert('Đăng ký thất bại')
+        () => {
+          this.messageService.add({severity:'success', summary:'Thành công', detail:'Đăng ký thành công'});
+        },
+        () => {
+          this.messageService.add({severity:'error', summary:'Lỗi', detail:'Đăng ký thất bại'});
+        }
       );
     }
   }

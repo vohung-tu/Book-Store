@@ -58,7 +58,7 @@
 
           <p><strong>Tác giả:</strong> 
             <a *ngIf="book?.author" [routerLink]="['/author', book.author._id]" class="author-href" target="_blank">
-              {{ book.author.name }}
+              {{ book.author }}
             </a>
           </p>
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>

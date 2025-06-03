@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthenticatedRequest } from './auth.interface';
 import { JwtAuthGuard } from './jwt.auth.guard';
@@ -13,21 +13,20 @@ export class AuthController {
         private readonly authService: AuthService
     ) {}
 
-    // @Post('reset-password-link')
-    // async resetPassword(@Body() dto: ResetPasswordDto) {
-    //     return this.authService.resetPasswordFromLink(dto);
-    // }
-
     @UseGuards(AuthGuard('jwt'))
     @Get('me')
     getProfile(@Req() req) {
-        // req.user được lấy từ JwtStrategy.validate()
         return req.user;
     }
 
     @Get('user-info')
     async getUserInfo(@Req() req: AuthenticatedRequest) {
         return req.user;
+    }
+
+    @Get('check-email')
+    async checkEmail(@Query('email') email: string): Promise<{ exists: boolean }> {
+        return this.authService.checkEmailExists(email);
     }
 
     @Get(':id')
@@ -41,7 +40,7 @@ export class AuthController {
     async getUsers() {
         return this.usersService.findAll(); // Trả về danh sách người dùng
     }
-    
+
     @UseGuards(JwtAuthGuard)
     @Patch(':id/address')
     async updateAddress(

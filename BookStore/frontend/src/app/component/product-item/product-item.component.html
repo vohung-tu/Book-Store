@@ -18,14 +18,15 @@
   <!-- Hover icons -->
   <div class="hover-icons">
     <p-button
-    pRipple
-    (click)="addToCart()"
-    icon="pi pi-shopping-cart"
-    class="cart-btn"
-    [rounded]="true"
-    [text]="true"
-    [raised]="true"
-  />
+      *ngIf="!isUpcomingRelease"
+      pRipple
+      (click)="addToCart()"
+      icon="pi pi-shopping-cart"
+      class="cart-btn"
+      [rounded]="true"
+      [text]="true"
+      [raised]="true"
+    />
     <!-- Button Detail -->
   <p-button
     class="detail-btn"

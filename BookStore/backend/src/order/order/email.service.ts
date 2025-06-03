@@ -8,7 +8,7 @@ export class MailService {
     service: 'gmail', // hoặc 'hotmail', 'outlook', SMTP...
     auth: {
       user: 'pamtech.org@gmail.com',
-      pass: 'rzul fgcm igql rdek'
+      pass: 'gxve tebv ngfr paxt'
     }
   });
 

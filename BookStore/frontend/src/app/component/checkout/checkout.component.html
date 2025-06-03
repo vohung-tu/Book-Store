@@ -63,7 +63,7 @@
         ></p-dropdown>
 
         <!-- Ô nhập địa chỉ khác -->
-        <label for="address">Địa chỉ khác:</label>
+        <label for="address">Địa chỉ:</label>
         <input
           id="address"
           type="text"
@@ -73,6 +73,23 @@
           placeholder="Chọn địa chỉ hoặc nhập địa chỉ khác"
           (input)="onAddressInput()"
         />
+
+        <div class="add-address">
+          <label for="cities">Tỉnh thành:</label>
+          <p-dropdown 
+            [options]="cities" 
+            [(ngModel)]="selectedCity" 
+            [ngModelOptions]="{standalone: true}" 
+            optionLabel="Name" placeholder="Tỉnh Thành" class="w-full md:w-56" (onChange)="onCityChange()" />
+        </div>
+        <div class="add-address">
+          <label for="districts">Quận huyện:</label>
+          <p-dropdown [options]="districts" [(ngModel)]="selectedDistrict" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Quận Huyện" class="w-full md:w-56" (onChange)="onDistrictChange()" />
+        </div>
+        <div class="add-address">
+          <label for="wards">Phường xã:</label>
+          <p-dropdown [options]="wards" [(ngModel)]="selectedWard" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Phường Xã" class="w-full md:w-56" />
+        </div>
 
         <label for="note">Ghi chú (tùy chọn):</label>
         <textarea id="note" rows="5" [(ngModel)]="orderInfo.note" name="note"></textarea>
@@ -100,8 +117,13 @@
       <h3>Thanh toán</h3>
       <div class="flex-1 flex-wrap gap-4">
         <div class="flex items-center" style="display: flex;">
-          <p-radiobutton name="payment-ck" value="payment" [(ngModel)]="orderInfo.payment" inputId="ingredient1"  />
-          <label for="ingredient1" class="ml-2">Chuyển khoản qua ngân hàng</label>
+          <p-radiobutton
+            name="payment"
+            value="payment"
+            [(ngModel)]="orderInfo.payment"
+            inputId="payment1"
+          />
+          <label for="payment1">Chuyển khoản qua ngân hàng</label>
         </div>
 
         <div *ngIf="orderInfo.payment === 'payment'" class="ml-6">
@@ -111,25 +133,14 @@
           <p>Chủ tài khoản: Nguyễn Văn A</p>
           <p>Nội dung chuyển khoản: [Mã đơn hàng]</p>
         </div>
-
         <div class="flex-1 items-center" style="display: flex;">
-          <p-radiobutton name="payment-vnp" value="payment" [(ngModel)]="orderInfo.payment" inputId="ingredient2" [disabled]="true" />
-          <label for="ingredient2" class="ml-2">Thanh toán qua VNPAY-QR</label>
-        </div>
-
-        <div class="flex-1 items-center" style="display: flex; justify-content: space-between;">
-          <p-radiobutton name="payment-zl" value="payment" [(ngModel)]="orderInfo.payment" inputId="ingredient3" [disabled]="true" />
-          <label for="ingredient3" class="ml-2">Thanh toán qua VNPay</label>
-          <button pButton label="Thanh toán VNPAY" icon="pi pi-credit-card"
-            class="vnpay-btn"
-            (click)="payWithVnpay()"
-            [disabled]="!orderInfo.name || !orderInfo.phone || !orderInfo.address || selectedBooks.length === 0">
-          </button>
-        </div>
-
-        <div class="flex-1 items-center" style="display: flex;">
-          <p-radiobutton name="payment-code" value="Onion" [(ngModel)]="orderInfo.payment" inputId="ingredient4" />
-          <label for="ingredient4" class="ml-2">Thanh toán khi nhận hàng (COD)</label>
+          <p-radiobutton
+            name="payment"
+            value="Onion"
+            [(ngModel)]="orderInfo.payment"
+            inputId="payment2"
+          />
+          <label for="payment2">Thanh toán khi nhận hàng (COD)</label>
         </div>
       </div>
 
@@ -175,7 +186,12 @@
         </div>
       </div>
       
-      <button type="button" class="pay-btn" [disabled]="!orderInfo.name || !orderInfo.email || !orderInfo.phone || !orderInfo.address" (click)="submitOrder()">
+     <button
+        type="button"
+        class="pay-btn"
+        [disabled]="!canSubmitOrder"
+        (click)="submitOrder()"
+      >
         <strong>ĐẶT HÀNG</strong>
       </button>
     </div>

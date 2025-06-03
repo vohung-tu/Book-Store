@@ -116,6 +116,11 @@ export class AuthService {
     );
   }
 
+  checkEmailExists(email: string): Observable<boolean> {
+    return this.http.get<{ exists: boolean }>(`http://localhost:3000/auth/check-email?email=${email}`)
+      .pipe(map(res => res.exists));
+  }
+
   getToken(): string | null {
     return sessionStorage.getItem('token');
   }

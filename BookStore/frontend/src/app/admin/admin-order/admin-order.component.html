@@ -34,6 +34,7 @@
         <th>Số điện thoại</th>
         <th>Email</th>
         <th>Tổng tiền</th>
+        <th>Trạng thái</th> <!-- Cột trạng thái -->
       </tr>
     </ng-template>
 
@@ -53,10 +54,18 @@
         </td>
         <td>{{ order.phone }}</td>
         <td>{{ order.email }}</td>
+        <td>{{ order.total | currency:'VND':'symbol':'1.0-0' }}</td>
         <td>
-          {{ order.total }}
+          <p-dropdown
+            [options]="statusOptionItems"
+            [(ngModel)]="order.status"
+            (onChange)="onStatusChange(order, $event.value)"
+          >
+          </p-dropdown>
         </td>
       </tr>
     </ng-template>
   </p-table>
+
 </div>
+<p-toast></p-toast>

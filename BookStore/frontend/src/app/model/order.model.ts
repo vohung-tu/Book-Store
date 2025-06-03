@@ -19,7 +19,7 @@ export interface Order {
   phone: number;
   email: string;
   total: number;
-  status: 'pending' | 'processing' | 'shipping' | 'completed' | 'cancelled' | 'returned';
+  status: string;
   orderDate: string;
   createdAt: string;
 }

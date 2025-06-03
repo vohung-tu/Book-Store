@@ -15,6 +15,8 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Author } from './authors.schema';
+import { Types } from 'mongoose';
+import { BadRequestException } from '@nestjs/common';
 
 @Controller('authors')
 export class AuthorsController {
@@ -56,13 +58,16 @@ export class AuthorsController {
 
   @Get(':id')
   async findById(@Param('id') id: string): Promise<Author> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Id không hợp lệ');
+    }
     const author = await this.authorsService.findById(id);
     if (!author) {
       throw new NotFoundException('Author not found');
     }
     return author;
   }
-
+  
   @Put(':id')
   @UseInterceptors(
     FileInterceptor('avatar', {
@@ -76,11 +81,15 @@ export class AuthorsController {
       }),
     }),
   )
-  async update(
+    async update(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
     @Body() body: any,
   ) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Id không hợp lệ');
+    }
+
     const avatarUrl: string | undefined = file
       ? `/uploads/authors/${file.filename}`
       : undefined;
@@ -95,6 +104,9 @@ export class AuthorsController {
 
   @Delete(':id')
   async delete(@Param('id') id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Id không hợp lệ');
+    }
     return this.authorsService.delete(id);
   }
 }

@@ -1,7 +1,7 @@
 .container {
   background-color: #fff;
   background-size: cover;
-  height: 703px;
+  max-height: 600px;
 
   .signin-container {
     background-color: #fcfcfc;
@@ -29,12 +29,14 @@
 }
 
 .forgot-password {
-  display: flex;
-  mat-checkbox {
-    padding-right: 20px;
-  }
+  margin-top: -22px;
   a {
-    padding-left: 20px;
+    padding-left: 170px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  a:hover {
+    color: #BE5985;
   }
 }
   
@@ -43,12 +45,10 @@ form {
   flex-direction: column;
   line-height: 5rem;
   align-items: center;
-  height: 620px;
+  height: 100%;
   
 }
-.password-input {
-  padding-bottom: 20px;
-}
+
 mat-form-field {
   height: 50px;
   width: 300px;

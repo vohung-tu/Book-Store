@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabel } from 'primeng/floatlabel';
 import { AuthService } from '../../../service/auth.service';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-reset-password',
@@ -13,17 +15,20 @@ import { AuthService } from '../../../service/auth.service';
     FormsModule,
     ReactiveFormsModule,
     InputTextModule, 
-    FloatLabel
+    FloatLabel,
+    ToastModule
   ],
   templateUrl: './reset-password.component.html',
-  styleUrl: './reset-password.component.scss'
+  styleUrl: './reset-password.component.scss',
+  providers: [MessageService]
 })
 export class ResetPasswordComponent {
   resetForm: FormGroup;
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private messageService: MessageService
   ) {
     this.resetForm = this.fb.group({
       currentPassword: ['', [Validators.required, Validators.minLength(6)]],
@@ -43,37 +48,58 @@ export class ResetPasswordComponent {
       const { currentPassword, newPassword, confirmPassword } = this.resetForm.value;
 
       if (newPassword !== confirmPassword) {
-        alert('Mật khẩu mới và xác nhận mật khẩu không khớp!');
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Cảnh báo',
+          detail: 'Mật khẩu mới và xác nhận mật khẩu không khớp!'
+        });
         return;
       }
 
-      const userId = this.authService.getCurrentUser()?._id; // 🔹 Lấy ID từ session
+      const userId = this.authService.getCurrentUser()?._id;
       console.log('UserID từ frontend:', userId);
 
       if (!userId) {
-        alert('Không tìm thấy ID người dùng!');
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Lỗi',
+          detail: 'Không tìm thấy ID người dùng!'
+        });
         return;
       }
 
       const payload = {
-        userId,  // 🛠 Gửi ID người dùng kèm mật khẩu cũ và mới
+        userId,
         currentPassword,
         newPassword
       };
 
       this.authService.updatePassword(payload).subscribe({
         next: () => {
-          alert('Mật khẩu đã được cập nhật thành công!');
-          this.resetForm.reset(); // 🔹 Xóa dữ liệu sau khi cập nhật
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Thành công',
+            detail: 'Mật khẩu đã được cập nhật thành công!'
+          });
+          this.resetForm.reset();
         },
         error: (err) => {
           console.error('Lỗi cập nhật mật khẩu:', err);
-          alert('Có lỗi xảy ra, vui lòng thử lại!');
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Lỗi',
+            detail: 'Có lỗi xảy ra, vui lòng thử lại!'
+          });
         }
       });
     } else {
-      alert('Vui lòng nhập đầy đủ thông tin hợp lệ!');
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Cảnh báo',
+        detail: 'Vui lòng nhập đầy đủ thông tin hợp lệ!'
+      });
     }
   }
+
 
 }

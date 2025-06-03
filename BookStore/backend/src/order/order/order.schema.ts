@@ -27,6 +27,9 @@ export class Order extends Document {
   @Prop()
   total: number;
 
+  @Prop({ enum: ['pending', 'processing', 'shipping', 'completed', 'cancelled', 'returned'], default: 'pending' })
+  status: string;
+
   @Prop()
   orderDate: Date;
 

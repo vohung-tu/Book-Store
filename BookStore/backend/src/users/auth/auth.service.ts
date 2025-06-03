@@ -87,5 +87,10 @@ export class AuthService {
     return { message: 'Đặt lại mật khẩu thành công' };
   }
 
+  async checkEmailExists(email: string): Promise<{ exists: boolean }> {
+    const user = await this.userModel.findOne({ email }).exec();
+    return { exists: !!user };
+  }
+
 
 }

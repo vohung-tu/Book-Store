@@ -13,19 +13,19 @@ import { AuthService } from '../../../service/auth.service';
 import { Select } from 'primeng/select';
 import { HttpClient } from '@angular/common/http';
 
-interface Ward {
+export interface Ward {
   Id: string;
   Name: string;
   Level: string;
 }
 
-interface District {
+export interface District {
   Id: string;
   Name: string;
   Wards: Ward[];
 }
 
-interface City {
+export interface City {
   Id: string;
   Name: string;
   Districts: District[];

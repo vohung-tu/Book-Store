@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Order } from './order.schema';
 import { BooksService } from 'src/books/books.service';
+import { UpdateStatusDto } from './update-status.dto';
 
 @Injectable()
 export class OrderService {
@@ -46,5 +47,15 @@ export class OrderService {
       throw new NotFoundException(`Đơn hàng với ID ${orderId} không tồn tại!`);
     }
     return order;
+  }
+
+  async updateStatus(orderId: string, updateStatusDto: UpdateStatusDto): Promise<Order> {
+    const order = await this.orderModel.findById(orderId);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    order.status = updateStatusDto.status;
+    return order.save();
   }
 }

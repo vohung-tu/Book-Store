@@ -29,18 +29,18 @@
         </mat-form-field>
       </div>
       <div class="forgot-password">
-        <mat-checkbox style="display: flex;" formControlName="rememberMe">Ghi nhớ mật khẩu?</mat-checkbox>
+  
         <a href="/forgot-password">Quên mật khẩu?</a>
       </div>
       <button mat-raised-button type="submit" [disabled]="signinForm.invalid || (isLoading$ | async)">
         Đăng Nhập
       </button>
-  
+<!--   
       <div class="signin-with" >hoặc đăng nhập với</div>
       <div class="social-login">
         <button mat-button class="face-lgin"><mat-icon class="mdi mdi-facebook"></mat-icon>Facebook</button> 
         <button mat-button class="google-lgin"><mat-icon class="mdi mdi-google-plus"></mat-icon>Google</button>
-      </div>
+      </div> -->
   
       <p class="signin-with">Bạn chưa có tài khoản? <a routerLink="/signup" >Đăng Ký</a></p>
     </form>

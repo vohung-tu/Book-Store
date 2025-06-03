@@ -7,7 +7,6 @@ import { ConfigModule } from '@nestjs/config';
 import { VnpayService } from "../payment.service";
 import { VnpayController } from "../payment.controller";
 import { MailService } from "./email.service";
-import { BooksService } from "src/books/books.service";
 import { BooksModule } from "src/books/books.module";
 
 @Module({

@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Get, Patch, Param, NotFoundException } from "@nestjs/common";
 import { OrderService } from "./order.service";
 import { BooksService } from "src/books/books.service";
+import { UpdateStatusDto } from "./update-status.dto";
 
 @Controller('orders')
 export class OrderController {
@@ -33,5 +34,10 @@ export class OrderController {
     }
 
     return { message: 'Thanh toán thành công, đã cập nhật tồn kho!' };
+  }
+  
+  @Patch(':id/status')
+  async updateStatus(@Param('id') id: string, @Body() updateStatusDto: UpdateStatusDto) {
+    return this.orderService.updateStatus(id, updateStatusDto);
   }
 }

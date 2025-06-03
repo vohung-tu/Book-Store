@@ -25,7 +25,7 @@ import { CartService } from '../../service/cart.service';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 import { BooksService } from '../../service/books.service';
-
+import { City, District, Ward } from '../user-info/address-book/address-book.component';
 export interface DiscountCode {
   code: string;
   minOrderAmount?: number;
@@ -72,6 +72,14 @@ export class CheckoutComponent implements OnInit {
   selectedAddress: string = '';
   currentUser: any;
   book: BookDetails = {} as BookDetails;
+  cities: City[] = [];
+  districts: District[] = [];
+  wards: Ward[] = [];
+  selectedCity: City | undefined;
+  selectedDistrict: District | undefined;
+  selectedWard: Ward | undefined;
+  vietnamAddresses: City[] = [];
+
   discountCodes: DiscountCode[] = [
     {
       code: 'GIAM10',
@@ -112,6 +120,7 @@ export class CheckoutComponent implements OnInit {
     { code: 'GIAM50K', description: 'Giảm 50K cho đơn hàng trên 300.000đ' },
     { code: 'MANGAONLY', description: 'Giảm 20% khi mua manga' }
   ];
+  countries: any;
 
   constructor(
     private router: Router,
@@ -165,28 +174,54 @@ export class CheckoutComponent implements OnInit {
       0
     );
     this.discountedAmount = this.totalAmount;
+    this.http.get<City[]>('/assets/json/vietnamAddress.json').subscribe((data) => {
+      this.vietnamAddresses = data;
+      this.cities = data; // Lấy danh sách tỉnh/thành phố
+    });
+  }
+
+  get canSubmitOrder(): boolean {
+    return (
+      !!this.orderInfo.name &&
+      !!this.orderInfo.email &&
+      !!this.orderInfo.phone &&
+      !!this.orderInfo.address &&
+      !!this.orderInfo.payment
+    );
+  }
+
+  onCityChange(): void {
+    this.districts = this.selectedCity ? this.selectedCity.Districts : [];
+    this.selectedDistrict = undefined;
+    this.selectedWard = undefined;
+  }
+
+  onDistrictChange(): void {
+    this.wards = this.selectedDistrict ? this.selectedDistrict.Wards : [];
+    this.selectedWard = undefined;
   }
 
   payWithVnpay() {
-  const orderId = Date.now().toString(); // tạo mã đơn hàng
-  const amount = this.discountedAmount + this.shippingFee;
+    const orderId = Date.now().toString(); // tạo mã đơn hàng
+    const amount = this.discountedAmount + this.shippingFee;
+    console.log(amount);
 
-  this.http.get<{ url: string }>('http://localhost:3000/vnpay/create-payment-url', {
-    params: {
-      amount: amount.toString(),
-      orderId,
-    }
-  }).subscribe({
-    next: (res) => {
-      if (res.url) {
-        window.location.href = res.url; // ✅ chuyển hướng tới VNPay
+    this.http.get<{ url: string }>('http://localhost:3000/vnpay/create-payment-url', {
+      params: {
+        amount: amount.toString(),
+        orderId,
       }
-    },
-    error: (err) => {
-      console.error('Lỗi khi gọi create-payment-url:', err);
-    }
-  });
-}
+    }).subscribe({
+      next: (res) => {
+        if (res.url) {
+          window.open(res.url, '_blank'); // ✅ chuyển hướng tới VNPay
+        }
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi create-payment-url:', err);
+      }
+    });
+  }
 
   submitOrder() {
     if (!this.userInfo?._id || !this.orderInfo.address) return;
@@ -197,7 +232,7 @@ export class CheckoutComponent implements OnInit {
         value: this.orderInfo.address,
         isDefault: false
       };
-      
+
       const exists = this.addresses.some(addr => addr.value === newAddress.value);
       if (!exists) {
         this.addresses.push(newAddress);
@@ -256,6 +291,7 @@ export class CheckoutComponent implements OnInit {
             console.error('Lỗi cập nhật tồn kho:', err);
           }
         });
+
         localStorage.removeItem('cart');
         this.cartService.clearCart();
         this.router.navigate(['/']);
@@ -275,21 +311,47 @@ export class CheckoutComponent implements OnInit {
 
   onAddressChange(event: any) {
     if (!this.userInfo) return;
-  
-    const selectedValue = event.value; // Lấy địa chỉ vừa chọn từ event
-  
+
+    const selectedValue = event.value;
     const selected = this.userInfo.address.find((a: any) => a.value === selectedValue);
-  
+
     if (selected) {
       this.orderInfo.name = selected.fullName ?? '';
       this.orderInfo.phone = String(selected.phoneNumber);
-      this.orderInfo.address = selected.value;
+
+      // Tách lấy phần địa chỉ trước dấu ',' đầu tiên
+      const addressPart = selected.value.split(',')[0].trim();
+      this.orderInfo.address = addressPart;
+
+      // Xử lý phần tỉnh thành, quận huyện, phường xã để hiển thị dropdown
+      const parts = selected.value.split(',').map(p => p.trim());
+
+      const cityName = parts.find(p => p.toLowerCase().includes('thành phố') || p.toLowerCase().includes('tp')) || '';
+      const districtName = parts.find(p => p.toLowerCase().includes('quận') || p.toLowerCase().includes('huyện')) || '';
+      const wardName = parts.find(p => p.toLowerCase().includes('phường') || p.toLowerCase().includes('xã')) || '';
+
+      this.selectedCity = this.cities.find(c => cityName && c.Name.toLowerCase() === cityName.toLowerCase()) || undefined;
+      this.onCityChange();
+
+      this.selectedDistrict = this.districts.find(d => districtName && d.Name.toLowerCase() === districtName.toLowerCase()) || undefined;
+      this.onDistrictChange();
+
+      this.selectedWard = this.wards.find(w => wardName && w.Name.toLowerCase() === wardName.toLowerCase()) || undefined;
     } else if (selectedValue === 'other') {
       this.orderInfo.name = this.userInfo.full_name || '';
       this.orderInfo.phone = String(this.userInfo.phone_number || '');
       this.orderInfo.address = '';
+
+      this.selectedCity = undefined;
+      this.selectedDistrict = undefined;
+      this.selectedWard = undefined;
+
+      this.districts = [];
+      this.wards = [];
     }
   }
+
+
 
    // Hàm xử lý thay đổi khi người dùng nhập địa chỉ
   onAddressInput() {

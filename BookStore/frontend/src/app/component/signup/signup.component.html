@@ -33,8 +33,14 @@
           <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
         <mat-error *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched">
-          Mật khẩu phải có ít nhất 6 ký tự
-        </mat-error>
+  <ng-container *ngIf="signupForm.get('password')?.hasError('minlength')">
+    Mật khẩu phải có ít nhất 6 ký tự,
+  </ng-container>
+  <ng-container *ngIf="signupForm.get('password')?.hasError('weakPassword')">
+     1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt.
+  </ng-container>
+</mat-error>
+
       </mat-form-field>
   
       <!-- Xác nhận mật khẩu -->
@@ -73,8 +79,15 @@
       <mat-form-field appearance="outline">
         <mat-label>Email</mat-label>
         <input matInput type="email" formControlName="email" placeholder="example@gmail.com">
-        <mat-error *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
+        
+        <mat-error *ngIf="signupForm.get('email')?.hasError('required')">
+          Email không được bỏ trống
+        </mat-error>
+        <mat-error *ngIf="signupForm.get('email')?.hasError('email')">
           Vui lòng nhập đúng định dạng email
+        </mat-error>
+        <mat-error *ngIf="signupForm.get('email')?.hasError('emailTaken')">
+          Email đã được sử dụng
         </mat-error>
       </mat-form-field>
   
@@ -105,3 +118,4 @@
     </form>
   </div>
 </div>
+<p-toast></p-toast>

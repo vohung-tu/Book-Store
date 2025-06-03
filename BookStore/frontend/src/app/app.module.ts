@@ -17,6 +17,10 @@ import { MatInputModule } from '@angular/material/input';
 import Swiper from 'swiper';
 import { provideHttpClient } from '@angular/common/http';
 import { BooksService } from './service/books.service';
+import { MessageService } from 'primeng/api';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { ToastModule } from 'primeng/toast';
 
 @NgModule({
   declarations: [
@@ -37,12 +41,18 @@ import { BooksService } from './service/books.service';
     ReactiveFormsModule, //sử dụng reactive form để tạo form trang đăng ký/đăng nhập
     MatFormFieldModule,   // Material Form Field
     MatInputModule,
-    Swiper
+    Swiper,
+    ToastModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
        
   ],
   providers: [
     BooksService,
-    provideHttpClient()
+    provideHttpClient(),
+    MessageService,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
 })
 export class AppModule { }

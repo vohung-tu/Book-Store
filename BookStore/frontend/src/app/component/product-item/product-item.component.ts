@@ -34,6 +34,7 @@ import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 })
 export class ProductItemComponent implements OnInit{
   @Input() book!: BookDetails;
+  @Input() isUpcomingRelease: boolean = false;
   @Output() showToast = new EventEmitter<any>();
   isFavorite = false;
   averageRating = 0;
@@ -65,6 +66,7 @@ export class ProductItemComponent implements OnInit{
       });
     }
   }
+
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
     if (this.isFavorite) {
