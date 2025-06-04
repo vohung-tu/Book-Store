@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { map, Observable } from 'rxjs';
 import { AuthService } from '../../../service/auth.service';
 import { DotSeparatorPipe } from '../../../pipes/dot-separator.pipe';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-user-order',
@@ -15,7 +16,8 @@ import { DotSeparatorPipe } from '../../../pipes/dot-separator.pipe';
     CommonModule,
     TabsModule,
     DotSeparatorPipe,
-    TableModule
+    TableModule,
+    ButtonModule
   ],
   templateUrl: './user-order.component.html',
   styleUrls: ['./user-order.component.scss']
