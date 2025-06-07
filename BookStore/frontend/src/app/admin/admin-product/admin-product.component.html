@@ -72,7 +72,7 @@
         <td>
           <span [innerHTML]="product.description"
             [ngStyle]="{'max-height': expandedRows[i] ? '100%' : '82px', 'overflow': expandedRows[i] ? 'visible' : 'hidden'}"
-            style="white-space: normal; max-width: 600px; word-wrap: break-word; display: block;">
+            style="white-space: normal; max-width: 500px; word-wrap: break-word; display: block;">
           </span>
           <a class="expanded" (click)="toggleExpand(i)">
             {{ expandedRows[i] ? 'Thu gọn' : 'Xem thêm' }}
@@ -147,6 +147,7 @@
       <textarea
         [(ngModel)]="imagesInput"
         placeholder="Nhập link ảnh, mỗi ảnh 1 dòng"
+        style="width: 100%; height: 100%"
       ></textarea>
     </div>
     <div class="p-field">

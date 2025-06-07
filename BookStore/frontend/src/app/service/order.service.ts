@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Order } from '../model/order.model';
 
@@ -26,5 +26,18 @@ export class OrderService {
 
   updateOrderStatus(orderId: string, status: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${orderId}/status`, { status });
+  }
+
+  cancelOrder(orderId: string, reason: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    // Gửi PATCH hoặc PUT request để cập nhật trạng thái đơn hàng
+    return this.http.patch(`${this.apiUrl}/${orderId}/cancel`, { reason }, {
+      headers
+    });
   }
 }

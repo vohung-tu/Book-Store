@@ -4,10 +4,19 @@ import { TabsModule } from 'primeng/tabs';
 import { Order, Product } from '../../../model/order.model';
 import { OrderService } from '../../../service/order.service';
 import { TableModule } from 'primeng/table';
-import { map, Observable } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, tap } from 'rxjs';
 import { AuthService } from '../../../service/auth.service';
 import { DotSeparatorPipe } from '../../../pipes/dot-separator.pipe';
 import { ButtonModule } from 'primeng/button';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { CartService } from '../../../service/cart.service';
+import { NavigationEnd, Router } from '@angular/router';
+import { BookDetails } from '../../../model/books-details.model';
+import { BooksService } from '../../../service/books.service';
+import { DialogModule } from 'primeng/dialog';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-user-order',
@@ -17,10 +26,15 @@ import { ButtonModule } from 'primeng/button';
     TabsModule,
     DotSeparatorPipe,
     TableModule,
-    ButtonModule
+    ButtonModule,
+    ToastModule,
+    DialogModule,
+    RadioButtonModule,
+    FormsModule,
   ],
   templateUrl: './user-order.component.html',
-  styleUrls: ['./user-order.component.scss']
+  styleUrls: ['./user-order.component.scss'],
+  providers: [MessageService]
 })
 export class UserOrderComponent implements OnInit, OnDestroy {
   product$: Observable<Product[]>;
@@ -38,6 +52,27 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     { value: 'cancelled', title: 'Bị hủy', content: 'Đơn hàng bị hủy' },
     { value: 'returned', title: 'Đổi trả', content: 'Đơn hàng đổi trả' }
   ];
+  cancelReasons: string[] = [
+    'Không còn nhu cầu mua hàng',
+    'Đặt nhầm/trùng',
+    'Thêm/bớt sản phẩm',
+    'Quên nhập mã giảm giá',
+    'Không áp dụng được mã giảm giá',
+    'Đơn hàng bị tách ra quá nhiều lần giao',
+    'Thời gian giao hàng quá chậm',
+    'Thay đổi địa chỉ nhận hàng',
+    'Khác'
+  ];
+  // Biến lưu trạng thái mở/đóng dialog
+  cancelDialogVisible: boolean = false;
+
+  // Biến lưu lý do hủy đã chọn
+  selectedCancelReason: string = '';
+
+  // Biến lưu ID đơn hàng đang được yêu cầu hủy
+  selectedOrderIdToCancel: string = '';
+  confirmCancelDialogVisible = false;
+
 
   // Sử dụng trackBy cho tabs
   trackByValue(index: number, item: any): any {
@@ -54,15 +89,26 @@ export class UserOrderComponent implements OnInit, OnDestroy {
 
   constructor(
     private orderService: OrderService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cartService: CartService,
+    private messageService: MessageService,
+    private router: Router,
+    private bookService: BooksService
   ) {
     // Sản phẩm của đơn hàng nếu cần sử dụng riêng
     this.product$ = this.orderService.getOrders().pipe(
       map(orders => orders.flatMap(order => order.products))
     );
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.selectedTab = ''; // reset về tab mặc định
+        this.filterOrdersByTab(); // lọc lại nếu cần
+      }
+    });
   }
 
   ngOnInit(): void {
+    this.selectedTab = '';
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', this.storageEventListener);
     }
@@ -123,15 +169,27 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     this.filterOrdersByTab();
   }
 
+  openCancelDialog(orderId: string) {
+    this.selectedOrderIdToCancel = orderId;
+    this.cancelDialogVisible = true;
+  }
+
+  openConfirmCancelDialog() {
+    if (!this.selectedCancelReason) {
+      this.messageService.add({severity:'warn', summary:'Cảnh báo', detail:'Vui lòng chọn lý do hủy đơn!'});
+      return;
+    }
+    this.confirmCancelDialogVisible = true;
+  }
+
+  getOrdersByStatus(status: string): Order[] {
+    if (!status) return this.orders;
+    return this.orders.filter(order => order.status?.toLowerCase() === status.toLowerCase());
+  }
+
   // Lọc đơn hàng theo selectedTab
   filterOrdersByTab(): void {
-    console.log('Filtering orders...');
-    // Nếu SelectedTab rỗng thì hiển thị tất cả
-    this.filteredOrders = !this.selectedTab 
-      ? [...this.orders] 
-      : this.orders.filter(order => order.status.toLowerCase() === this.selectedTab);
-    
-    console.log('Filtered Orders count:', this.filteredOrders.length);
+    this.filteredOrders = this.getOrdersByStatus(this.selectedTab);
   }
 
   // Tính số đơn theo trạng thái (sử dụng lowercase để so sánh)
@@ -139,5 +197,74 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     return status 
       ? this.orders.filter(order => order.status.toLowerCase() === status.toLowerCase()).length 
       : this.orders.length;
+  }
+
+  cancelOrder(orderId: string, reason: string) {
+    if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+      this.orderService.cancelOrder(orderId, reason).subscribe({
+        next: (res) => {
+          this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã hủy đơn hàng.' });
+          this.filterOrdersByTab(); // refresh lại đơn hàng
+        },
+        error: (err) => {
+          this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể hủy đơn hàng.' });
+        }
+      });
+    }
+  }
+
+  confirmCancelOrder() {
+    this.orderService.cancelOrder(this.selectedOrderIdToCancel, this.selectedCancelReason).subscribe({
+      next: () => {
+        this.confirmCancelDialogVisible = false; 
+        this.cancelDialogVisible = false;
+        this.selectedCancelReason = '';
+        this.loadUserOrders();
+        this.messageService.add({severity:'success', summary:'Thành công', detail:'Đơn hàng đã được hủy.'});
+      },
+      error: err => {
+        this.confirmCancelDialogVisible = false;
+        this.messageService.add({severity:'error', summary:'Lỗi', detail:'Hủy đơn thất bại.'});
+        console.error('Hủy đơn thất bại:', err);
+      }
+    });
+  }
+
+  rebuyOrder(products: any[]): void {
+    const fetches = products.map(product =>
+      this.bookService.getBookById(product.productId || product._id).pipe(
+        tap(book => {
+          const bookWithQuantity = { ...book, quantity: product.quantity || 1 };
+          this.cartService.addToCart(bookWithQuantity);
+        }),
+        catchError(err => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Lỗi',
+            detail: `Không thể lấy thông tin sản phẩm ${product.title}`,
+          });
+          return of(null);
+        })
+      )
+    );
+
+    forkJoin(fetches).subscribe(() => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Đã thêm vào giỏ hàng',
+        detail: 'Bạn có thể kiểm tra lại trước khi thanh toán.',
+      });
+      this.router.navigate(['/cart']);
+    });
+  }
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'processing': return 'Đang xử lý';
+      case 'confirmed': return 'Đã xác nhận';
+      case 'shipping': return 'Đang giao hàng';
+      case 'completed': return 'Đã giao';
+      case 'cancelled': return 'Đã hủy';
+      default: return 'Chờ thanh toán';
+    }
   }
 }

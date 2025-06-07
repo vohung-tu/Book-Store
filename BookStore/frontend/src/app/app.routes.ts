@@ -26,10 +26,11 @@ import { ForgotPasswordComponent } from './component/forgot-password/forgot-pass
 import { ResetPasswordLinkComponent } from './component/reset-password-link/reset-password-link.component';
 
 const routes: Routes = [
-  { 
-    path: 'home', 
-    component: HomepageComponent 
-  }, // Trang chủ
+  {
+    path: 'home',
+    loadChildren: () =>
+      import('./component/homepage/homepage.module').then(m => m.HomepageModule)
+  },
   {
     path: '', 
     redirectTo: '/home', 

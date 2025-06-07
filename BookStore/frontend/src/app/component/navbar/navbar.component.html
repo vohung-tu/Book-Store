@@ -65,7 +65,7 @@
                   <mat-icon>person</mat-icon> Thông tin cá nhân
                 </button>
 
-                <button mat-menu-item *ngIf="userRole === 'admin'" routerLink="/admin/dashboard">
+                <button mat-menu-item *ngIf="userRole === 'admin'" routerLink="/admin/dashboard" target="_blank">
                   <mat-icon>admin_panel_settings</mat-icon> Quản trị
                 </button>
                 <button mat-menu-item (click)="signout()">

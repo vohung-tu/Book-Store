@@ -47,3 +47,64 @@
     color: #949191  ;
   }
 }
+p-tab {
+  background-color: #BE5985;
+  color: #fff;
+}
+/* Căn chỉnh label và radio button nằm cùng hàng, khoảng cách hợp lý */
+.p-field-radiobutton {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+}
+
+.p-field-radiobutton label {
+  margin-left: 0.5rem;
+  user-select: none;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Thêm padding cho phần nội dung */
+.p-fluid {
+  padding: 1rem 1.25rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  color: #444;
+}
+
+p > strong {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+  color: #222;
+}
+
+.ui-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: #f9f9f9;
+  border-top: 1px solid #ddd;
+}
+
+button.p-button.p-button-primary {
+  background-color: #d9534f;
+  border-color: #d43f3a;
+}
+
+button.p-button.p-button-primary:hover {
+  background-color: #c9302c;
+  border-color: #ac2925;
+}
+
+button.p-button.p-button-text {
+  color: #666;
+}
+
+button.p-button.p-button-text:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}

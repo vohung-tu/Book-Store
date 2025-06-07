@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Order } from './order.schema';
@@ -57,5 +57,28 @@ export class OrderService {
 
     order.status = updateStatusDto.status;
     return order.save();
+  }
+
+  async cancelOrder(orderId: string, userId: string): Promise<Order> {
+    const order = await this.orderModel.findById(orderId);
+    
+    if (!order) {
+      throw new NotFoundException('Đơn hàng không tồn tại');
+    }
+
+    if (order.userId.toString() !== userId.toString()) {
+      throw new ForbiddenException('Bạn không có quyền hủy đơn hàng này');
+    }
+
+    if (order.status === 'cancelled') {
+      throw new ForbiddenException('Đơn hàng đã bị hủy');
+    }
+
+    order.status = 'cancelled';
+    return await order.save();
+  }
+
+  async findOrdersByUserId(userId: string) {
+    return this.orderModel.find({ user: userId }).sort({ createdAt: -1 }).lean();
   }
 }

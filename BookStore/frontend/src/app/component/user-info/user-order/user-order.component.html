@@ -1,3 +1,4 @@
+<p-toast></p-toast>
 <p-tabs [(value)]="selectedTab">
   <p-tablist>
     <!-- Mỗi tab gọi selectTab (không gọi thêm filterOrdersByTab ở đây) -->
@@ -8,7 +9,7 @@
 
   <p-tabpanels>
     <!-- Duyệt qua mảng tabs, nhưng chỉ panel nào ứng với selectedTab mới render nội dung -->
-    <p-tabpanel *ngFor="let tab of tabs; trackBy: trackByValue">
+    <p-tabpanel *ngFor="let tab of tabs; trackBy: trackByValue" >
       <ng-container *ngIf="selectedTab === tab.value">
         <h3>{{ tab.content }}</h3>
         <div>
@@ -17,6 +18,11 @@
               <div class="order-code">
                 <h3>#{{ order._id }}</h3>
                 <p>{{ order.createdAt | date: 'short' }}</p>
+                <p style="color:#BE5985"><strong>Trạng thái:</strong>
+                  <span >
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </p> 
               </div>
 
               <p-table [value]="order.products" [tableStyle]="{'table-layout': 'fixed', 'width': '100%'}">
@@ -41,12 +47,33 @@
               </p-table>
 
               <h3 style="text-align: right; margin-top: 10px;">
-                Tổng tiền: {{ order.total | dotSeparator }}
+                Tổng tiền: {{ order.total | dotSeparator }} VNĐ
               </h3>
               <div class="rebuy">
-                <p-button class="cancel-btn" severity="success" label="Hủy Đơn" size="large"></p-button>
-                <p-button class="rebuy-btn" severity="success" label="Mua Lại" size="large" variant="outlined"></p-button>
-               
+                <p-button 
+                  *ngIf="selectedTab !== 'completed' && selectedTab !== 'cancelled'" 
+                  class="cancel-btn" 
+                  severity="success" 
+                  label="Hủy Đơn" 
+                  size="large" 
+                  (click)="openCancelDialog(order._id)">
+                </p-button>
+                <p-button 
+                  *ngIf="selectedTab === 'completed'" 
+                  class="review-btn" 
+                  severity="success" 
+                  label="Đánh Giá" 
+                  size="large"
+                  >
+                </p-button>
+                <p-button 
+                class="rebuy-btn" 
+                  severity="success" 
+                  label="Mua Lại" 
+                  size="large" 
+                  variant="outlined"
+                  (click)="rebuyOrder(order.products)">
+                </p-button>
               </div>
             </div>
           </ng-container>
@@ -62,3 +89,35 @@
     Không có đơn hàng nào trong trạng thái này.
   </p>
 </ng-template>
+<p-dialog 
+  header="Xác nhận hủy đơn" 
+  [(visible)]="cancelDialogVisible" 
+  [modal]="true" 
+  [closable]="false" 
+  [style]="{width: '400px'}">
+
+  <div class="p-fluid">
+    <p><strong>Chọn lý do hủy đơn:</strong></p>
+    
+    <div *ngFor="let reason of cancelReasons" class="p-field-radiobutton">
+      <p-radioButton 
+        name="cancelReason" 
+        [value]="reason" 
+        [(ngModel)]="selectedCancelReason" 
+        inputId="{{reason}}">
+      </p-radioButton>
+      <label [for]="reason">{{ reason }}</label>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Hủy bỏ" icon="pi pi-times" class="p-button-text" (click)="cancelDialogVisible = false"></button>
+    <button 
+      pButton 
+      label="Xác nhận hủy" 
+      icon="pi pi-check" 
+      (click)="confirmCancelOrder()" 
+      [disabled]="!selectedCancelReason">
+    </button>
+  </ng-template>
+</p-dialog>
