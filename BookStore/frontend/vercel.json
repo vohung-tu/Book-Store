@@ -1,12 +1,18 @@
 {
-  "outputDirectory": "dist/AppBookStore/browser",
+  "version": 2,
   "builds": [
     {
-      "src": "dist/AppBookStore/browser/**",
-      "use": "@vercel/static"
+      "src": "angular.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/app-book-store"
+      }
     }
   ],
   "routes": [
+    {
+      "handle": "filesystem"
+    },
     {
       "src": "/(.*)",
       "dest": "/index.html"
