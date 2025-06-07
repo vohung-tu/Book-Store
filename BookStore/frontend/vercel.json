@@ -1,0 +1,15 @@
+{
+  "outputDirectory": "dist/AppBookStore/browser",
+  "builds": [
+    {
+      "src": "dist/AppBookStore/browser/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
