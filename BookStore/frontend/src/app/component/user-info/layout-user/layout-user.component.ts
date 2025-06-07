@@ -6,6 +6,8 @@ import { CardModule } from 'primeng/card';
 import { User } from '../../../model/users-details.model';
 import { AuthService } from '../../../service/auth.service';
 import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-layout-user',
@@ -15,15 +17,19 @@ import { FormsModule } from '@angular/forms';
     CommonModule,
     ButtonModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    ToastModule
   ],
   templateUrl: './layout-user.component.html',
-  styleUrls: ['./layout-user.component.scss'] // ✅ Sửa từ `styleUrl` thành `styleUrls`
+  styleUrls: ['./layout-user.component.scss'],
+  providers: [MessageService]
 })
 export class LayoutUserComponent implements OnInit {
   currentUser: User | null = null;
   
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService,
+    private messageService: MessageService
+  ) {}
 
   ngOnInit(): void {
     this.getCurrentUser();
@@ -60,4 +66,29 @@ export class LayoutUserComponent implements OnInit {
     const defaultAddress = this.currentUser.address.find((addr: any) => addr.isDefault) || this.currentUser.address[0];
     return defaultAddress ? defaultAddress.value : '';
   }
+
+  onSaveChanges(): void {
+    if (!this.currentUser) return;
+
+    this.authService.updateUser(this.currentUser).subscribe({
+      next: (updatedUser) => {
+        this.currentUser = updatedUser as User;
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Cập nhật thành công',
+          detail: 'Thông tin của bạn đã được lưu.'
+        });
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Cập nhật thất bại',
+          detail: 'Đã xảy ra lỗi khi lưu thông tin.'
+        });
+      }
+    });
+  }
+
 }

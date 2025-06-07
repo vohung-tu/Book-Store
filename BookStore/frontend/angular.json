@@ -67,6 +67,29 @@
           },
           "defaultConfiguration": "production"
         },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/app-book-store/server",
+            "main": "src/main.server.ts",
+            "tsConfig": "tsconfig.server.json"
+          },
+          "configurations": {
+            "production": {
+              "sourceMap": false,
+              "optimization": true
+            }
+          }
+        },
+        "prerender": {
+          "builder": "@nguniversal/builders:prerender",
+          "options": {
+            "browserTarget": "AppBookStore:build:production",
+            "serverTarget": "AppBookStore:server:production",
+            "routes": ["/"]
+          }
+        },
+
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {

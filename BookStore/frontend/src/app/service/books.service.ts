@@ -7,7 +7,7 @@ import { BookDetails } from '../model/books-details.model';
   providedIn: 'root' // Đảm bảo service được cung cấp toàn cục
 })
 export class BooksService {
-  private readonly apiUrl = 'http://localhost:3000/books'; //  Dùng `readonly` để tránh thay đổi URL
+  private readonly apiUrl = 'https://book-store-3-svnz.onrender.com/books'; //  Dùng `readonly` để tránh thay đổi URL
 
   constructor(private http: HttpClient) {}
 

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthenticatedRequest } from './auth.interface';
 import { JwtAuthGuard } from './jwt.auth.guard';
@@ -67,4 +67,9 @@ export class AuthController {
 
         return updatedUser;
     }
+
+    // @Put('update/:id')
+    //     updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    //     return this.authService.updateUser(id, updateUserDto);
+    //     }
 }

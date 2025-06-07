@@ -111,7 +111,7 @@ export class AdminProductComponent {
   }
 
   fetchProducts() {
-    this.http.get<any[]>('http://localhost:3000/books').subscribe({
+    this.http.get<any[]>('https://book-store-3-svnz.onrender.com/books').subscribe({
       next: data => {
         this.products = data.map(book => ({
           ...book,
@@ -177,7 +177,7 @@ export class AdminProductComponent {
       // Gán ảnh phụ vào sản phẩm đang chỉnh sửa
       this.editingProduct.images = imageLinks;
 
-      this.http.put(`http://localhost:3000/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
+      this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
         next: () => {
           this.fetchProducts();
           this.resetDialog();
@@ -188,7 +188,7 @@ export class AdminProductComponent {
       // Gán ảnh phụ vào sản phẩm mới
       this.newProduct.images = imageLinks;
 
-      this.http.post(`http://localhost:3000/books`, this.newProduct).subscribe({
+      this.http.post(`https://book-store-3-svnz.onrender.com/books`, this.newProduct).subscribe({
         next: () => {
           this.fetchProducts();
           this.resetDialog();
@@ -231,7 +231,7 @@ export class AdminProductComponent {
   
   deleteProduct(product: any) {
     if (confirm(`Bạn có chắc muốn xoá sản phẩm "${product.title}"?`)) {
-      this.http.delete(`http://localhost:3000/books/${product.id}`).subscribe({
+      this.http.delete(`https://book-store-3-svnz.onrender.com/books/${product.id}`).subscribe({
         next: () => {
           this.products = this.products.filter(p => p.id !== product.id);
           console.log('Đã xoá sản phẩm');

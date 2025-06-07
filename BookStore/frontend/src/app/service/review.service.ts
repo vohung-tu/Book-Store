@@ -5,7 +5,7 @@ import { Review } from '../model/review.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
-  private baseUrl = 'http://localhost:3000/reviews'; // Backend NestJS endpoint
+  private baseUrl = 'https://book-store-3-svnz.onrender.com/reviews'; // Backend NestJS endpoint
 
   constructor(private http: HttpClient) {}
 

@@ -107,7 +107,7 @@ export class AdminAuthorComponent implements OnInit{
 
   openEditDialog(author: Author) {
     this.newAuthor = { ...author }; // Sao chép dữ liệu tác giả vào biến mới
-    this.previewImage = 'http://localhost:3000' + author.avatar; // Hiển thị ảnh cũ
+    this.previewImage = 'https://book-store-3-svnz.onrender.com' + author.avatar; // Hiển thị ảnh cũ
     this.showEditDialog = true;
   }
 
