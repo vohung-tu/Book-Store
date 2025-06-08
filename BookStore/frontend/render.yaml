@@ -1,0 +1,6 @@
+services:
+  - type: static
+    name: book-store-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist/app-book-store/browser
