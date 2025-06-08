@@ -35,9 +35,14 @@
           <ng-container *ngIf="books?.images as imgs">
             <ng-container *ngIf="imgs.length > 4">
               <!-- Nội dung khi có hơn 4 ảnh -->
-              <div class="sub-image overlay" (click)="changeCover(books.images?.[3]!)">
-
-                <div *ngIf="extraImagesCount > 0" class="overlay-text">+{{ extraImagesCount }}</div>
+              <div class="sub-image overlay" (click)="changeCover(books.images?.[3]!)"
+              [style.backgroundImage]="'url(' + books.images?.[3]! + ')'">
+                <img 
+                    [src]="books.images?.[3]!" 
+                    alt="Ảnh phụ sách" 
+                    class="sub-image-overlay-img"
+                  />
+                <div class="overlay-text" *ngIf="books?.images as imgs">+{{ imgs.length - 3 }}</div>
               </div>
             </ng-container>
           </ng-container>
@@ -57,7 +62,7 @@
           </div>
 
           <p><strong>Tác giả:</strong> 
-            <a *ngIf="book?.author" [routerLink]="['/author', book.author._id]" class="author-href" target="_blank">
+            <a *ngIf="book?.author" [routerLink]="['/author', book.author._id]" class="author-href" target="_blank" style="text-decoration: none;">
               {{ book.author }}
             </a>
           </p>
@@ -144,14 +149,14 @@
             <textarea pTextarea rows="4" placeholder="Nhập nhận xét của bạn về sản phẩm" [(ngModel)]="review.comment" style="width: 100%; border-radius: 10px; height: 200px;"></textarea>
           </div>
           <!-- Thêm upload hình ảnh và video -->
-          <div class="p-mt-3">
+          <!-- <div class="p-mt-3">
             <label>Thêm hình ảnh:</label>
             <input type="file" accept="image/*" (change)="onFileSelected($event, 'image')" />
 
             <div *ngIf="imagePreview" class="p-mt-2">
               <img [src]="imagePreview" alt="Ảnh đánh giá" style="max-width: 200px;" />
             </div>
-          </div>
+          </div> -->
 
           <div class="p-d-flex p-jc-between">
             <button pButton label="Hủy" class="p-button-text" (click)="showReviewDialog = false"></button>

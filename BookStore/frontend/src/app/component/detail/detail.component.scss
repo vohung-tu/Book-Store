@@ -42,6 +42,8 @@
       width: 70px;
       height: 80px;
       object-fit: cover; /* Cắt ảnh vừa khung mà không méo */
+      margin-right: 6px;
+      border-radius: 4px;
       cursor: pointer;
       position: relative;
       border-radius: 4px;
@@ -54,7 +56,17 @@
 
     .sub-image.overlay {
       position: relative;
+      display: inline-block;
     }
+
+    .sub-image-overlay-img {
+      width: 70px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      filter: brightness(0.6);
+    }
+
 
     .sub-image.overlay .overlay-text {
       position: absolute;
@@ -62,7 +74,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.6); /* Màu nền đen mờ */
+      background-color: rgba(94, 93, 93, 0.6); /* Màu nền đen mờ */
       color: white;
       font-weight: bold;
       font-size: 18px;

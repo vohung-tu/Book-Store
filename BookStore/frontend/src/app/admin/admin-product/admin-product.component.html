@@ -72,10 +72,10 @@
         <td>
           <span [innerHTML]="product.description"
             [ngStyle]="{'max-height': expandedRows[i] ? '100%' : '82px', 'overflow': expandedRows[i] ? 'visible' : 'hidden'}"
-            style="white-space: normal; max-width: 500px; word-wrap: break-word; display: block;">
+            style="white-space: normal; max-width: 300px; word-wrap: break-word; display: block;">
           </span>
           <a class="expanded" (click)="toggleExpand(i)">
-            {{ expandedRows[i] ? 'Thu gọn' : 'Xem thêm' }}
+            <strong>{{ expandedRows[i] ? 'Thu gọn' : 'Xem thêm' }}</strong>
           </a>
         </td>
         <td>{{ product.price | dotSeparator }}</td>
@@ -85,9 +85,20 @@
         <td>{{ getCategoryLabel(product.categoryName) }}</td>
         <td>{{ product.quantity }}</td>
         <td>
-          <ng-container *ngFor="let img of product.images">
-            <img [src]="img" alt="ảnh phụ" width="40" style="margin-right: 4px" />
+          <ng-container *ngIf="product.images?.length > 0; else noImages">
+            <img
+              *ngFor="let img of product.images"
+              [src]="img"
+              alt="Ảnh phụ"
+              width="40"
+              height="40"
+              style="margin-right: 4px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc"
+            />
           </ng-container>
+
+          <ng-template #noImages>
+            <span style="color: gray; font-style: italic;">Không có ảnh</span>
+          </ng-template>
         </td>
         <td>
           <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editProduct(product)"></button>
@@ -143,12 +154,17 @@
       <input pInputText type="text" [(ngModel)]="productForm.quantity" />
     </div>
     <div class="p-field">
-      <label>Ảnh phụ (link)</label>
-      <textarea
-        [(ngModel)]="imagesInput"
-        placeholder="Nhập link ảnh, mỗi ảnh 1 dòng"
-        style="width: 100%; height: 100%"
-      ></textarea>
+      <label>Ảnh phụ</label>
+      <input type="file" multiple (change)="onAdditionalImagesSelected($event)" />
+      <div class="image-preview-container">
+        <img
+          *ngFor="let img of productForm.images"
+          [src]="img"
+          alt="preview"
+          width="100"
+          class="preview-img"
+        />
+      </div>
     </div>
     <div class="p-field">
       <label>Ảnh bìa</label>

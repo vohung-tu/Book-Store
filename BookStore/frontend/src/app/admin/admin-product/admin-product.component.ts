@@ -160,13 +160,27 @@ export class AdminProductComponent {
       reader.readAsDataURL(file);
     }
   }
+  onAdditionalImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (input.files && input.files.length > 0) {
+      this.productForm.images = []; // clear old previews
+
+      Array.from(input.files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (reader.result) {
+            this.productForm.images.push(reader.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
 
   saveProduct() {
-  // Tách các link ảnh phụ thành mảng
-    const imageLinks = this.imagesInput
-      .split('\n')
-      .map((url) => url.trim())
-      .filter((url) => !!url);
+  // Dùng ảnh phụ từ productForm.additionalImages
+    const additionalImages = this.productForm.images || [];
 
     if (this.isEditMode) {
       if (!this.editingProduct?.id) {
@@ -174,8 +188,9 @@ export class AdminProductComponent {
         return;
       }
 
-      // Gán ảnh phụ vào sản phẩm đang chỉnh sửa
-      this.editingProduct.images = imageLinks;
+      // Gán ảnh bìa và ảnh phụ
+      this.editingProduct.coverImage = this.productForm.coverImage;
+      this.editingProduct.images = additionalImages;
 
       this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
         next: () => {
@@ -184,9 +199,11 @@ export class AdminProductComponent {
         },
         error: (err) => console.error('Lỗi khi cập nhật sản phẩm', err)
       });
+
     } else {
-      // Gán ảnh phụ vào sản phẩm mới
-      this.newProduct.images = imageLinks;
+      // Gán ảnh bìa và ảnh phụ cho sản phẩm mới
+      this.newProduct.coverImage = this.productForm.coverImage;
+      this.newProduct.images = additionalImages;
 
       this.http.post(`https://book-store-3-svnz.onrender.com/books`, this.newProduct).subscribe({
         next: () => {
@@ -197,6 +214,7 @@ export class AdminProductComponent {
       });
     }
   }
+
 
 
   resetDialog() {
