@@ -24,7 +24,7 @@
             "stylePreprocessorOptions": {
               "includePaths": ["src/style/layout"]
             },
-            "outputPath": "dist/app-book-store",
+            "outputPath": "dist/app-book-store/browser",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
