@@ -3,8 +3,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthenticatedRequest } from './auth.interface';
 import { JwtAuthGuard } from './jwt.auth.guard';
 import { UsersService } from '../users.service';
-import { ResetPasswordDto } from '../dto/forgot-password.dto';
 import { AuthService } from './auth.service';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -68,8 +68,8 @@ export class AuthController {
         return updatedUser;
     }
 
-    // @Put('update/:id')
-    //     updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    //     return this.authService.updateUser(id, updateUserDto);
-    //     }
+    @Put('update/:id')
+    async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.authService.updateUser(id, updateUserDto);
+    }
 }

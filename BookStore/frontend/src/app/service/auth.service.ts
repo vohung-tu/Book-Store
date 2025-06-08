@@ -205,7 +205,7 @@ export class AuthService {
     );
   }
 
-  updateUser(user: any) {
+  updateUser(user: User) {
     return this.http.put(`${this.API_URL}/update/${user._id}`, user);
   }
 

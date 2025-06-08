@@ -9,6 +9,7 @@ import { UsersService } from "../users.service";
 import { v4 as uuidv4 } from 'uuid';
 import { ResetPasswordDto } from "../dto/forgot-password.dto";
 import { MailService } from "src/order/order/email.service";
+import { UpdateUserDto } from "../dto/update-user.dto";
 
 @Injectable()
 export class AuthService {
@@ -93,4 +94,7 @@ export class AuthService {
   }
 
 
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
+  }
 }
