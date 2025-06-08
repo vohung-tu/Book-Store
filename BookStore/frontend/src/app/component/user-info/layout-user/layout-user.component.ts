@@ -26,6 +26,8 @@ import { ToastModule } from 'primeng/toast';
 })
 export class LayoutUserComponent implements OnInit {
   currentUser: User | null = null;
+  birthDate!: string;
+  today: string = new Date().toISOString().split('T')[0];
   
   constructor(private authService: AuthService,
     private messageService: MessageService
@@ -33,19 +35,28 @@ export class LayoutUserComponent implements OnInit {
 
   ngOnInit(): void {
     this.getCurrentUser();
+    if (this.currentUser?.birth) {
+      const date = new Date(this.currentUser.birth);
+      this.birthDate = date.toISOString().split('T')[0]; // "yyyy-MM-dd"
+    }
+
   }
 
   getCurrentUser(): void {
-    if (typeof window === 'undefined') return; 
-    console.log(localStorage.getItem('token'));
+    if (typeof window === 'undefined') return;
     const token = localStorage.getItem('token');
     if (!token) return;
-    
+
     this.authService.getProfile().subscribe({
       next: (user) => {
         if (user) {
-
           this.currentUser = user;
+
+          // ✅ Di chuyển xử lý birthDate vào đây
+          if (this.currentUser.birth) {
+            const date = new Date(this.currentUser.birth);
+            this.birthDate = date.toISOString().split('T')[0]; // "yyyy-MM-dd"
+          }
         } else {
           console.error('Không thể lấy thông tin người dùng');
         }
@@ -55,6 +66,7 @@ export class LayoutUserComponent implements OnInit {
       }
     });
   }
+
 
   // Hàm để lấy địa chỉ mặc định
   getDefaultAddress() {

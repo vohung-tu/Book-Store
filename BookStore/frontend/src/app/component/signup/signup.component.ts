@@ -5,15 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { BrowserModule } from '@angular/platform-browser';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AuthService } from '../../service/auth.service';
 import { catchError, debounceTime, map, of, switchMap } from 'rxjs';
 import { MessageService } from 'primeng/api';
-import {   ToastModule } from 'primeng/toast';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-signup',
@@ -43,7 +42,8 @@ export class SignupComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private messageService: MessageService) {
+    private messageService: MessageService,
+    private router: Router) {
       this.signupForm = this.fb.group({
         full_name: ['', Validators.required],
         username: ['', [Validators.required, Validators.minLength(4)]],
@@ -113,10 +113,23 @@ export class SignupComponent {
   
       this.authService.signup(userData).subscribe(
         () => {
-          this.messageService.add({severity:'success', summary:'Thành công', detail:'Đăng ký thành công'});
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Thành công',
+            detail: 'Đăng ký thành công'
+          });
+
+          // 👇 Chuyển sang trang đăng nhập sau 1-2 giây
+          setTimeout(() => {
+            this.router.navigate(['/signin']);
+          }, 1500);
         },
         () => {
-          this.messageService.add({severity:'error', summary:'Lỗi', detail:'Đăng ký thất bại'});
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Lỗi',
+            detail: 'Đăng ký thất bại'
+          });
         }
       );
     }
