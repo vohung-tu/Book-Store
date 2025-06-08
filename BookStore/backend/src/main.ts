@@ -8,7 +8,10 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:4200', // Cho phép Frontend truy cập
+    origin: [
+    'http://localhost:4200',
+    'https://book-store-9krz-git-main-vo-hung-tus-projects-326c6a02.vercel.app'
+  ],  
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
