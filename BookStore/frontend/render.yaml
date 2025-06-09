@@ -1,6 +1,8 @@
 services:
-  - type: static
-    name: book-store-frontend
-    rootDir: frontend
-    buildCommand: npm install && npm run buildAdd commentMore actions
+  - type: web
+    name: app-book-store-frontend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s dist/app-book-store/browser
     staticPublishPath: dist/app-book-store
+    plan: free
