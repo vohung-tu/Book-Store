@@ -97,7 +97,7 @@ export class CheckoutComponent implements OnInit {
       code: 'MANGAONLY',
       discountType: 'percentage',
       value: 20,
-      applicableProductIds: ['67d476cebc4adca790816959', '67d47799bc4adca79081695b', '67d477d6bc4adca79081695c'], // ID sản phẩm manga
+      applicableProductIds: ['67d476cebc4adca790816959', '67d47799bc4adca79081695b', '67d477d6bc4adca79081695c', '6808f1d2bb1a5697f5ee1698', '6820958784a25778e6197d2f', '683197de692b739c9c44b599', '6831c0e082b8e236bfe33cab'], // ID sản phẩm manga
     }
   ];
 
