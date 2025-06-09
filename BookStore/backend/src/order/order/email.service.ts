@@ -13,7 +13,7 @@ export class MailService {
   });
 
   async sendResetPasswordEmail(to: string, resetToken: string) {
-    const resetLink = `http://localhost:4200/reset-password-link?token=${resetToken}`;
+    const resetLink = `https://book-store-aquj.onrender.com/reset-password-link?token=${resetToken}`;
     const mailOptions = {
       from: '"Hệ thống" <your_email@gmail.com>',
       to,
