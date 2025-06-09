@@ -2,10 +2,10 @@
   "version": 2,
   "builds": [
     {
-      "src": "BookStore/frontend/",
+      "src": "BookStore/frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist/app-book-store"
+        "distDir": "BookStore/frontend/dist/app-book-store"
       }
     }
   ],
