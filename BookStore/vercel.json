@@ -1,18 +1,5 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "BookStore/frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "BookStore/frontend/dist/app-book-store"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
   ]
 }
