@@ -10,8 +10,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
     'http://localhost:4200',
-    'https://book-store-9krz-git-main-vo-hung-tus-projects-326c6a02.vercel.app',
-    'https://book-store-aquj.onrender.com'
+    'https://book-store-v302.onrender.com'
   ],  
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
