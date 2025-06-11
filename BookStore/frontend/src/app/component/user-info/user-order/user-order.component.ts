@@ -165,9 +165,6 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     } else {
       console.error('Không tìm thấy thông tin user');
     }
-    this.orderService.getOrders().subscribe((orders) => {
-    this.orders = orders; // ✅ phải gán lại vào biến đang dùng trong template
-  });
   }
 
   // trackBy function cho order trong ngFor
