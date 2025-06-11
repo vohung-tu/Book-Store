@@ -17,7 +17,8 @@ import { BooksService } from '../../../service/books.service';
 import { DialogModule } from 'primeng/dialog';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { FormsModule } from '@angular/forms';
-
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 @Component({
   selector: 'app-user-order',
   standalone: true,
@@ -31,10 +32,11 @@ import { FormsModule } from '@angular/forms';
     DialogModule,
     RadioButtonModule,
     FormsModule,
+    ConfirmDialogModule
   ],
   templateUrl: './user-order.component.html',
   styleUrls: ['./user-order.component.scss'],
-  providers: [MessageService]
+  providers: [MessageService, ConfirmationService]
 })
 export class UserOrderComponent implements OnInit, OnDestroy {
   product$: Observable<Product[]>;
@@ -42,6 +44,9 @@ export class UserOrderComponent implements OnInit, OnDestroy {
   filteredOrders: Order[] = [];
   selectedTab: string = ''; 
   isOrdersLoaded = false; // Kiểm soát việc gọi API nhiều lần
+  discountedAmount: number = 0;
+  selectedBooks: BookDetails[] = [];
+  totalAmount: number = 0;
 
   tabs = [
     { value: '', title: 'Tất cả', content: 'Tất cả đơn hàng' },
@@ -93,7 +98,8 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private messageService: MessageService,
     private router: Router,
-    private bookService: BooksService
+    private bookService: BooksService,
+    private confirmationService: ConfirmationService
   ) {
     // Sản phẩm của đơn hàng nếu cần sử dụng riêng
     this.product$ = this.orderService.getOrders().pipe(
@@ -120,6 +126,10 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     if (typeof window !== 'undefined') {
       window.removeEventListener('storage', this.storageEventListener);
     }
+    this.totalAmount = this.selectedBooks.reduce(
+      (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+      0
+    );
   }
 
   // Hàm reload (có thể được gọi qua sự kiện storage) sẽ bỏ qua kiểm tra isOrdersLoaded
@@ -155,6 +165,9 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     } else {
       console.error('Không tìm thấy thông tin user');
     }
+    this.orderService.getOrders().subscribe((orders) => {
+    this.orders = orders; // ✅ phải gán lại vào biến đang dùng trong template
+  });
   }
 
   // trackBy function cho order trong ngFor
@@ -219,6 +232,7 @@ export class UserOrderComponent implements OnInit, OnDestroy {
         this.confirmCancelDialogVisible = false; 
         this.cancelDialogVisible = false;
         this.selectedCancelReason = '';
+        this.isOrdersLoaded = false;
         this.loadUserOrders();
         this.messageService.add({severity:'success', summary:'Thành công', detail:'Đơn hàng đã được hủy.'});
       },

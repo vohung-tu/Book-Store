@@ -16,4 +16,5 @@ export interface BookDetails {
   quantity?: number,
   categoryName: string,
   reviews?: Review[];
+  [key: string]: any;
 }

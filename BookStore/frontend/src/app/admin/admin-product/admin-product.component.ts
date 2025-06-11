@@ -12,6 +12,10 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 import { Editor } from 'primeng/editor';
+import { AuthorService } from '../../service/author.service';
+import { Author } from '../../model/author.model';
+import { ActivatedRoute } from '@angular/router';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-admin-product',
@@ -30,6 +34,7 @@ import { Editor } from 'primeng/editor';
     DotSeparatorPipe,
     Editor
   ],
+  providers: [MessageService],
   templateUrl: './admin-product.component.html',
   styleUrls: ['./admin-product.component.scss']
 })
@@ -45,10 +50,12 @@ export class AdminProductComponent {
   selectedProducts: any[] = [];
   text: string | undefined;
   imagesInput: string = ''; 
+  authors: Author[] = [];
 
   newProduct = {
     title: '',
-    author: '',
+    author: {},
+    authorId: '',
     description: '',
     price: 0,
     flashsale_price: 0,
@@ -59,6 +66,7 @@ export class AdminProductComponent {
     images: [] as string[],
     coverImage: ''
   };
+  selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
 
   categories = [
     { label: 'Sách Trong Nước', value: 'sach-trong-nuoc' },
@@ -81,11 +89,15 @@ export class AdminProductComponent {
   };
   
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authorService: AuthorService, private messageService: MessageService) {}
 
   ngOnInit(): void {
-    this.fetchProducts();
+    
     this.filteredProducts = this.products;
+    this.authorService.getAuthors().subscribe(data => {
+      this.authors = data;
+      this.fetchProducts();
+    });
   }
 
   getCategoryLabel(slug: string): string {
@@ -110,20 +122,50 @@ export class AdminProductComponent {
     console.log(this.expandedRows);
   }
 
+  onAuthorSelect(event: any) {
+    const selectedAuthor = this.authors.find(author => author._id === event.value);
+
+    if (selectedAuthor) {
+      this.productForm.author = { _id: selectedAuthor._id, name: selectedAuthor.name }; // ✅ Lưu cả `_id` và `name`
+    }
+  }
+
   fetchProducts() {
     this.http.get<any[]>('https://book-store-3-svnz.onrender.com/books').subscribe({
       next: data => {
-        this.products = data.map(book => ({
-          ...book,
-          id: book._id    // gán _id thành id để phù hợp với dataKey
-        }));
-        this.filteredProducts = data.map(book => ({
-          ...book,
-          id: book._id    // gán _id thành id để phù hợp với dataKey
-        }));
+
+        this.products = data.map(book => {
+          let authorObj = { name: 'Không rõ', _id: '' };
+
+          if (typeof book.author === 'object' && book.author?.name) {
+            authorObj = {
+              _id: book.author._id || '',
+              name: book.author.name
+            };
+          } else if (typeof book.author === 'string') {
+            const found = this.authors.find(a => a._id === book.author);
+            if (found) {
+              authorObj = {
+                _id: found._id || '',
+                name: found.name || 'Không rõ'
+              };
+            } else {
+              authorObj = { _id: book.author, name: 'Không rõ' };
+            }
+          }
+
+          return {
+            ...book,
+            id: book._id,
+            author: authorObj
+          };
+        });
+
+        this.filteredProducts = [...this.products];
       },
-      error: err => console.error('Lỗi khi lấy danh sách sản phẩm', err)
+      error: err => console.error('❌ Lỗi khi lấy danh sách sản phẩm:', err)
     });
+
   }
 
   openAddProductDialog() {
@@ -142,7 +184,20 @@ export class AdminProductComponent {
   deleteSelectedProducts() {
     if (this.selectedProducts && this.selectedProducts.length) {
       this.filteredProducts = this.filteredProducts.filter(p => !this.selectedProducts.includes(p));
+      const count = this.selectedProducts.length;
       this.selectedProducts = [];
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Đã xoá sản phẩm',
+        detail: `${count} sản phẩm đã được xoá khỏi danh sách.`,
+      });
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Chưa chọn sản phẩm',
+        detail: 'Vui lòng chọn sản phẩm để xoá.',
+      });
     }
   }
 
@@ -179,8 +234,9 @@ export class AdminProductComponent {
   }
 
   saveProduct() {
-  // Dùng ảnh phụ từ productForm.additionalImages
     const additionalImages = this.productForm.images || [];
+    const selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
+    const wasEditMode = this.isEditMode; // ⬅️ Lưu trạng thái trước khi reset
 
     if (this.isEditMode) {
       if (!this.editingProduct?.id) {
@@ -188,48 +244,61 @@ export class AdminProductComponent {
         return;
       }
 
-      // Gán ảnh bìa và ảnh phụ
       this.editingProduct.coverImage = this.productForm.coverImage;
       this.editingProduct.images = additionalImages;
+      this.editingProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
 
       this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
         next: () => {
           this.fetchProducts();
           this.resetDialog();
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Thành công',
+            detail: `Sản phẩm đã được ${wasEditMode ? 'cập nhật' : 'thêm mới'}.`,
+            life: 3000
+          });
         },
         error: (err) => console.error('Lỗi khi cập nhật sản phẩm', err)
       });
 
     } else {
-      // Gán ảnh bìa và ảnh phụ cho sản phẩm mới
       this.newProduct.coverImage = this.productForm.coverImage;
       this.newProduct.images = additionalImages;
+      this.newProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
 
       this.http.post(`https://book-store-3-svnz.onrender.com/books`, this.newProduct).subscribe({
         next: () => {
           this.fetchProducts();
           this.resetDialog();
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Thành công',
+            detail: `Sản phẩm  đã được ${wasEditMode ? 'cập nhật' : 'thêm mới'}.`,
+            life: 3000
+          });
         },
         error: (err) => console.error('Lỗi khi thêm sản phẩm', err)
       });
     }
   }
 
-
-
   resetDialog() {
     this.displayAddDialog = false;
     this.isEditMode = false;
     this.editingProduct = null;
     this.newProduct = {
-      title: '', 
-      author: '', 
+      title: '',
+      author: {},
+      authorId: '',
       description: '',
-      price: 0, 
-      flashsale_price: 0, 
+      price: 0,
+      flashsale_price: 0,
       discount_percent: 0,
-      publishedDate: '', 
-      categoryName: '', 
+      publishedDate: '',
+      categoryName: '',
       quantity: 0,
       images: [] as string[],
       coverImage: ''
@@ -240,9 +309,26 @@ export class AdminProductComponent {
     return this.isEditMode ? this.editingProduct : this.newProduct;
   }
 
+  get formattedPublishedDate(): string {
+    const date = this.productForm.publishedDate;
+    if (!date) return '';
+
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  onDateChange(value: string) {
+    this.productForm.publishedDate = value;
+  }
+
   editProduct(product: any) {
     this.isEditMode = true;
     this.editingProduct = { ...product };
+    this.editingProduct.authorId = product.author?._id || '';
     this.newProduct = { ...product };   
     this.displayAddDialog = true;
   }
@@ -252,9 +338,20 @@ export class AdminProductComponent {
       this.http.delete(`https://book-store-3-svnz.onrender.com/books/${product.id}`).subscribe({
         next: () => {
           this.products = this.products.filter(p => p.id !== product.id);
-          console.log('Đã xoá sản phẩm');
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Xoá thành công',
+            detail: `Sản phẩm "${product.title}" đã được xoá.`,
+          });
         },
-        error: (err) => console.error('Lỗi khi xoá sản phẩm', err)
+        error: (err) => {
+          console.error('Lỗi khi xoá sản phẩm', err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Lỗi xoá',
+            detail: `Không thể xoá sản phẩm "${product.title}".`,
+          });
+        }
       });
     }
   }

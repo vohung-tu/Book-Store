@@ -1,7 +1,13 @@
 <div class="book-item">
   <img [src]="book.coverImage" alt="{{ book.title }}" />
   <h3>{{ book.title }}</h3>
-  <p>Tác giả: {{ book.author }}</p>
+  <p>
+    <b>Tác giả:</b>
+    <span *ngIf="authorId && authorName !== 'Không rõ'" class="author-href">
+      {{ authorName }}
+    </span>
+    <span *ngIf="!authorId || authorName === 'Không rõ'">Không rõ</span>
+  </p>
   <h4>Giá: {{ book.flashsale_price | dotSeparator  }} đ</h4>
   <div class="discount">
     <h5>{{ book.price | dotSeparator }} đ</h5>

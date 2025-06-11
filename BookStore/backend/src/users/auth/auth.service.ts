@@ -35,7 +35,7 @@ export class AuthService {
       throw new BadRequestException('Mật khẩu không đúng.');
     }
 
-    // Tạo token JWT
+    // Tạo token JWT  
     const token = this.signToken(user);
     return { token, user };
   }

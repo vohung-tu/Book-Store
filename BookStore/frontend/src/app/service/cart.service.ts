@@ -22,16 +22,12 @@ export class CartService {
   }
 
   private loadCart(): void {
-    if (typeof window !== 'undefined') {
-      const cartData = sessionStorage.getItem('cart');
-      if (cartData) {
-        const storage = this.authService.isAuthenticated() ? localStorage : sessionStorage;
-        const cartData = storage.getItem('cart');
-        this.cart = cartData ? JSON.parse(cartData) : [];
-        this.cartSubject.next([...this.cart]);
-      }
-    }
-  }
+  const storage = this.authService.isAuthenticated() ? localStorage : sessionStorage;
+  const cartData = storage.getItem('cart');
+
+  this.cart = cartData ? JSON.parse(cartData) : [];
+  this.cartSubject.next([...this.cart]);
+}
 
   private saveCart(): void {
     const storage = this.authService.isAuthenticated() ? localStorage : sessionStorage;
