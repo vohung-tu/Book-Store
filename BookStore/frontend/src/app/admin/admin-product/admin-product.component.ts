@@ -176,7 +176,7 @@ export class AdminProductComponent {
     const query = this.searchText.toLowerCase();
     this.filteredProducts = this.products.filter(p =>
       p.title.toLowerCase().includes(query) ||
-      p.author.toLowerCase().includes(query) ||
+      p.author.name.toLowerCase().includes(query) ||
       p.categoryName.toLowerCase().includes(query)
     );
   }
