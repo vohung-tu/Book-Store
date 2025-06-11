@@ -38,6 +38,8 @@ export class SignupComponent {
   signupForm!: FormGroup;
   hidePassword = true;           // Ẩn/hiện mật khẩu
   hideConfirmPassword = true;    // Ẩn/hiện xác nhận mật khẩu
+  maxDate: Date = new Date(); // Ngày hiện tại, chặn các ngày trong tương lai
+
 
   constructor(
     private fb: FormBuilder,
@@ -57,7 +59,6 @@ export class SignupComponent {
         validators: this.passwordMatchValidator // Kiểm tra mật khẩu khớp
       });
     }
-
   // Hàm kiểm tra mật khẩu có khớp không
   passwordMatchValidator(form: FormGroup) {
     const password = form.get('password')?.value;

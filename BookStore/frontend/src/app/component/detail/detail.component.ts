@@ -26,8 +26,10 @@ import { User } from '../../model/users-details.model';
 import { ReviewService } from '../../service/review.service';
 import { Review } from '../../model/review.model';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
-import { Author } from '../../model/author.model';
+
 import { AuthorService } from '../../service/author.service';
+import { Author } from '../../model/author.model';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-detail',
@@ -59,11 +61,11 @@ import { AuthorService } from '../../service/author.service';
 })
 export class DetailComponent implements OnInit {
   @Input() book!: BookDetails;
+  @Input() author: Author | null = null;
   isFavorite = false; // Trạng thái yêu thích
   books: BookDetails | undefined;
   relatedBooks: BookDetails[] = [];
   quantity: number = 1;
-  authors: Author[] = [];
   showDialog = false;
   @ViewChild('cartDialog') cartDialog!: TemplateRef<any>; // Trỏ đến dialog template trong HTML
   showReviewDialog = false;
@@ -88,6 +90,9 @@ export class DetailComponent implements OnInit {
   averageRating = 0;
   totalReviews = 0;
   ratingCounts: { [key: number]: number } = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  authorId!: string;
+  authors: Author[] = [];
+  product: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -97,29 +102,104 @@ export class DetailComponent implements OnInit {
     private messageService: MessageService,
     private reviewService: ReviewService,
     public authService: AuthService,
-    private authorService: AuthorService
+    private authorService: AuthorService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     this.authorService.getAuthors().subscribe(data => {
+      console.log(data);
       this.authors = data;
     });
-    this.currentUserId = this.authService.getCurrentUser();
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
+    const id = this.route.snapshot.paramMap.get('id');
       if (id) {
-        this.fetchBookDetails(id);
-        this.bookService.getBookById(id).subscribe(book => {
-          this.book = book;
-          this.loadRelatedBooks(book.categoryName);
-          this.getReviewsByProductId(id);
-          this.breadcrumbItems = [
-            { label: 'Trang chủ', url: '/' },
-            { label: this.formatCategory(book.categoryName), url: `/category/${book.categoryName}` },
-            { label: book.title }
-          ];
-        });
+        this.getAuthorsAndProduct(id);
       }
+    this.route.paramMap.subscribe(params => {
+      const bookId = params.get('id');
+
+      if (bookId) {
+        this.loadBookDetails(bookId);
+      }
+    });
+  }
+
+  // 📖 Tải thông tin sách
+  private loadBookDetails(bookId: string): void {
+    this.fetchBookDetails(bookId);
+    this.bookService.getBookById(bookId).subscribe(book => {
+      console.log('📖 Book Data:', book);
+      console.log('📌 Book Author:', book.author);
+      console.log('📌 Book Author ID:', book.author._id);
+
+      this.book = { ...book };
+
+      // ✅ Nếu `book.author` là chuỗi, chuyển thành đối tượng
+      if (typeof book.author === 'string') {
+        this.book.author = { _id: '', name: book.author };
+      }
+
+      console.log('🔍 Processed Book Author:', this.book.author);
+
+      // ✅ Nếu `_id` tồn tại, lấy thông tin tác giả
+      if (this.book.author._id) {
+        this.loadAuthorDetails(this.book.author._id);
+      } else {
+        this.author = this.book.author; // Nếu không có `_id`, hiển thị dữ liệu tạm thời
+      }
+
+      this.loadRelatedBooks(book.categoryName);
+      this.getReviewsByProductId(bookId);
+      this.breadcrumbItems = [
+        { label: 'Trang chủ', url: '/' },
+        { label: this.formatCategory(book.categoryName), url: `/category/${book.categoryName}` },
+        { label: book.title }
+      ];
+    });
+  }
+
+  // 🖊️ Tải thông tin tác giả
+  private loadAuthorDetails(authorId: string): void {
+    console.log('🚀 Đang tải thông tin Author:', authorId);
+
+    this.authorService.getAuthorById(authorId).subscribe({
+      next: (data: Author) => {
+        console.log('🖊️ Dữ liệu tác giả:', data);
+        this.author = data;
+      },
+      error: (err) => {
+        console.error('❌ Lỗi khi gọi API:', err);
+      }
+    });
+  }
+
+  getAuthorsAndProduct(productId: string) {
+    this.authorService.getAuthors().subscribe(authors => {
+      this.authors = authors;
+
+      this.http.get<any>(`https://book-store-3-svnz.onrender.com/books/${productId}`)
+        .subscribe(book => {
+          let authorObj = { name: 'Không rõ', _id: '' };
+
+          if (typeof book.author === 'string') {
+            const found = authors.find(a => a._id === book.author);
+            if (found) {
+              authorObj = {
+                _id: found._id ?? '',
+                name: found.name ?? 'Không rõ'
+              };
+            } else {
+              authorObj = { _id: book.author, name: 'Không rõ' };
+            }
+          } else if (typeof book.author === 'object' && book.author?.name) {
+            authorObj = book.author;
+          }
+
+          this.product = {
+            ...book,
+            author: authorObj
+          };
+        });
     });
   }
 

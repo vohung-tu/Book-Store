@@ -1,3 +1,18 @@
+<ng-template let-author pTemplate="item">
+  <div class="author-card">
+    <a [routerLink]="['/author', author._id]" class="author-item">
+      <img 
+        *ngIf="author.avatar" 
+        [src]="'https://book-store-3-svnz.onrender.com' + author.avatar" 
+        alt="{{ author.name }}"
+        class="author-avatar"
+      />
+    </a>
+    <a [routerLink]="['/author', author._id]" class="author-name-link">
+      <h4 class="author-name">{{ author.name }}</h4>
+    </a>
+  </div>
+</ng-template>
 <div class="book-cover" *ngIf="books; else loading">
   <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
   <div class="book-details-row">
@@ -60,12 +75,18 @@
             <h5>{{ books.price | dotSeparator }} đ</h5>
             <div class="discount-badge">-{{ books.discount_percent }}%</div>
           </div>
-
-          <p><strong>Tác giả:</strong> 
-            <a *ngIf="book?.author" [routerLink]="['/author', book.author._id]" class="author-href" target="_blank" style="text-decoration: none;">
-              {{ book.author }}
+          <b>Tác giả:</b>
+          <td>
+            <a *ngIf="product.author?._id" 
+              [routerLink]="['/author', product.author._id]"
+              class="author-href">
+              {{ product.author.name || 'Không rõ' }}
             </a>
-          </p>
+            <span *ngIf="!product.author?._id">
+              {{ product.author.name || 'Không rõ' }}
+            </span>
+          </td>
+          <span *ngIf="!book.author?.name">Không rõ</span>
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
 
           <div class="book-stock">
@@ -148,15 +169,6 @@
           <div class="p-field-comment">
             <textarea pTextarea rows="4" placeholder="Nhập nhận xét của bạn về sản phẩm" [(ngModel)]="review.comment" style="width: 100%; border-radius: 10px; height: 200px;"></textarea>
           </div>
-          <!-- Thêm upload hình ảnh và video -->
-          <!-- <div class="p-mt-3">
-            <label>Thêm hình ảnh:</label>
-            <input type="file" accept="image/*" (change)="onFileSelected($event, 'image')" />
-
-            <div *ngIf="imagePreview" class="p-mt-2">
-              <img [src]="imagePreview" alt="Ảnh đánh giá" style="max-width: 200px;" />
-            </div>
-          </div> -->
 
           <div class="p-d-flex p-jc-between">
             <button pButton label="Hủy" class="p-button-text" (click)="showReviewDialog = false"></button>
@@ -200,6 +212,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- Khi đang tải dữ liệu -->
 <ng-template #loading>

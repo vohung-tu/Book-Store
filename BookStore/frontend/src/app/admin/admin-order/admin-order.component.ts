@@ -34,8 +34,18 @@ export class AdminOrderComponent implements OnInit {
   searchText: string = '';
   filteredOrders: Order[] = [];
 
-  statusOptions = ['pending', 'processing', 'shipping', 'completed', 'cancelled', 'returned'];
-  statusOptionItems = this.statusOptions.map(s => ({ label: s, value: s }));
+  // statusOptions = ['pending', 'processing', 'shipping', 'completed', 'cancelled', 'returned'];
+  // statusOptionItems = this.statusOptions.map(s => ({ label: s, value: s }));
+  statusOptions = [
+    { label: 'Chờ xử lý', value: 'pending' },
+    { label: 'Đang xử lý', value: 'processing' },
+    { label: 'Đang giao hàng', value: 'shipping' },
+    { label: 'Hoàn thành', value: 'completed' },
+    { label: 'Đã hủy', value: 'cancelled' },
+    { label: 'Đã trả hàng', value: 'returned' }
+  ];
+
+  statusOptionItems = this.statusOptions;
 
   constructor(
     private orderService: OrderService,
@@ -43,7 +53,8 @@ export class AdminOrderComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.statusOptionItems = this.statusOptions.map(s => ({ label: s, value: s }));
+    // this.statusOptionItems = this.statusOptions.map(s => ({ label: s, value: s }));
+    this.statusOptionItems = this.statusOptions;
     this.loadOrders();
   }
 
