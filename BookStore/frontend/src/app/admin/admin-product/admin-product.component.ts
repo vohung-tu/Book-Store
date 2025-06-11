@@ -12,6 +12,9 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 import { Editor } from 'primeng/editor';
+import { AuthorService } from '../../service/author.service';
+import { Author } from '../../model/author.model';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-admin-product',
@@ -45,10 +48,12 @@ export class AdminProductComponent {
   selectedProducts: any[] = [];
   text: string | undefined;
   imagesInput: string = ''; 
+  authors: Author[] = [];
 
   newProduct = {
     title: '',
-    author: '',
+    author: {},
+    authorId: '',
     description: '',
     price: 0,
     flashsale_price: 0,
@@ -59,6 +64,7 @@ export class AdminProductComponent {
     images: [] as string[],
     coverImage: ''
   };
+  selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
 
   categories = [
     { label: 'Sách Trong Nước', value: 'sach-trong-nuoc' },
@@ -81,11 +87,15 @@ export class AdminProductComponent {
   };
   
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authorService: AuthorService) {}
 
   ngOnInit(): void {
-    this.fetchProducts();
+    
     this.filteredProducts = this.products;
+    this.authorService.getAuthors().subscribe(data => {
+      this.authors = data;
+      this.fetchProducts();
+    });
   }
 
   getCategoryLabel(slug: string): string {
@@ -110,20 +120,50 @@ export class AdminProductComponent {
     console.log(this.expandedRows);
   }
 
+  onAuthorSelect(event: any) {
+    const selectedAuthor = this.authors.find(author => author._id === event.value);
+
+    if (selectedAuthor) {
+      this.productForm.author = { _id: selectedAuthor._id, name: selectedAuthor.name }; // ✅ Lưu cả `_id` và `name`
+    }
+  }
+
   fetchProducts() {
     this.http.get<any[]>('https://book-store-3-svnz.onrender.com/books').subscribe({
       next: data => {
-        this.products = data.map(book => ({
-          ...book,
-          id: book._id    // gán _id thành id để phù hợp với dataKey
-        }));
-        this.filteredProducts = data.map(book => ({
-          ...book,
-          id: book._id    // gán _id thành id để phù hợp với dataKey
-        }));
+
+        this.products = data.map(book => {
+          let authorObj = { name: 'Không rõ', _id: '' };
+
+          if (typeof book.author === 'object' && book.author?.name) {
+            authorObj = {
+              _id: book.author._id || '',
+              name: book.author.name
+            };
+          } else if (typeof book.author === 'string') {
+            const found = this.authors.find(a => a._id === book.author);
+            if (found) {
+              authorObj = {
+                _id: found._id || '',
+                name: found.name || 'Không rõ'
+              };
+            } else {
+              authorObj = { _id: book.author, name: 'Không rõ' };
+            }
+          }
+
+          return {
+            ...book,
+            id: book._id,
+            author: authorObj
+          };
+        });
+
+        this.filteredProducts = [...this.products];
       },
-      error: err => console.error('Lỗi khi lấy danh sách sản phẩm', err)
+      error: err => console.error('❌ Lỗi khi lấy danh sách sản phẩm:', err)
     });
+
   }
 
   openAddProductDialog() {
@@ -179,8 +219,8 @@ export class AdminProductComponent {
   }
 
   saveProduct() {
-  // Dùng ảnh phụ từ productForm.additionalImages
     const additionalImages = this.productForm.images || [];
+    const selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
 
     if (this.isEditMode) {
       if (!this.editingProduct?.id) {
@@ -188,9 +228,9 @@ export class AdminProductComponent {
         return;
       }
 
-      // Gán ảnh bìa và ảnh phụ
       this.editingProduct.coverImage = this.productForm.coverImage;
       this.editingProduct.images = additionalImages;
+      this.editingProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
 
       this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
         next: () => {
@@ -201,9 +241,9 @@ export class AdminProductComponent {
       });
 
     } else {
-      // Gán ảnh bìa và ảnh phụ cho sản phẩm mới
       this.newProduct.coverImage = this.productForm.coverImage;
       this.newProduct.images = additionalImages;
+      this.newProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
 
       this.http.post(`https://book-store-3-svnz.onrender.com/books`, this.newProduct).subscribe({
         next: () => {
@@ -215,21 +255,20 @@ export class AdminProductComponent {
     }
   }
 
-
-
   resetDialog() {
     this.displayAddDialog = false;
     this.isEditMode = false;
     this.editingProduct = null;
     this.newProduct = {
-      title: '', 
-      author: '', 
+      title: '',
+      author: {},
+      authorId: '',
       description: '',
-      price: 0, 
-      flashsale_price: 0, 
+      price: 0,
+      flashsale_price: 0,
       discount_percent: 0,
-      publishedDate: '', 
-      categoryName: '', 
+      publishedDate: '',
+      categoryName: '',
       quantity: 0,
       images: [] as string[],
       coverImage: ''
@@ -243,6 +282,7 @@ export class AdminProductComponent {
   editProduct(product: any) {
     this.isEditMode = true;
     this.editingProduct = { ...product };
+    this.editingProduct.authorId = product.author?._id || '';
     this.newProduct = { ...product };   
     this.displayAddDialog = true;
   }
