@@ -39,10 +39,7 @@ export class AdminUserComponent implements OnInit {
   searchText: string = '';
   filteredUsers: any[] = [];
   addresses: Address[] = [];
-  roles = [
-    { label: 'Admin', value: 'admin' },
-    { label: 'User', value: 'user' }
-  ];
+  
 
   constructor(
     private http: HttpClient, 
@@ -120,15 +117,13 @@ export class AdminUserComponent implements OnInit {
 
   editUser(u: any) {
     this.user = { ...u };
-    this.user.birth = this.formatDateToInput(this.user.birth);
+    this.selectedAddress = null;
     this.newAddress = '';
     this.isEditMode = true;
     this.displayDialog = true;
-
+  
     if (this.user._id) {
       this.loadUserAddresses(this.user._id);
-    } else {
-      this.selectedAddress = null; // nếu không có user id thì reset
     }
   }
 
@@ -186,13 +181,6 @@ export class AdminUserComponent implements OnInit {
     }
   }
   
-  formatDateToInput(dateStr: string): string {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '';
-    // Lấy YYYY-MM-DD
-    return date.toISOString().substring(0, 10);
-  }
 
   deleteUser(user: any) {
     const userId = user._id;

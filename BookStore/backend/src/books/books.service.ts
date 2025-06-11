@@ -17,17 +17,21 @@ export class BooksService {
   }
 
   async findAll(): Promise<Book[]> {
-    const books = await this.bookModel.find().populate('author').lean(); // ✅ Lấy đầy đủ tác giả
-    return books.map(book => ({
-      ...book,
-      id: book._id.toString(),
-    }));
-  }
+      const books = await this.bookModel.find().lean(); // dùng lean để trả plain object
+      return books.map(book => ({
+        ...book,
+        id: book._id.toString(), // thêm trường id từ _id
+      }));
+    }
+    
 
   async findOne(id: string): Promise<Book | null> {
-    return this.bookModel.findById(id).populate('author').exec(); // ✅ Tự động lấy dữ liệu tác giả từ DB
+      const book = await this.bookModel.findById(id).exec();
+      if (!book) {
+        throw new NotFoundException(`Book with id ${id} not found`);
+      }
+      return book;
   }
-
   
   async update(id: string, updateData: Partial<Book>): Promise<Book | null> {
       return this.bookModel.findByIdAndUpdate(id, updateData, { new: true }).exec();

@@ -92,6 +92,7 @@
         [(ngModel)]="selectedAddress"
         placeholder="Chọn địa chỉ"
         (onChange)="onAddressChange($event)"
+        [disabled]="addresses.length === 0"
       ></p-dropdown>
     </div>
     
@@ -99,23 +100,16 @@
       <label>Hoặc nhập địa chỉ mới</label>
       <input type="text" pInputText [(ngModel)]="newAddress" placeholder="Nhập địa chỉ mới" />
     </div>
-    
-    <div class="p-field">
-      <label for="role">Vai trò</label>
-      <p-dropdown
-        [options]="roles"
-        optionLabel="label"
-        optionValue="value"
-        [(ngModel)]="user.role"
-        placeholder="Chọn vai trò"
-      ></p-dropdown>
-    </div>
-    
+
     <div class="p-field">
       <label for="birth">Ngày sinh</label>
       <input id="birth" type="date" pInputText [(ngModel)]="user.birth" />
     </div>
 
+    <div class="p-field">
+      <label for="role">Vai trò</label>
+      <input id="role" type="text" pInputText [(ngModel)]="user.role" />
+    </div>
   </div>
 
   <ng-template pTemplate="footer">

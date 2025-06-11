@@ -4,6 +4,7 @@ import { AuthorService } from '../../service/author.service';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 import { CommonModule } from '@angular/common';
 import { Author } from '../../model/author.model';
+import { AuthService } from '../../service/auth.service';
 import { User } from '../../model/users-details.model';
 import { BooksService } from '../../service/books.service';
 import { BookDetails } from '../../model/books-details.model';
@@ -11,6 +12,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { RippleModule } from 'primeng/ripple';
+import { ProductItemComponent } from '../product-item/product-item.component';
+import { FavoritePageService } from '../../service/favorite-page.service';
+import { CartService } from '../../service/cart.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-author-details',
@@ -53,15 +58,8 @@ export class AuthorDetailsComponent implements OnInit {
 
     // Lấy danh sách sách của tác giả
     this.bookService.getBooks().subscribe((books) => {
-      this.booksByAuthor = books.filter(book => {
-        // book.author có thể là string hoặc object
-        if (typeof book.author === 'object' && book.author?._id) {
-          return book.author._id === this.authorId;
-        } else if (typeof book.author === 'string') {
-          return book.author === this.authorId;
-        }
-        return false;
-      });
+
+      this.booksByAuthor = books.filter(book => book.author === this.author.name);
 
       console.log("Danh sách sách theo tác giả:", this.booksByAuthor);
     });

@@ -87,7 +87,15 @@
   border-radius: 4px;
   border: 1px solid #ccc;
 }
-button {
+
+.body-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  button {
     max-height: 50px;
     border-radius: 6px;
     border: 1px solid #ccc;
@@ -99,15 +107,6 @@ button {
       background-color: #d0d8f0;
     }
   }
-
-.body-bar {
-  display: flex;
-  justify-content: space-between;
-  padding: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-
-  
 
   .search-bar {
     position: relative;

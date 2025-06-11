@@ -14,8 +14,7 @@
         (input)="filterProducts()"
       />
     </div>
-    <div class="btn-header" style="display: flex; gap:10px">
-      <button
+    <button
       *ngIf="selectedProducts?.length"
       pButton
       type="button"
@@ -25,7 +24,6 @@
       (click)="deleteSelectedProducts()"
     ></button>
     <button pButton type="button" label="Thêm sản phẩm" icon="pi pi-plus" (click)="openAddProductDialog()"></button>
-    </div>
   </div>
   
   <p-table
@@ -70,7 +68,7 @@
         </td>
         <td><img [src]="product.coverImage" alt="cover" width="60" /></td>
         <td>{{ product.title }}</td>
-        <td>{{ product.author?.name || 'Không rõ' }}</td>
+        <td>{{ product.author }}</td>
         <td>
           <span [innerHTML]="product.description"
             [ngStyle]="{'max-height': expandedRows[i] ? '100%' : '82px', 'overflow': expandedRows[i] ? 'visible' : 'hidden'}"
@@ -103,10 +101,8 @@
           </ng-template>
         </td>
         <td>
-          <div class="btn-table" style=" gap:10px">
-            <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editProduct(product)"></button>
-          <button pButton type="button" icon="pi pi-trash" (click)="deleteProduct(product)"></button>
-          </div>
+          <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editProduct(product)"></button>
+          <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" (click)="deleteProduct(product)"></button>
         </td>
       </tr>
     </ng-template>
@@ -119,15 +115,8 @@
       <input pInputText type="text" [(ngModel)]="productForm.title" />
     </div>
     <div class="p-field">
-      <label for="author">Tác giả</label>
-      <p-dropdown 
-        [options]="authors" 
-        optionLabel="name" 
-        optionValue="_id" 
-        [(ngModel)]="productForm.authorId"
-        placeholder="Chọn tác giả"
-        (onChange)="onAuthorSelect($event)">
-      </p-dropdown>
+      <label>Tác giả</label>
+      <input pInputText type="text" [(ngModel)]="productForm.author" />
     </div>
     <div class="p-field">
       <label>Mô tả</label>
