@@ -122,6 +122,7 @@ export class DetailComponent implements OnInit {
         this.loadBookDetails(bookId);
       }
     });
+    this.currentUserId = this.authService.getCurrentUser();
   }
 
   // 📖 Tải thông tin sách
