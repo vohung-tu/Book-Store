@@ -9,6 +9,7 @@ import { AuthorsController } from "./authors.controller";
     MongooseModule.forFeature([{ name: Author.name, schema: AuthorSchema }])
   ],
   providers: [AuthorsService],
-  controllers: [AuthorsController] 
+  controllers: [AuthorsController] ,
+  exports: [MongooseModule],
 })
 export class AuthorsModule {}

@@ -1,13 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Book, BookDocument } from './book.schema';
-import { Model, Types } from 'mongoose';
+import { isValidObjectId, Model, Types } from 'mongoose';
 import { Order } from 'src/order/order/order.schema';
+import { Author } from 'src/authors/authors.schema';
 
 @Injectable()
 export class BooksService {
   constructor(
     @InjectModel(Book.name) private bookModel: Model<BookDocument>,
+    @InjectModel(Author.name) private authorModel: Model<Author>,
     @InjectModel(Order.name) private orderModel: Model<Order>
     ) {}
 
@@ -16,13 +18,36 @@ export class BooksService {
       return createdBook.save();
   }
 
-  async findAll(): Promise<Book[]> {
-    const books = await this.bookModel.find().populate('author').lean(); // ✅ Lấy đầy đủ tác giả
-    return books.map(book => ({
-      ...book,
-      id: book._id.toString(),
-    }));
+
+
+  async findAllBooks(): Promise<any[]> {
+    const books = await this.bookModel.find().lean();
+
+    const authors = await this.authorModel.find().lean(); // lấy toàn bộ authors 1 lần
+
+    const authorMap = new Map(authors.map(a => [a._id.toString(), a.name]));
+
+    return books.map(book => {
+      let authorName = 'Không rõ';
+
+      if (typeof book.author === 'object' && book.author !== null && 'name' in book.author) {
+        authorName = book.author.name;
+      } else if (typeof book.author === 'string') {
+        // Nếu là ObjectId dạng string và có trong map
+        if (authorMap.has(book.author)) {
+          authorName = authorMap.get(book.author) ?? 'Không rõ';
+        } else {
+          authorName = book.author; // fallback nếu là tên (sai dữ liệu)
+        }
+      }
+
+      return {
+        ...book,
+        authorName,
+      };
+    });
   }
+
 
   async findOne(id: string): Promise<Book | null> {
     return this.bookModel.findById(id).populate('author').exec(); // ✅ Tự động lấy dữ liệu tác giả từ DB

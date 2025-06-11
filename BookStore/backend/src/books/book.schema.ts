@@ -9,8 +9,8 @@ export class Book {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Author', required: true })
-  author: Author;
+  @Prop({ type: Types.ObjectId, ref: 'Author', required: false })
+  author: Author | Types.ObjectId;
 
   @Prop()
   description: string;

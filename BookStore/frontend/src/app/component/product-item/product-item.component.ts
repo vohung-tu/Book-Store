@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { ReviewService } from '../../service/review.service';
 import { Review } from '../../model/review.model';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
+import { AuthorService } from '../../service/author.service';
 
 @Component({
   selector: 'app-product-item',
@@ -39,6 +40,8 @@ export class ProductItemComponent implements OnInit{
   isFavorite = false;
   averageRating = 0;
   reviews: Review[] = [];
+  authorName: string = 'Không rõ';
+  authorId: string | null = null; 
 
   review: Review = {
     productId: '', // gán từ input hoặc route
@@ -53,11 +56,35 @@ export class ProductItemComponent implements OnInit{
   constructor(
     private favoriteService: FavoritePageService,
     private cartService: CartService,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    private authorService: AuthorService
   ) {}
 
   ngOnInit(): void {
     if (this.book && this.book._id) {
+      // === Kiểm tra tác giả trước khi xử lý ===
+      if (!this.book.author) {
+        this.authorName = 'Không rõ';
+        this.authorId = null;
+      } else if (typeof this.book.author === 'object') {
+        // Đã populate
+        this.authorName = this.book.author.name || 'Không rõ';
+        this.authorId = this.book.author._id || null;
+      } else if (typeof this.book.author === 'string') {
+        // Chưa populate → gọi API
+        this.authorService.getAuthorById(this.book.author).subscribe({
+          next: (author) => {
+            this.authorName = author?.name || 'Không rõ';
+            this.authorId = author?._id || null;
+          },
+          error: (err) => {
+            console.error('Không thể lấy thông tin tác giả', err);
+            this.authorName = 'Không rõ';
+          }
+        });
+      }
+
+      // === Đánh giá ===
       this.reviewService.getReviews(this.book._id).subscribe(data => {
         this.reviews = data;
         const total = this.reviews.length;
