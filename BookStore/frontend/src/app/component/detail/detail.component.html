@@ -75,11 +75,11 @@
             <h5>{{ books.price | dotSeparator }} đ</h5>
             <div class="discount-badge">-{{ books.discount_percent }}%</div>
           </div>
-          <b>Tác giả:</b>
-          <td>
+          <td style="display: flex;">
+            <b>Tác giả: &nbsp;</b>
             <a *ngIf="product.author?._id" 
               [routerLink]="['/author', product.author._id]"
-              class="author-href">
+              class="author-href" style="text-decoration: none; color: #BE5985">
               {{ product.author.name || 'Không rõ' }}
             </a>
             <span *ngIf="!product.author?._id">

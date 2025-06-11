@@ -15,6 +15,7 @@ import { Editor } from 'primeng/editor';
 import { AuthorService } from '../../service/author.service';
 import { Author } from '../../model/author.model';
 import { ActivatedRoute } from '@angular/router';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-admin-product',
@@ -33,6 +34,7 @@ import { ActivatedRoute } from '@angular/router';
     DotSeparatorPipe,
     Editor
   ],
+  providers: [MessageService],
   templateUrl: './admin-product.component.html',
   styleUrls: ['./admin-product.component.scss']
 })
@@ -87,7 +89,7 @@ export class AdminProductComponent {
   };
   
 
-  constructor(private http: HttpClient, private authorService: AuthorService) {}
+  constructor(private http: HttpClient, private authorService: AuthorService, private messageService: MessageService) {}
 
   ngOnInit(): void {
     
@@ -182,7 +184,20 @@ export class AdminProductComponent {
   deleteSelectedProducts() {
     if (this.selectedProducts && this.selectedProducts.length) {
       this.filteredProducts = this.filteredProducts.filter(p => !this.selectedProducts.includes(p));
+      const count = this.selectedProducts.length;
       this.selectedProducts = [];
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Đã xoá sản phẩm',
+        detail: `${count} sản phẩm đã được xoá khỏi danh sách.`,
+      });
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Chưa chọn sản phẩm',
+        detail: 'Vui lòng chọn sản phẩm để xoá.',
+      });
     }
   }
 
@@ -221,6 +236,7 @@ export class AdminProductComponent {
   saveProduct() {
     const additionalImages = this.productForm.images || [];
     const selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
+    const wasEditMode = this.isEditMode; // ⬅️ Lưu trạng thái trước khi reset
 
     if (this.isEditMode) {
       if (!this.editingProduct?.id) {
@@ -236,6 +252,13 @@ export class AdminProductComponent {
         next: () => {
           this.fetchProducts();
           this.resetDialog();
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Thành công',
+            detail: `Sản phẩm đã được ${wasEditMode ? 'cập nhật' : 'thêm mới'}.`,
+            life: 3000
+          });
         },
         error: (err) => console.error('Lỗi khi cập nhật sản phẩm', err)
       });
@@ -249,6 +272,13 @@ export class AdminProductComponent {
         next: () => {
           this.fetchProducts();
           this.resetDialog();
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Thành công',
+            detail: `Sản phẩm  đã được ${wasEditMode ? 'cập nhật' : 'thêm mới'}.`,
+            life: 3000
+          });
         },
         error: (err) => console.error('Lỗi khi thêm sản phẩm', err)
       });
@@ -279,6 +309,22 @@ export class AdminProductComponent {
     return this.isEditMode ? this.editingProduct : this.newProduct;
   }
 
+  get formattedPublishedDate(): string {
+    const date = this.productForm.publishedDate;
+    if (!date) return '';
+
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  onDateChange(value: string) {
+    this.productForm.publishedDate = value;
+  }
+
   editProduct(product: any) {
     this.isEditMode = true;
     this.editingProduct = { ...product };
@@ -292,9 +338,20 @@ export class AdminProductComponent {
       this.http.delete(`https://book-store-3-svnz.onrender.com/books/${product.id}`).subscribe({
         next: () => {
           this.products = this.products.filter(p => p.id !== product.id);
-          console.log('Đã xoá sản phẩm');
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Xoá thành công',
+            detail: `Sản phẩm "${product.title}" đã được xoá.`,
+          });
         },
-        error: (err) => console.error('Lỗi khi xoá sản phẩm', err)
+        error: (err) => {
+          console.error('Lỗi khi xoá sản phẩm', err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Lỗi xoá',
+            detail: `Không thể xoá sản phẩm "${product.title}".`,
+          });
+        }
       });
     }
   }
