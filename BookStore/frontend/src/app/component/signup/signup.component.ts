@@ -15,9 +15,9 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 
 @Component({
-  selector: 'app-signup',
-  standalone: true,
-  imports: [
+  selector: 'app-signup', //selector: Tên selector để gắn component trong HTML.
+  standalone: true,  //standalone: true: Sử dụng Angular Standalone Component (không cần module riêng).
+  imports: [ //imports: Các module cần thiết để chạy template HTML.
     NgIf,
     RouterModule,
     ReactiveFormsModule,
@@ -32,7 +32,7 @@ import { ToastModule } from 'primeng/toast';
   ],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss'],
-  providers: [MessageService]
+  providers: [MessageService]  //providers: Khai báo service toast dùng riêng cho component.
 })
 export class SignupComponent {
   signupForm!: FormGroup;

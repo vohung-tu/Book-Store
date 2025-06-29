@@ -105,7 +105,7 @@ export class DetailComponent implements OnInit {
     private authorService: AuthorService,
     private http: HttpClient
   ) {}
-
+  //ham ngOnInit chạy xong thì mới load dữ liệu lên component
   ngOnInit(): void {
     this.authorService.getAuthors().subscribe(data => {
       console.log(data);
