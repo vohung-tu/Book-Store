@@ -11,7 +11,7 @@ export class BooksService {
 
   constructor(private http: HttpClient) {}
 
- // Lấy danh sách sách từ backend và ánh xạ _id -> id
+ // Lấy danh sách sách từ backend và ánh xạ _id (mongo) -> id
   getBooks(): Observable<BookDetails[]> {
     return this.http.get<BookDetails[]>(this.apiUrl).pipe(
       map(books =>

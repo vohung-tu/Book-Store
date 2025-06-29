@@ -44,7 +44,7 @@ export class SearchPageComponent implements OnInit{
         });
       }
     });
-  }
+  } // hàm ngOnInit chỉ đc gọi 1 lần ngay sau khi khởi tạo component và tất cả các @Input() đã được gán gtri
   applyFilter() {
     const normalizedKeyword = this.normalize(this.keyword);
     this.filteredProducts = this.products.filter(product =>

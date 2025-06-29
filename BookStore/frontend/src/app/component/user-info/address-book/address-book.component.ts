@@ -12,6 +12,7 @@ import { Address, User } from '../../../model/users-details.model';
 import { AuthService } from '../../../service/auth.service';
 import { Select } from 'primeng/select';
 import { HttpClient } from '@angular/common/http';
+import { DropdownModule } from 'primeng/dropdown';
 
 export interface Ward {
   Id: string;
@@ -43,7 +44,7 @@ export interface City {
     ToastModule,
     RouterModule,
     RadioButtonModule,
-    Select
+    DropdownModule
   ],
   providers: [MessageService],
   templateUrl: './address-book.component.html',
@@ -67,15 +68,26 @@ export class AddressBookComponent implements OnInit {
   fullName: string = '';
   phoneNumber!: number;
   user: User = {} as User;
-  defaultAddressIndex = -1;
+  defaultAddressIndex = -1; //là không có địa chỉ mặc định nào được chọn ban đầu
   addresses: Address[] = [
   ];
   editAddressIndex: number | null = null;
-  editAddressData: { value: string; isDefault: boolean; fullName: string; phoneNumber?: number } = {
+  editAddressData: { 
+    value: string; 
+    isDefault: boolean; 
+    fullName: string; 
+    phoneNumber?: number
+    city?: City | undefined,
+    district?: District | undefined,
+    ward?: Ward | undefined
+  } = {
     value: '',
     isDefault: false,
     fullName: '',
-    phoneNumber: 0
+    phoneNumber: 0,
+    city: undefined as City | undefined,
+    district: undefined as District | undefined,
+    ward: undefined as Ward | undefined
   };
 
   constructor(
@@ -85,15 +97,14 @@ export class AddressBookComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadUser();
     this.http.get<City[]>('/assets/json/vietnamAddress.json').subscribe((data) => {
       this.vietnamAddresses = data;
       this.cities = data; // Lấy danh sách tỉnh/thành phố
     });
-    this.loadUser()
   }
 
   onCityChange(): void {
-    console.log('selectedCity', this.selectedCity);
     this.districts = this.selectedCity ? this.selectedCity.Districts : [];
     this.selectedDistrict = undefined;
     this.selectedWard = undefined;
@@ -102,6 +113,18 @@ export class AddressBookComponent implements OnInit {
   onDistrictChange(): void {
     this.wards = this.selectedDistrict ? this.selectedDistrict.Wards : [];
     this.selectedWard = undefined;
+  }
+
+  onCityChangeFromEditDialog(): void {
+    this.districts = this.editAddressData.city ? this.editAddressData.city.Districts : [];
+    this.editAddressData.district = undefined;
+    this.wards = [];
+    this.editAddressData.ward = undefined;
+  }
+
+  onDistrictChangeFromEditDialog(): void {
+    this.wards = this.editAddressData.district ? this.editAddressData.district.Wards : [];
+    this.editAddressData.ward = undefined;
   }
 
   private loadUser(): void {
@@ -143,29 +166,41 @@ export class AddressBookComponent implements OnInit {
     const address = this.user.address[index];
     if (!address) return;
 
-    this.editAddressIndex = index;
+    console.log('Address value:', address.value);
 
-    // Phân tích địa chỉ cũ
-    const addressParts = address.value.split(', ').reverse();
-    const wardName = addressParts[0];   // Phường/Xã
-    const districtName = addressParts[1]; // Quận/Huyện
-    const cityName = addressParts[2];     // Tỉnh/Thành phố
+    const parts = address.value.split(',').map(p => p.trim());
+    const wardName = parts[1] || '';
+    const districtName = parts[2] || '';
+    const cityName = parts[3] || '';
 
-    // Gán lại thông tin
+    const foundCity = this.cities.find(c => c.Name === cityName);
+    let foundDistrict: District | undefined;
+    let foundWard: Ward | undefined;
+
+    if (foundCity) {
+      foundDistrict = foundCity.Districts.find(d => d.Name === districtName);
+      if (foundDistrict) {
+        foundWard = foundDistrict.Wards.find(w => w.Name === wardName);
+      }
+    }
+
+    this.districts = foundCity?.Districts || [];
+    this.wards = foundDistrict?.Wards || [];
+
     this.editAddressData = {
-      value: address.value || '',
-      isDefault: address.isDefault || false,
+      value: address.value,
+      isDefault: address.isDefault,
       fullName: address.fullName || '',
-      phoneNumber: address.phoneNumber || 0
+      phoneNumber: address.phoneNumber,
+      city: foundCity,
+      district: foundDistrict,
+      ward: foundWard
     };
-
-    // Tìm dữ liệu phù hợp trong danh sách
-    this.selectedCity = this.cities.find(city => city.Name === cityName) || null as any;
-    this.selectedDistrict = this.selectedCity?.Districts.find(district => district.Name === districtName) || null as any;
-    this.selectedWard = this.selectedDistrict?.Wards.find(ward => ward.Name === wardName) || null as any;
 
     this.displayEditAddressDialog = true;
   }
+
+
   onCancelEditAddress() {
     this.displayEditAddressDialog = false;
     this.editAddressIndex = null;
@@ -177,9 +212,9 @@ export class AddressBookComponent implements OnInit {
       !this.editAddressData.fullName.trim() ||
       !this.editAddressData.phoneNumber ||
       isNaN(this.editAddressData.phoneNumber) ||
-      !this.selectedCity ||
-      !this.selectedDistrict ||
-      !this.selectedWard
+      !this.editAddressData.city ||
+      !this.editAddressData.district ||
+      !this.editAddressData.ward
     ) {
       this.messageService.add({
         severity: 'warn',
@@ -189,19 +224,20 @@ export class AddressBookComponent implements OnInit {
       return;
     }
 
-    // // Tạo địa chỉ mới đầy đủ
-    // const fullAddress = `${this.editAddressData.value.trim()}, ${this.selectedWard.Name}, ${this.selectedDistrict.Name}, ${this.selectedCity.Name}`;
+    const fullAddress = `${this.editAddressData.value.trim()}, ${this.editAddressData.ward.Name}, ${this.editAddressData.district.Name}, ${this.editAddressData.city.Name}`;
 
-    // // Cập nhật dữ liệu
-    // this.user.address[this.editAddressIndex] = {
-    //   ...this.editAddressData,
-    //   value: fullAddress // Cập nhật địa chỉ mới đầy đủ
-    // };
+    this.user.address[this.editAddressIndex] = {
+      value: fullAddress,
+      isDefault: this.editAddressData.isDefault,
+      fullName: this.editAddressData.fullName.trim(),
+      phoneNumber: this.editAddressData.phoneNumber
+    };
 
-    // Cập nhật địa chỉ mặc định nếu cần
+    // Nếu đặt làm mặc định, reset các địa chỉ khác
     if (this.editAddressData.isDefault) {
-      this.user.address.forEach(addr => addr.isDefault = false);
-      this.user.address[this.editAddressIndex].isDefault = true;
+      this.user.address.forEach((addr, idx) => {
+        addr.isDefault = idx === this.editAddressIndex;
+      });
     }
 
     // Gửi lên server

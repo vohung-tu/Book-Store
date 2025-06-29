@@ -63,15 +63,15 @@ export class SigninComponent implements OnInit{
       this.authService.signin({ email, password }).subscribe(
         (res) => {
           const user = res.user;
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+          const returnUrl = this.route.snapshot.queryParams['returnUrl']; //home
 
           localStorage.setItem('token', res.token);
           localStorage.setItem('user', JSON.stringify(user));
 
           // Điều hướng: returnUrl > /home
           this.router.navigateByUrl(returnUrl || '/home').then(() => {
-            window.location.reload()
-          });;
+            window.location.reload();
+          });
 
           this.errorMessage = null;
         },

@@ -45,7 +45,7 @@ export class UsersController {
     return { message: 'Xoá người dùng thành công' };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard) //phải xác thực thì mới được phép gọi api
   @Patch(':id/address')
   async updateAddress(
     @Param('id') id: string,
