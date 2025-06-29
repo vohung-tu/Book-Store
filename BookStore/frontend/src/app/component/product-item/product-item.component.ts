@@ -34,7 +34,7 @@ import { AuthorService } from '../../service/author.service';
   providers: [MessageService]
 })
 export class ProductItemComponent implements OnInit{
-  @Input() book!: BookDetails;
+  @Input() book!: BookDetails; // "!"" được gán trước khi sử dụng để sau khi sử dụng đừng báo lỗi undefined 
   @Input() isUpcomingRelease: boolean = false;
   @Output() showToast = new EventEmitter<any>();
   isFavorite = false;

@@ -15,9 +15,9 @@ export class SignupDto {
   password?: string;
   re_password?: string;
 
-  @IsNotEmpty()
   birth: string;
 
+  @IsNotEmpty()
   address?: string;
   phone_number: number;
 

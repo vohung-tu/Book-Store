@@ -22,8 +22,11 @@
             </mat-menu>
 
           </div>
+          <!-- search -->
           <div class="search-container">
-            <i class="pi pi-search search-icon"></i>
+            <i class="pi pi-search search-icon"></i> 
+            <!-- thẻ chứa icon của html -->
+
             <input
               type="text"
               class="search-input"
@@ -31,7 +34,9 @@
               [(ngModel)]="searchTerm"
               (keydown.enter)="onSearch()"
             />
-          </div>           
+            
+          </div>    
+
         </div>
       </div>
 

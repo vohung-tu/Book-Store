@@ -174,6 +174,7 @@ export class CheckoutComponent implements OnInit {
       0
     );
     this.discountedAmount = this.totalAmount;
+    
     this.http.get<City[]>('/assets/json/vietnamAddress.json').subscribe((data) => {
       this.vietnamAddresses = data;
       this.cities = data; // Lấy danh sách tỉnh/thành phố

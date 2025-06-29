@@ -7,7 +7,8 @@
     </p-tab>
   </p-tablist>
 
-  <p-tabpanels>
+  <p-tabpanels> 
+    <!-- thư viện của primeng hỗ trợ -->
     <!-- Duyệt qua mảng tabs, nhưng chỉ panel nào ứng với selectedTab mới render nội dung -->
     <p-tabpanel *ngFor="let tab of tabs; trackBy: trackByValue" >
       <ng-container *ngIf="selectedTab === tab.value">
@@ -46,8 +47,10 @@
                 </ng-template>
               </p-table>
 
+              <h4 style="text-align: right; margin-top: 10px;">Phí ship: 25.000 đ</h4>
+
               <h3 style="text-align: right; margin-top: 10px;">
-                Tổng tiền: {{ order.total | dotSeparator }} VNĐ
+                Tổng tiền: {{ (order.total + 25000) | dotSeparator }} VNĐ
               </h3>
               <div class="rebuy">
                 <p-button 

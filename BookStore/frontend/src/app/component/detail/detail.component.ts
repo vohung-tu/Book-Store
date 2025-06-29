@@ -108,7 +108,6 @@ export class DetailComponent implements OnInit {
   //ham ngOnInit chạy xong thì mới load dữ liệu lên component
   ngOnInit(): void {
     this.authorService.getAuthors().subscribe(data => {
-      console.log(data);
       this.authors = data;
     });
     const id = this.route.snapshot.paramMap.get('id');
@@ -129,18 +128,12 @@ export class DetailComponent implements OnInit {
   private loadBookDetails(bookId: string): void {
     this.fetchBookDetails(bookId);
     this.bookService.getBookById(bookId).subscribe(book => {
-      console.log('📖 Book Data:', book);
-      console.log('📌 Book Author:', book.author);
-      console.log('📌 Book Author ID:', book.author._id);
-
       this.book = { ...book };
 
       // ✅ Nếu `book.author` là chuỗi, chuyển thành đối tượng
       if (typeof book.author === 'string') {
         this.book.author = { _id: '', name: book.author };
       }
-
-      console.log('🔍 Processed Book Author:', this.book.author);
 
       // ✅ Nếu `_id` tồn tại, lấy thông tin tác giả
       if (this.book.author._id) {
@@ -161,15 +154,12 @@ export class DetailComponent implements OnInit {
 
   // 🖊️ Tải thông tin tác giả
   private loadAuthorDetails(authorId: string): void {
-    console.log('🚀 Đang tải thông tin Author:', authorId);
 
     this.authorService.getAuthorById(authorId).subscribe({
       next: (data: Author) => {
-        console.log('🖊️ Dữ liệu tác giả:', data);
         this.author = data;
       },
       error: (err) => {
-        console.error('❌ Lỗi khi gọi API:', err);
       }
     });
   }
@@ -366,19 +356,6 @@ export class DetailComponent implements OnInit {
       image: '',
       userId: ''
     };
-  }
-
-  openReviewDialog() {
-    if (!this.authService.isLoggedIn()) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Thông báo',
-        detail: 'Chỉ có thành viên mới có thể viết nhận xét. Vui lòng đăng nhập hoặc đăng ký.'
-      });
-      return;
-    }
-
-    this.showReviewDialog = true;
   }
 
   // Hàm tăng số lượng

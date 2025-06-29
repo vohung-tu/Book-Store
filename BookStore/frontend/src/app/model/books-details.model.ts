@@ -3,7 +3,7 @@ import { Review } from "./review.model";
 
 export interface BookDetails {
   id?: string,
-  _id:string,
+  _id:string, // mongodb tự tạo ra
   title: string,
   description: string,
   author: Author,

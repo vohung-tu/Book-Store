@@ -12,7 +12,7 @@ import { ResetPasswordDto } from './dto/forgot-password.dto';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>, //decorator tiêm (thêm vào) model tương ứng vào trong constructor của service
   ) {}
 
   /** Đăng ký */
@@ -24,8 +24,8 @@ export class UsersService {
     if (existingUser) throw new BadRequestException('Email đã được sử dụng.');
   
     // Nếu không có password => dùng mặc định
-    const plainPassword = password || '123456';
-    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+    const plainPassword = password || '123456'; //admin user sử dụng cái đk này
+    const hashedPassword = await bcrypt.hash(plainPassword, 10); //băm password ra để không log ra được pass 
   
     const newUser = new this.userModel({
       ...dto,

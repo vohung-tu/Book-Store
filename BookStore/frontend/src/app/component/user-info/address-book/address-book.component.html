@@ -63,20 +63,20 @@
 
     <div class="add-address">
       <label for="countries">Quốc gia:</label>
-      <p-select [options]="countries" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" optionLabel="name" placeholder="---" />
+      <p-dropdown [options]="countries" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" optionLabel="name" placeholder="---" />
     </div>
     
     <div class="add-address">
       <label for="cities">Tỉnh thành:</label>
-      <p-select [options]="cities" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Tỉnh Thành" class="w-full md:w-56" (onChange)="onCityChange()" />
+      <p-dropdown [options]="cities" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Tỉnh Thành" class="w-full md:w-56" (onChange)="onCityChange()" />
     </div>
     <div class="add-address">
       <label for="districts">Quận huyện:</label>
-      <p-select [options]="districts" [(ngModel)]="selectedDistrict" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Quận Huyện" class="w-full md:w-56" (onChange)="onDistrictChange()" />
+      <p-dropdown [options]="districts" [(ngModel)]="selectedDistrict" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Quận Huyện" class="w-full md:w-56" (onChange)="onDistrictChange()" />
     </div>
     <div class="add-address">
       <label for="wards">Phường xã:</label>
-      <p-select [options]="wards" [(ngModel)]="selectedWard" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Phường Xã" class="w-full md:w-56" />
+      <p-dropdown [options]="wards" [(ngModel)]="selectedWard" [ngModelOptions]="{standalone: true}" optionLabel="Name" placeholder="Phường Xã" class="w-full md:w-56" />
     </div>
     <div class="add-address">
       <label for="newAddress">Địa chỉ:</label>
@@ -105,44 +105,52 @@
 
     <div class="add-address">
       <label for="countries">Quốc gia:</label>
-      <p-select [options]="countries" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" optionLabel="name" placeholder="---" class="w-full md:w-56" />
+      <p-dropdown [options]="countries" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" optionLabel="name" placeholder="---" class="w-full md:w-56" />
     </div>
     <div class="add-address">
       <label for="cities">Tỉnh thành:</label>
-      <p-select 
-        [options]="cities" 
-        [(ngModel)]="selectedCity" 
-        optionLabel="Name" 
+      <p-dropdown
+        [options]="cities"
+        [(ngModel)]="editAddressData.city"
+        [ngModelOptions]="{ standalone: true }"
+        optionLabel="Name"
+        placeholder="Tỉnh Thành"
         class="w-full md:w-56"
-        [ngModelOptions]="{standalone: true}"  />
-        
+        (onChange)="onCityChangeFromEditDialog()"
+      />
     </div>
     <div class="add-address">
       <label for="districts">Quận huyện:</label>
-      <p-select [options]="districts" 
-        [(ngModel)]="selectedDistrict" 
+      <p-dropdown
+        [options]="districts"
+        [(ngModel)]="editAddressData.district"
+        [ngModelOptions]="{ standalone: true }"
         optionLabel="Name"
+        placeholder="Quận Huyện"
         class="w-full md:w-56"
-        />
+        (onChange)="onDistrictChangeFromEditDialog()"
+      />
     </div>
     <div class="add-address">
       <label for="wards">Phường xã:</label>
-      <p-select 
-        [options]="wards" 
-        [(ngModel)]="selectedWard" 
+      <p-dropdown
+        [options]="wards"
+        [(ngModel)]="editAddressData.ward"
+        [ngModelOptions]="{ standalone: true }"
         optionLabel="Name"
+        placeholder="Phường Xã"
         class="w-full md:w-56"
-        [ngModelOptions]="{standalone: true}"/>
+      />
     </div>
      <div class="add-address">
       <label for="editValue">Địa chỉ:</label>
       <input type="text" id="editValue" [(ngModel)]="editAddressData.value" />
     </div>
 
-    <div class="p-field-checkbox">
+    <!-- <div class="p-field-checkbox">
       <p-checkbox [(ngModel)]="editAddressData.isDefault" inputId="editIsDefault"></p-checkbox>
       <label for="editIsDefault">Đặt làm địa chỉ mặc định</label>
-    </div>
+    </div> -->
   </div>
 
   <div class="dialog-buttons">

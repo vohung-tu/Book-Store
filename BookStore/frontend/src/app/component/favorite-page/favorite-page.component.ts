@@ -35,6 +35,7 @@ export class FavoritePageComponent implements OnInit{
   ) {}
 
   ngOnInit(): void {
+    // favorites$: emit (phát ra ) dsach yêu thích mỗi khi có thay đổi
     this.favoriteService.favorites$.subscribe(books => {
       this.favoriteBooks = books;
     });
