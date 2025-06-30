@@ -163,6 +163,9 @@ export class AddressBookComponent implements OnInit {
   }
 
   onEditAddress(index: number) {
+
+    this.editAddressIndex = index;
+
     const address = this.user.address[index];
     if (!address) return;
 
@@ -207,6 +210,14 @@ export class AddressBookComponent implements OnInit {
   }
   
   onSaveEditedAddress() {
+      console.log('DEBUG EDIT:', this.editAddressData);
+      console.log('Index:', this.editAddressIndex);
+      console.log('Full name:', this.editAddressData.fullName);
+      console.log('Phone:', this.editAddressData.phoneNumber);
+      console.log('City:', this.editAddressData.city);
+      console.log('District:', this.editAddressData.district);
+      console.log('Ward:', this.editAddressData.ward);
+
     if (
       this.editAddressIndex === null ||
       !this.editAddressData.fullName.trim() ||
