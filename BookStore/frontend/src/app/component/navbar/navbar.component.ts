@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../service/auth.service';
 import { CommonModule, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Observable, Subject } from 'rxjs';
+import { debounceTime, Observable, Subject } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CartService } from '../../service/cart.service';
@@ -15,6 +15,7 @@ import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
+import { BooksService } from '../../service/books.service';
 
 @Component({
   selector: 'app-navbar',
@@ -46,12 +47,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
   currentUser: any;
   userRole: string | null = null;
   searchTerm = '';
+  showSuggestions = false;
+  suggestions: any[] = [];
+  filteredSuggestions: string[] = [];
+  private searchSubject = new Subject<string>();
 
   constructor(private authService: AuthService,
     private cartService: CartService,
+    private bookService: BooksService,
     private router: Router
   ) {
     this.cart$ = this.cartService.getCart();
+    this.searchSubject.pipe(debounceTime(300)).subscribe((term) => {
+      this.fetchSuggestions(term);
+    });
   }
 
   ngOnInit(): void {
@@ -94,7 +103,36 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
   }
 
+  onInputChange() {
+    this.searchSubject.next(this.searchTerm);
+  }
+
+  fetchSuggestions(term: string) {
+    if (!term.trim()) {
+      this.suggestions = [];
+      return;
+    }
+
+    this.bookService.searchBooks(term).subscribe({
+      next: (res) => (this.suggestions = res),
+      error: () => (this.suggestions = []),
+    });
+  }
+
+
+  selectSuggestion(suggestion: BookDetails) {
+    this.searchTerm = suggestion.title;
+    this.suggestions = [];
+    this.onSearch(); // Gọi luôn tìm kiếm nếu muốn
+  }
+
+  hideSuggestions() {
+    // Trì hoãn để kịp chọn bằng chuột trước khi mất focus
+    setTimeout(() => this.showSuggestions = false, 150);
+  }
+
   onSearch() {
+    console.log('Tìm kiếm:', this.searchTerm);
     if (this.searchTerm.trim()) {
       this.router.navigate(['/search'], {
         queryParams: { keyword: this.searchTerm.trim() }
@@ -109,6 +147,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   navigateToCategory(category: string) {
     if (!category) {
+      return;
     }
     this.router.navigate(['/category', category]);
   }

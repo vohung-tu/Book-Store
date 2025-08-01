@@ -23,20 +23,23 @@
 
           </div>
           <!-- search -->
-          <div class="search-container">
-            <i class="pi pi-search search-icon"></i> 
-            <!-- thẻ chứa icon của html -->
-
+          <div class="search-container" (clickOutside)="hideSuggestions()">
+            <i class="pi pi-search search-icon"></i>
             <input
               type="text"
               class="search-input"
               placeholder="Tìm kiếm sách bạn cần"
               [(ngModel)]="searchTerm"
+              (input)="onInputChange()"
               (keydown.enter)="onSearch()"
             />
-            
-          </div>    
 
+            <ul class="suggestions-dropdown" *ngIf="suggestions.length">
+              <li *ngFor="let suggestion of suggestions" (click)="selectSuggestion(suggestion)">
+                <i class="pi pi-search search-icon"></i> {{ suggestion.title }}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 

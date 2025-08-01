@@ -3,7 +3,7 @@ import { interval, Subscription, takeWhile } from 'rxjs';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { BookDetails } from '../../model/books-details.model';
 import { BooksService } from '../../service/books.service';
 import { CarouselModule } from 'primeng/carousel';
@@ -43,7 +43,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
     private bookService: BooksService,
     private authorService: AuthorService,
     private messageService: MessageService,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    private router: Router
   ) {}
   intervalId: any;
   books: BookDetails[] = [];
@@ -133,7 +134,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
         return publishedDate >= thirtyDaysAgo && publishedDate <= today;
       });
       const daysLater = new Date();
-      daysLater.setDate(today.getDate() + 70);
+      daysLater.setDate(today.getDate() + 110);
 
       this.incommingReleaseBooks = this.books.filter(book => {
         const publishedDate = new Date(book.publishedDate);
@@ -181,6 +182,11 @@ export class HomepageComponent implements OnInit, OnDestroy {
       life: 3000
     });
   }
-  
+  navigateToCategory(category: string) {
+    if (!category) {
+      return;
+    }
+    this.router.navigate(['/category', category]);
+  }
 
 }

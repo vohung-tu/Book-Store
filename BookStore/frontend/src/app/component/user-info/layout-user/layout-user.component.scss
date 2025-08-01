@@ -32,13 +32,19 @@
 
 /* Header của card */
 .card-header {
-  background-color: #BE5985;
+  background-color: #105191;
   color: white;
   padding: 10px 15px;
   font-size: 18px;
   font-weight: bold;
   text-align: center;
   border-bottom: 1px solid #ccc;
+}
+
+.card-footer {
+  button {
+    background-color: #105191 !important;
+  }
 }
 
 /* Nội dung */
