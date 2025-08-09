@@ -2,15 +2,17 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, Observable } from 'rxjs';
 import { BookDetails } from '../model/books-details.model';
 import { AuthService } from './auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CartService {
+  private API_URL = 'https://book-store-3-svnz.onrender.com/cart';
   private cart: BookDetails[] = [];
   private cartSubject = new BehaviorSubject<BookDetails[]>([]);
 
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private http: HttpClient) {
     this.loadCart();
     this.authService.authStatusChanged?.subscribe((loggedIn: boolean) => {
       if (loggedIn) {
@@ -22,11 +24,10 @@ export class CartService {
   }
 
   private loadCart(): void {
-  const storage = this.authService.isAuthenticated() ? localStorage : sessionStorage;
-  const cartData = storage.getItem('cart');
-
-  this.cart = cartData ? JSON.parse(cartData) : [];
-  this.cartSubject.next([...this.cart]);
+  this.http.get<BookDetails[]>('/api/cart').subscribe(cart => {
+    this.cart = cart;
+    this.cartSubject.next([...this.cart]);
+  });
 }
 
   private saveCart(): void {
@@ -36,35 +37,43 @@ export class CartService {
   }
 
   getCart(): Observable<BookDetails[]> {
-    return this.cartSubject.asObservable().pipe(map(items => items || []));
+    return this.http.get<BookDetails[]>(this.API_URL);
   }
 
   addToCart(book: BookDetails): void {
-    const existingBook = this.cart.find(item => item._id === book._id);
-    if (existingBook) {
-      existingBook.quantity = (existingBook.quantity || 1) + 1;
-    } else {
-      this.cart.push({ ...book, quantity: 1 });
-    }
-    this.saveCart();
+    this.http.post(
+      `${this.API_URL}/${book._id}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${this.authService.getToken()}` },
+      }
+    ).subscribe({
+      next: () => this.loadCart(),
+      error: (err) => console.error('Error adding to cart:', err),
+    });
   }
 
   updateQuantity(bookId: string, change: number): void {
     const book = this.cart.find(item => item._id === bookId);
     if (book) {
-      book.quantity = Math.max(1, (book.quantity || 1) + change);
-      this.saveCart();
+      const newQuantity = Math.max(1, (book.quantity || 1) + change);
+      this.http.patch(`${this.API_URL}/${bookId}`, { quantity: newQuantity }).subscribe(() => {
+        this.loadCart();
+      });
     }
   }
 
   removeFromCart(bookId: string): void {
-    this.cart = this.cart.filter(item => item._id !== bookId);
-    this.saveCart();
+    this.http.delete(`${this.API_URL}/${bookId}`).subscribe(() => {
+      this.loadCart();
+    });
   }
 
   clearCart(): void {
-    this.cart = [];
-    this.saveCart();
+    this.http.delete(this.API_URL).subscribe(() => {
+      this.cart = [];
+      this.cartSubject.next([]);
+    });
   }
 
   // 🔁 Merge session cart into localStorage after login
