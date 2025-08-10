@@ -8,7 +8,10 @@ export class CartController {
     constructor(private cartService: CartService) {}
 
     @Get()
-    getCart(@Req() req){
+    getCart(@Req() req) {
+        if (!req.user?._id) {
+            return [];
+        }
         return this.cartService.getUserCart(req.user._id);
     }
 

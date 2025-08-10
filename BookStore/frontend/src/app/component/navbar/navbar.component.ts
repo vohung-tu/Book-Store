@@ -65,12 +65,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
-    // Kiểm tra và lấy thông tin user khi reload
-    this.authService.getUserInfo().subscribe();
-    this.cart$.subscribe(cart => {
-      this.cartItemCount = cart ? cart.length : 0;
-    });
 
+    if (this.authService.isLoggedIn()) {
+      this.cartService.getCart().subscribe({
+        next: (cart) => {
+          this.cartItemCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        },
+        error: (err) => {
+          console.error('Error loading cart:', err);
+          this.cartItemCount = 0;
+        }
+      });
+    } else {
+      this.cartItemCount = 0;
+    }
     this.currentUser = this.authService.getCurrentUser();
     this.userRole = this.currentUser?.role || null;
     this.getCurrentUser();

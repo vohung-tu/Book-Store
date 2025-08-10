@@ -59,11 +59,14 @@ export class CartComponent implements OnInit {
   } 
 
   ngOnInit(): void {
-    this.cart$.subscribe(cart => {
-      this.totalPrice = cart.reduce((sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1), 0);
+    // Load lại từ server khi vào trang
+    this.cartService.getCart().subscribe(cart => {
+      this.totalPrice = cart.reduce(
+        (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+        0
+      );
     });
   }
-
   // tăng số lượng
   increaseQuantity(book: BookDetails): void {
     this.cartService.updateQuantity(book._id, 1);
