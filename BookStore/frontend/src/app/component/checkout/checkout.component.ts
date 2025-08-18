@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,6 +26,8 @@ import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 import { BooksService } from '../../service/books.service';
 import { City, District, Ward } from '../user-info/address-book/address-book.component';
+import { Dialog, DialogModule } from 'primeng/dialog';
+import QRCode from 'qrcode';
 export interface DiscountCode {
   code: string;
   minOrderAmount?: number;
@@ -55,7 +57,8 @@ export interface DiscountCode {
     DividerModule,
     DropdownModule,
     BreadcrumbComponent,
-    DotSeparatorPipe
+    DotSeparatorPipe,
+    DialogModule
   ],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss']
@@ -109,6 +112,12 @@ export class CheckoutComponent implements OnInit {
     note: '',
     payment: ''
   };
+
+  @ViewChild('qrMomoCanvas') qrMomoCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('qrVnpayCanvas') qrVnpayCanvas!: ElementRef<HTMLCanvasElement>;
+
+  momoValue = 'https://momo.vn/payment/your-order-id';   // link hoặc dữ liệu QR MoMo
+  vnpayValue = 'https://vnpay.vn/payment/your-order-id'; // link hoặc dữ liệu QR VNPAY
 
   shipping = {
     selected: 'other_provinces',  // This will hold the selected shipping method
@@ -179,6 +188,41 @@ export class CheckoutComponent implements OnInit {
       this.vietnamAddresses = data;
       this.cities = data; // Lấy danh sách tỉnh/thành phố
     });
+  }
+
+  ngAfterViewInit() {
+    // render QR mặc định nếu có chọn MoMo/VNPAY
+    if (this.orderInfo.payment === 'momo') {
+      this.generateMomoQR();
+    }
+    if (this.orderInfo.payment === 'vnpay') {
+      this.generateVnpayQR();
+    }
+  }
+
+  generateMomoQR() {
+    if (this.qrMomoCanvas) {
+      QRCode.toCanvas(this.qrMomoCanvas.nativeElement, this.momoValue, {
+        width: 250,
+      });
+    }
+  }
+
+  generateVnpayQR() {
+    if (this.qrVnpayCanvas) {
+      QRCode.toCanvas(this.qrVnpayCanvas.nativeElement, this.vnpayValue, {
+        width: 250,
+      });
+    }
+  }
+
+  onPaymentChange() {
+    // render lại QR khi chọn phương thức thanh toán
+    if (this.orderInfo.payment === 'momo') {
+      this.generateMomoQR();
+    } else if (this.orderInfo.payment === 'vnpay') {
+      this.generateVnpayQR();
+    }
   }
 
   get canSubmitOrder(): boolean {
@@ -445,5 +489,19 @@ export class CheckoutComponent implements OnInit {
     // Tìm địa chỉ mặc định (isDefault = true)
     const defaultAddress = this.currentUser.address.find((addr: any) => addr.isDefault);
     return defaultAddress ? defaultAddress.value : '';
+  }
+
+  placeOrder() {
+    if (this.orderInfo.payment === 'momo') {
+      // logic mở dialog MoMo
+      alert('Thanh toán bằng MOMO - hiển thị QR');
+    } else if (this.orderInfo.payment === 'vnpay') {
+      // logic mở dialog VNPAY
+      alert('Thanh toán bằng VNPAY - hiển thị QR');
+    } else if (this.orderInfo.payment === 'cod') {
+      alert('Thanh toán COD');
+    } else if (this.orderInfo.payment === 'bank') {
+      alert('Chuyển khoản ngân hàng');
+    }
   }
 }

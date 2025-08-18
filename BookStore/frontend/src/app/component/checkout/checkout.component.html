@@ -116,33 +116,81 @@
       
       <h3>Thanh toán</h3>
       <div class="flex-1 flex-wrap gap-4">
+
+        <!-- Bank -->
         <div class="flex items-center" style="display: flex;">
           <p-radiobutton
             name="payment"
-            value="payment"
+            value="bank"
             [(ngModel)]="orderInfo.payment"
             inputId="payment1"
+            (onClick)="onPaymentChange()"
           />
           <label for="payment1">Chuyển khoản qua ngân hàng</label>
         </div>
-
-        <div *ngIf="orderInfo.payment === 'payment'" class="ml-6">
+        <div *ngIf="orderInfo.payment === 'bank'" class="ml-6">
           <p><strong>Thông tin chuyển khoản:</strong></p>
           <p>Ngân hàng: NCB</p>
           <p>Số tài khoản: 9704198526191432198</p>
           <p>Chủ tài khoản: Nguyễn Văn A</p>
           <p>Nội dung chuyển khoản: [Mã đơn hàng]</p>
         </div>
+
+        <!-- COD -->
         <div class="flex-1 items-center" style="display: flex;">
           <p-radiobutton
             name="payment"
-            value="Onion"
+            value="cod"
             [(ngModel)]="orderInfo.payment"
             inputId="payment2"
+            (onClick)="onPaymentChange()"
           />
           <label for="payment2">Thanh toán khi nhận hàng (COD)</label>
         </div>
+
+        <!-- MOMO -->
+        <div class="flex-1 items-center" style="display: flex;">
+          <p-radiobutton
+            name="payment"
+            value="momo"
+            [(ngModel)]="orderInfo.payment"
+            inputId="payment3"
+            (onClick)="onPaymentChange()"
+          />
+          <div style="padding: 10px; display: flex;">
+            
+            <img src="assets/images/momo.png" alt="" width="32px" height="32px">
+          <label for="payment3" style="padding-left: 10px;">
+            Ví MoMo</label>
+          </div>
+        </div>
+        <div *ngIf="orderInfo.payment === 'momo'" class="ml-6">
+          <canvas #qrMomoCanvas></canvas>
+          <p>Quét mã QR bằng ứng dụng MoMo để thanh toán.</p>
+        </div>
+
+        <!-- VNPAY -->
+        <div class="flex-1 items-center" style="display: flex;">
+          <p-radiobutton
+            name="payment"
+            value="vnpay"
+            [(ngModel)]="orderInfo.payment"
+            inputId="payment4"
+            (onClick)="onPaymentChange()"
+          />
+          <div class="vnpay-class" style="padding: 10px; display: flex;">
+            <img src="assets/images/vnpay.png" alt="" width="32px" height="32px">
+          <label for="payment4" style="padding-left: 10px;"> VNPAY</label>
+          </div>
+        </div>
+        <div *ngIf="orderInfo.payment === 'vnpay'" class="ml-6">
+          <canvas #qrVnpayCanvas></canvas>
+          <p>Quét mã QR bằng ứng dụng VNPAY để thanh toán.</p>
+        </div>
+
       </div>
+
+      <!-- <button (click)="placeOrder()">Đặt hàng</button> -->
 
       <div class="mt-4 " style="display: flex;">
         <input type="text" pInputText [(ngModel)]="discountCode" placeholder="Nhập mã giảm giá" name="discountCode" [ngModelOptions]="{standalone: true}"/>

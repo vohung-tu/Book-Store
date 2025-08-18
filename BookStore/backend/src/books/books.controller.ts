@@ -7,36 +7,44 @@ export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Post()
-  async create(@Body() book: Book): Promise<Book> {
+  create(@Body() book: Book): Promise<Book> {
     return this.booksService.create(book);
   }
 
+  // ✅ ONE endpoint: find all or filter by category with pagination
   @Get()
-  async findAll(): Promise<Book[]> {
-    return await this.booksService.findAllBooks();
+  async find(
+    @Query('category') category?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20'
+  ) {
+    const p = Math.max(+page || 1, 1);
+    const l = Math.min(+limit || 20, 100);
+
+    return category
+      ? this.booksService.findByCategory(category, p, l)
+      : this.booksService.findAllBooks(p, l);
   }
 
   @Get('search')
   async searchBooks(@Query('keyword') keyword: string): Promise<Book[]> {
-    if (!keyword) {
-      throw new BadRequestException('Keyword is required');
-    }
+    if (!keyword) throw new BadRequestException('Keyword is required');
     return this.booksService.searchBooks(keyword);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Book | Book[] | null> { // 🔄 Đổi kiểu trả về thành `Book | Book[] | null`
-    if (id === 'best-sellers') {
-      return this.booksService.getBestSellers(); // ✅ Gọi API đúng, không ép kiểu
-    }
-
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) { 
-      throw new BadRequestException('ID sách không hợp lệ!');
-    }
-
-    return this.booksService.findOne(id);
+  @Get('best-sellers')
+  getBestSellers() {
+    return this.booksService.getBestSellers();
   }
 
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<Book | null> {
+    // giữ đặc biệt nếu bạn có thêm slug khác thì xử lý trước ở đây
+    if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+      throw new BadRequestException('ID sách không hợp lệ!');
+    }
+    return this.booksService.findOne(id);
+  }
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateData: Partial<Book>): Promise<Book | null> {
@@ -47,19 +55,4 @@ export class BooksController {
   async delete(@Param('id') id: string): Promise<void> {
     return this.booksService.delete(id);
   }
-
-  @Get('category/:categoryName')
-  async getProductsByCategory(@Param('categoryName') categoryName: string): Promise<Book[] | null> {
-    if (!categoryName) {
-      throw new BadRequestException('Category name is required');
-    }
-
-    return this.booksService.findByCategory(categoryName);
-  }
-
-  @Get('/best-sellers')
-  async getBestSellers() {
-    return this.booksService.getBestSellers();
-  }
-
 }

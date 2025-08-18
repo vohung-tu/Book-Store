@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 import { BookDetails } from '../../model/books-details.model';
 import { CartService } from '../../service/cart.service';
 import { CommonModule } from '@angular/common';
@@ -53,34 +53,35 @@ export class CartComponent implements OnInit {
     private authService: AuthService,
     private messageService: MessageService
   ) {
-    this.cart$ = this.cartService.getCart().pipe(
-      map(cart => cart || [])
-    );
+    this.cart$ = this.cartService.getCart();
+    this.cart$.subscribe(cart => {
+      this.totalPrice = (cart ?? []).reduce((s, it) =>
+        s + (it.flashsale_price || it.price) * (it.quantity || 1), 0);
+    });
   } 
 
   ngOnInit(): void {
-    // Load lại từ server khi vào trang
-    this.cartService.getCart().subscribe(cart => {
-      this.totalPrice = cart.reduce(
+    // Tự động cập nhật tổng tiền khi cart thay đổi
+    this.cart$.subscribe(cart => {
+      this.totalPrice = (cart ?? []).reduce(
         (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
         0
       );
     });
   }
-  // tăng số lượng
+
   increaseQuantity(book: BookDetails): void {
-    this.cartService.updateQuantity(book._id, 1);
+    this.cartService.updateQuantity(book.cartItemId, 1).subscribe();
   }
 
-  // giảm số lượng
   decreaseQuantity(book: BookDetails): void {
-    if(book.quantity && book.quantity > 1) {
-      this.cartService.updateQuantity(book._id, -1);
+    if ((book.quantity ?? 1) > 1) {
+      this.cartService.updateQuantity(book.cartItemId, -1).subscribe();
     }
   }
 
-  removeItem(bookId: string): void {
-    this.cartService.removeFromCart(bookId);
+  removeItem(cartItemId: string): void {
+    this.cartService.removeFromCart(cartItemId).subscribe();
   }
 
   onCheckboxChange(book: BookDetails, event: Event): void {

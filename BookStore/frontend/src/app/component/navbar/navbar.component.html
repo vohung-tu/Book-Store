@@ -6,22 +6,6 @@
           <a routerLink="/home">
             <img src="assets/images/logo.png" alt="" width="180px" height="90px">
           </a>
-          <div class="category-btn">
-            <button class="btn-change-category" mat-button [matMenuTriggerFor]="category">
-              <mat-icon matSuffix>category</mat-icon>
-            </button>
-
-            <mat-menu #category="matMenu">
-              <button mat-menu-item (click)="navigateToCategory('sach-trong-nuoc');$event.stopPropagation()" >Sách trong nước</button>
-              <button mat-menu-item (click)="navigateToCategory('vpp-dung-cu-hoc-sinh')">VPP - Dụng cụ học sinh</button>
-              <button mat-menu-item (click)="navigateToCategory('do-choi')">Đồ chơi</button>
-              <button mat-menu-item (click)="navigateToCategory('lam-dep')">Làm Đẹp</button>
-              <button mat-menu-item (click)="navigateToCategory('manga')">Truyện tranh - Manga</button>
-              <button mat-menu-item (click)="navigateToCategory('sach-tham-khao')">Sách tham khảo</button>
-
-            </mat-menu>
-
-          </div>
           <!-- search -->
           <div class="search-container" (clickOutside)="hideSuggestions()">
             <i class="pi pi-search search-icon"></i>

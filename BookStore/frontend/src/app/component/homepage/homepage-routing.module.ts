@@ -6,7 +6,7 @@ const routes: Routes = [
   {
     path: '',
     component: HomepageComponent,
-    title: 'Trang chủ'
+    title: 'PamTech - Nơi ươm mầm giấc mơ'
   }
 ];
 

@@ -4,3 +4,6 @@
 vd: ng g c signup (tạo component xử lý page signup)
 
 - nhìn vào project, ta thấy có file index.html, ta thấy <!doctype html>... là code khai báo html phải có thì các page html trong project mới hoạt động và hiểu được. Các link trong index.html đều được khai báo để sử dụng các thư viện cho toàn project
+
+npm install compression
+npm install --save-dev @types/compression

@@ -1,0 +1,69 @@
+<div class="admin-cats">
+  <div class="toolbar">
+    <h2>Quản lý Category</h2>
+    <button pButton label="Thêm danh mục" icon="pi pi-plus" (click)="openCreate()"></button>
+  </div>
+
+  <p-table
+    [value]="rows"
+    [paginator]="true"
+    [rows]="rowsPerPage"
+    [rowHover]="true"
+    [loading]="loading"
+    [tableStyle]="{ 'min-width': '600px' }"
+    [rowTrackBy]="trackById"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 40%">Tên</th>
+        <th style="width: 40%">Slug</th>
+        <th style="width: 20%; text-align: right">Thao tác</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-r>
+      <tr>
+        <td>
+          <div class="name-cell">
+            <span class="name">{{ r.name }}</span>
+          </div>
+        </td>
+        <td>
+          <p-tag [value]="r.slug"></p-tag>
+        </td>
+        <td class="actions">
+          <button pButton text icon="pi pi-pencil" (click)="openEdit(r)" aria-label="Sửa"></button>
+          <button pButton text severity="danger" icon="pi pi-trash" (click)="del(r)" aria-label="Xóa"></button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="3" class="empty">Chưa có danh mục nào.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-dialog
+    [(visible)]="show"
+    [modal]="true"
+    [draggable]="false"
+    [dismissableMask]="true"
+    [style]="{ width: '480px', maxWidth: '95vw' }"
+    [header]="editId ? 'Sửa danh mục' : 'Thêm danh mục'"
+  >
+    <div class="form-grid">
+      <label for="name">Tên danh mục <span>*</span></label>
+      <input id="name" pInputText [(ngModel)]="form.name" placeholder="VD: Sách Trong Nước" />
+
+      <label for="slug">Slug (tùy chọn)</label>
+      <input id="slug" pInputText [(ngModel)]="form.slug" placeholder="vd: sach-trong-nuoc" />
+
+      <div class="dialog-actions">
+        <button pButton label="Hủy" (click)="show = false" class="btn-cancel"></button>
+        <button pButton label="Lưu" icon="pi pi-check" (click)="save()" [disabled]="!form.name"></button>
+      </div>
+    </div>
+  </p-dialog>
+</div>

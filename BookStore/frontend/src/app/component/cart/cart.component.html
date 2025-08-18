@@ -5,7 +5,7 @@
     { label: 'Giỏ hàng' }
   ]">
 </app-breadcrumb>
-<h1 style="text-align: center; color: #16a34a;">GIỎ HÀNG</h1>
+<h1 style="text-align: center; color: #105191;">GIỎ HÀNG</h1>
 
 <!-- Giỏ hàng có sản phẩm -->
 <div class="cart-container" *ngIf="(cart$ | async) as cartData">
@@ -58,10 +58,10 @@
             <button mat-button (click)="increaseQuantity(book)">+</button>
           </td>
           <td class="total-price">
-            {{ (book.flashsale_price || book.price) * (book.quantity || 1) | dotSeparator}} đ
+            {{ (book.flashsale_price || book.price) * (book.quantity || 1) | dotSeparator }} đ
           </td>
           <td>
-            <button class="delete-btn" (click)="removeItem(book._id)">
+            <button class="delete-btn" (click)="removeItem(book.cartItemId)">
               <mat-icon>delete</mat-icon>
             </button>
           </td>

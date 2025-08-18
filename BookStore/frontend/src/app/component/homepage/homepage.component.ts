@@ -4,7 +4,7 @@ import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { Router, RouterModule } from '@angular/router';
-import { BookDetails } from '../../model/books-details.model';
+import { BookDetails, Category } from '../../model/books-details.model';
 import { BooksService } from '../../service/books.service';
 import { CarouselModule } from 'primeng/carousel';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -17,6 +17,7 @@ import { ButtonModule } from 'primeng/button';
 import { Author } from '../../model/author.model';
 import { AuthorService } from '../../service/author.service';
 import { ReviewService } from '../../service/review.service';
+import { CategoryService } from '../../service/category.service';
 
 @Component({
   selector: 'app-homepage',
@@ -44,6 +45,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
     private authorService: AuthorService,
     private messageService: MessageService,
     private reviewService: ReviewService,
+    private categoryService: CategoryService,
     private router: Router
   ) {}
   intervalId: any;
@@ -52,7 +54,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
   sachThamKhao: BookDetails[] = [];
   sachTrongNuoc: BookDetails[] = [];
   authors: Author[] = [];
-
+  categories: Category[] = [];
   days = 0;
   hours = 0;
   minutes = 0;
@@ -89,10 +91,16 @@ export class HomepageComponent implements OnInit, OnDestroy {
   newReleaseBooks: BookDetails[] = [];
   incommingReleaseBooks: BookDetails[] = [];
   bestSellerBooks:  BookDetails[] = [];
+  trackById = (_: number, c: { _id:string }) => c._id;
   
   private timerSubscription?: Subscription;
 
   ngOnInit(): void {
+    this.setFavicon('assets/images/logo.png');
+    this.categoryService.getCategories().subscribe({
+      next: (cats) => this.categories = cats,
+      error: (err) => console.error('❌ Lỗi load categories:', err)
+    });
     this.authorService.getAuthors().subscribe(data => {
       this.authors = data;
     });
@@ -120,21 +128,36 @@ export class HomepageComponent implements OnInit, OnDestroy {
       }
   ]
 
-    this.bookService.getBooks().subscribe((data) => {
-      this.books = data;
-      this.sachThamKhao = this.books.filter(book => book.categoryName === 'sach-tham-khao');
-      this.sachTrongNuoc = this.books.filter(book => book.categoryName === 'sach-trong-nuoc');
+    this.bookService.getBooks().subscribe(res => {
+      this.books = res ?? [];
+
+      const getCatSlug = (b: BookDetails): string => {
+        const c = b.categoryName as any;
+        return typeof c === 'string' ? c : c?.slug ?? '';
+      };
+      const buckets = this.books.reduce(
+        (acc, b) => {
+          const slug = getCatSlug(b);
+          if (slug === 'sach-tham-khao')  acc.tk.push(b);
+          if (slug === 'sach-trong-nuoc') acc.tn.push(b);
+          return acc;
+        },
+        { tk: [] as BookDetails[], tn: [] as BookDetails[] }
+      );
+
+      this.sachThamKhao  = buckets.tk;
+      this.sachTrongNuoc = buckets.tn;
 
       const today = new Date();
       const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(today.getDate() - 60); 
+      thirtyDaysAgo.setDate(today.getDate() - 90); 
 
       this.newReleaseBooks = this.books.filter(book => {
         const publishedDate = new Date(book.publishedDate);
         return publishedDate >= thirtyDaysAgo && publishedDate <= today;
       });
       const daysLater = new Date();
-      daysLater.setDate(today.getDate() + 110);
+      daysLater.setDate(today.getDate() + 365);
 
       this.incommingReleaseBooks = this.books.filter(book => {
         const publishedDate = new Date(book.publishedDate);
@@ -164,6 +187,18 @@ export class HomepageComponent implements OnInit, OnDestroy {
     });
   }
 
+  setFavicon(iconUrl: string) {
+    const link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+    if (link) {
+      link.href = iconUrl;
+    } else {
+      const newLink = document.createElement('link');
+      newLink.rel = 'icon';
+      newLink.href = iconUrl;
+      document.head.appendChild(newLink);
+    }
+  }
+
   getBookDetails(id: string): void {
     this.bookService.getBookById(id).subscribe((data) => {
       this.selectedBook = data;
@@ -187,6 +222,20 @@ export class HomepageComponent implements OnInit, OnDestroy {
       return;
     }
     this.router.navigate(['/category', category]);
+  }
+
+   imageFor(slug: string): string {
+    const map: Record<string, string> = {
+      'sach-trong-nuoc': 'assets/images/cate-sach-trong-nuoc.png',
+      'vpp-dung-cu-hoc-sinh': 'assets/images/cate-dung-cu.jpg',
+      'do-choi': 'assets/images/luuniem.webp',
+      'lam-dep': 'assets/images/trang-diem.jpg',
+      'manga': 'assets/images/truyen-tranh-1.jpg',
+      'sach-tham-khao': 'assets/images/sach-tham-khao.jpg',
+      'sach-ngoai-van': 'assets/images/sach-nuoc-ngoai.jpg',
+      'ma-giam-gia': 'assets/images/coupon-1.jpg',
+    };
+    return map[slug] ?? `assets/images/${slug}.jpg`; // fallback nếu bạn đặt tên ảnh theo slug
   }
 
 }

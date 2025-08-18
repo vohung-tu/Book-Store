@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
 import { BookDetails } from '../model/books-details.model';
 import { AuthService } from './auth.service';
 import { HttpClient } from '@angular/common/http';
@@ -10,7 +10,7 @@ import { HttpClient } from '@angular/common/http';
 export class CartService {
   private API_URL = 'https://book-store-3-svnz.onrender.com/cart';
   private cartSubject = new BehaviorSubject<BookDetails[]>([]);
-  private cart: BookDetails[] = [];
+  cart$ = this.cartSubject.asObservable();
 
   constructor(
     private authService: AuthService,
@@ -21,79 +21,64 @@ export class CartService {
     }
   }
 
-  /** Lấy cart từ server và đẩy vào BehaviorSubject */
+  /** fetch từ server và next vào subject */
   private loadCart(): void {
     const token = this.authService.getToken();
-    if (!token) {
-      this.cartSubject.next([]);
-      return;
-    }
+    if (!token) return this.cartSubject.next([]);
+
     this.http.get<BookDetails[]>(this.API_URL, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
-      next: (cart) => {
-        this.cart = cart;
-        this.cartSubject.next([...this.cart]);
-      },
-      error: (err) => console.error('Error loading cart:', err),
+      next: cart => this.cartSubject.next(cart ?? []),
+      error: err => console.error('Error loading cart:', err),
     });
   }
 
   getCart(): Observable<BookDetails[]> {
-    const token = this.authService.getToken();
-    return this.http.get<BookDetails[]>(this.API_URL, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    return this.cart$;
   }
 
   /** Thêm sản phẩm vào giỏ */
-  addToCart(book: BookDetails): void {
-    this.http.post(
-      `${this.API_URL}/${book._id}`,
-      {},
-      {
-        headers: { 
-          Authorization: `Bearer ${this.authService.getToken()}`,
-          'Content-Type': 'application/json'
-        },
-      }
-    ).subscribe({
-      next: () => this.loadCart(),
-      error: (err) => console.error('Error adding to cart:', err),
-    });
+  addToCart(book: BookDetails): Observable<any> {
+    return this.http.post(`${this.API_URL}/${book._id}`, {}, {
+      headers: { Authorization: `Bearer ${this.authService.getToken()}` }
+    }).pipe(
+      tap(() => this.loadCart())
+    );
   }
 
-  /** Cập nhật số lượng */
-  updateQuantity(bookId: string, change: number): void {
-    this.http.patch(
-      `${this.API_URL}/${bookId}`,
-      { change },
-      {
-        headers: { Authorization: `Bearer ${this.authService.getToken()}` },
-      }
-    ).subscribe({
-      next: () => this.loadCart(),
-      error: (err) => console.error('Error updating quantity:', err),
-    });
+  updateQuantity(cartItemId: string, change: number): Observable<any> {
+    // Optimistic update
+    const prev = this.cartSubject.value;
+    const next = prev.map(it =>
+      it.cartItemId === cartItemId
+        ? { ...it, quantity: Math.max(1, (it.quantity || 1) + change) }
+        : it
+    );
+    this.cartSubject.next(next);
+
+    return this.http.patch(`${this.API_URL}/${cartItemId}`, { change }, {
+      headers: { Authorization: `Bearer ${this.authService.getToken()}` }
+    }).pipe();
   }
 
   /** Xóa 1 sản phẩm */
-  removeFromCart(bookId: string): void {
-    this.http.delete(`${this.API_URL}/${bookId}`, {
-      headers: { Authorization: `Bearer ${this.authService.getToken()}` },
-    }).subscribe({
-      next: () => this.loadCart(),
-      error: (err) => console.error('Error removing from cart:', err),
-    });
+  removeFromCart(cartItemId: string): Observable<any> {
+    const prev = this.cartSubject.value;
+    const next = prev.filter(it => it.cartItemId !== cartItemId);
+    this.cartSubject.next(next);
+
+    return this.http.delete(`${this.API_URL}/${cartItemId}`, {
+      headers: { Authorization: `Bearer ${this.authService.getToken()}` }
+    })/* .pipe(catchError(err => { this.cartSubject.next(prev); return throwError(() => err); })) */;
   }
 
   /** Xóa toàn bộ giỏ */
-  clearCart(): void {
-    this.http.delete(this.API_URL, {
+  clearCart(): Observable<any> {
+    return this.http.delete(this.API_URL, {
       headers: { Authorization: `Bearer ${this.authService.getToken()}` },
-    }).subscribe({
-      next: () => this.cartSubject.next([]),
-      error: (err) => console.error('Error clearing cart:', err),
-    });
+    }).pipe(
+      tap(() => this.cartSubject.next([]))
+    );
   }
 }

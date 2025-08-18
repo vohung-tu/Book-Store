@@ -33,7 +33,7 @@ export class Book {
   @Prop({ type: Date })
   publishedDate: Date;
 
-  @Prop({ required: true })
+  @Prop({ required: true, lowercase: true, trim: true })
   categoryName: string;
 
   @Prop({ required: true })
@@ -41,3 +41,4 @@ export class Book {
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);
+BookSchema.index({ categoryName: 1 });

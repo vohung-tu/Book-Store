@@ -24,6 +24,7 @@ import { AddressBookComponent } from './component/user-info/address-book/address
 import { ResetPasswordComponent } from './component/user-info/reset-password/reset-password.component';
 import { ForgotPasswordComponent } from './component/forgot-password/forgot-password.component';
 import { ResetPasswordLinkComponent } from './component/reset-password-link/reset-password-link.component';
+import { AdminCategoryComponent } from './admin/admin-category/admin-category.component';
 
 const routes: Routes = [
   {
@@ -130,6 +131,11 @@ const routes: Routes = [
         component: AdminAuthorComponent,
         title: 'Admin Author'
       },
+      {
+        path: 'category',
+        component: AdminCategoryComponent,
+        title: 'Admin Category' 
+      }
     ],
   },
   { path: 'search',

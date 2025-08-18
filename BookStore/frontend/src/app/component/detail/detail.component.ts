@@ -30,6 +30,7 @@ import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 import { AuthorService } from '../../service/author.service';
 import { Author } from '../../model/author.model';
 import { HttpClient } from '@angular/common/http';
+import { catName, catSlug } from '../category/category.helpers';
 
 @Component({
   selector: 'app-detail',
@@ -127,27 +128,32 @@ export class DetailComponent implements OnInit {
   // 📖 Tải thông tin sách
   private loadBookDetails(bookId: string): void {
     this.fetchBookDetails(bookId);
+
     this.bookService.getBookById(bookId).subscribe(book => {
       this.book = { ...book };
 
-      // ✅ Nếu `book.author` là chuỗi, chuyển thành đối tượng
-      if (typeof book.author === 'string') {
-        this.book.author = { _id: '', name: book.author };
+      // Chuẩn hóa author
+      if (typeof this.book.author === 'string') {
+        this.book.author = { _id: '', name: this.book.author };
       }
 
-      // ✅ Nếu `_id` tồn tại, lấy thông tin tác giả
-      if (this.book.author._id) {
+      if (this.book.author?._id) {
         this.loadAuthorDetails(this.book.author._id);
       } else {
-        this.author = this.book.author; // Nếu không có `_id`, hiển thị dữ liệu tạm thời
+        this.author = this.book.author as any;
       }
 
-      this.loadRelatedBooks(book.categoryName);
+      // ✅ Thu hẹp category trước khi dùng
+      const slug = catSlug(this.book.categoryName);   // string
+      const name = catName(this.book.categoryName);   // string
+
+      this.loadRelatedBooks(slug);                    // ← giờ hợp kiểu string
       this.getReviewsByProductId(bookId);
+
       this.breadcrumbItems = [
         { label: 'Trang chủ', url: '/' },
-        { label: this.formatCategory(book.categoryName), url: `/category/${book.categoryName}` },
-        { label: book.title }
+        { label: name, url: `/category/${slug}` },
+        { label: this.book.title }
       ];
     });
   }

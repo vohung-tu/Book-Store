@@ -13,13 +13,14 @@ export class BooksService {
 
  // Lấy danh sách sách từ backend và ánh xạ _id (mongo) -> id
   getBooks(): Observable<BookDetails[]> {
-    return this.http.get<BookDetails[]>(this.apiUrl).pipe(
-      map(books =>
-        books.map(book => ({
+    return this.http.get<any>(this.apiUrl).pipe(
+      map(res => {
+        const books = Array.isArray(res) ? res : res.items || [];
+        return books.map((book: any) => ({
           ...book,
-          id: book._id // Chuyển _id thành id
-        }))
-      )
+          id: book._id
+        }));
+      })
     );
   }
 
@@ -34,8 +35,13 @@ export class BooksService {
   }
 
   // lấy books by category
-  getProductsByCategory(categoryName: string): Observable<BookDetails[]> {
-    return this.http.get<BookDetails[]>(`${this.apiUrl}/category/${categoryName}`);
+  getProductsByCategory(categorySlug: string, page = 1, limit = 20): Observable<BookDetails[]> {
+    return this.http.get<{ items: BookDetails[]; total: number; page: number; pages: number }>(
+      this.apiUrl,
+      { params: { category: categorySlug, page, limit } }
+    ).pipe(
+      map(res => (res.items ?? []).map(b => ({ ...b, id: (b as any)._id })))
+    );
   }
 
   searchBooks(keyword: string): Observable<BookDetails[]> {

@@ -1,10 +1,9 @@
 <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
-<h2>Sản phẩm thuộc danh mục: {{ this.formatCategory(this.categoryName) }}</h2>
+<h2>Sản phẩm thuộc danh mục: {{ displayName }}</h2>
 
-<!-- <app-product-filter 
-  (priceFilter)="onPriceFilter()"
-  (publisherFilter)="onPublisherFilter()">
-</app-product-filter> -->
+<!-- <div class="card">
+    <p-megamenu [model]="items" />
+</div> -->
 
 <div class="product-container" *ngIf="products.length > 0; else noProducts">
   <app-product-item

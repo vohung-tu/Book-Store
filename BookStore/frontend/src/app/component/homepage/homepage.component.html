@@ -15,52 +15,10 @@
 
   <div class="container-category">
     <div class="category">
-      <div class="cate-child">
-        <a (click)="navigateToCategory('sach-trong-nuoc');$event.stopPropagation()">
-            <img src="assets/images/cate-sach-trong-nuoc.png" alt="" width="120px" height="75px">
-            <span>Sách trong nước</span>
-        </a>
-      </div>
-      <div class="cate-child">
-        <a (click)="navigateToCategory('vpp-dung-cu-hoc-sinh')">
-            <img src="assets/images/cate-dung-cu.jpg" alt="" width="100px" height="75px">
-            <span>VPP - Dụng cụ học sinh</span>
-        </a>
-      </div>
-      <div class="cate-child">
-        <a (click)="navigateToCategory('do-choi')">
-            <img src="assets/images/cate-sach-trong-nuoc.png" alt="" width="120px" height="75px">
-            <span>Quà lưu niệm</span>
-        </a>
-      </div>
-      <div class="cate-child">
-        <a (click)="navigateToCategory('lam-dep')">
-            <img src="assets/images/cate-sach-trong-nuoc.png" alt="" width="120px" height="75px">
-            <span>Làm Đẹp</span>
-        </a>
-      </div>
-      <div class="cate-child">
-        <a (click)="navigateToCategory('manga')">
-            <img src="assets/images/cate-sach-trong-nuoc.png" alt="" width="120px" height="75px">
-            <span>Truyện tranh - Manga</span>
-        </a>
-      </div>
-      <div class="cate-child">
-        <a (click)="navigateToCategory('sach-tham-khao')">
-            <img src="assets/images/cate-sach-trong-nuoc.png" alt="" width="120px" height="75px">
-            <span>Sách tham khảo</span>
-        </a>
-      </div>
-      <div class="cate-child">
-        <a (click)="navigateToCategory('sach-trong-nuoc')">
-            <img src="assets/images/cate-sach-trong-nuoc.png" alt="" width="120px" height="75px">
-            <span>Sách trong nước</span>
-        </a>
-      </div>
-      <div class="cate-child">
-        <a (click)="navigateToCategory('sach-trong-nuoc')">
-            <img src="assets/images/cate-sach-trong-nuoc.png" alt="" width="120px" height="75px">
-            <span>Sách trong nước</span>
+      <div class="cate-child" *ngFor="let cat of categories; trackBy: trackById">
+        <a (click)="navigateToCategory(cat.slug); $event.stopPropagation()">
+          <img [src]="imageFor(cat.slug)" [alt]="cat.name" width="120" height="75" loading="lazy" />
+          <span>{{ cat.name }}</span>
         </a>
       </div>
     </div>
