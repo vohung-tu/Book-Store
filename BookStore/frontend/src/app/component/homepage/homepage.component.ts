@@ -238,6 +238,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
       'sach-tham-khao': 'assets/images/sach-tham-khao.jpg',
       'sach-ngoai-van': 'assets/images/sach-nuoc-ngoai.jpg',
       'ma-giam-gia': 'assets/images/coupon-1.jpg',
+      'sach-giao-khoa-2025': 'assets/images/sach-giao-khoa.jpg'
     };
     return map[slug] ?? `assets/images/${slug}.jpg`; // fallback nếu bạn đặt tên ảnh theo slug
   }
