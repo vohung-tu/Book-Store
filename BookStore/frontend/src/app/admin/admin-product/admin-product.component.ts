@@ -126,9 +126,9 @@ export class AdminProductComponent {
   }
 
   fetchProducts() {
-    this.http.get<any>('https://book-store-3-svnz.onrender.com/books').subscribe({
+    this.http.get<any>('https://book-store-3-svnz.onrender.com/books?limit=1000').subscribe({
       next: data => {
-        this.products = data.items.map((book: any) => {
+        this.products = (data.items || []).map((book: any) => {
           let authorObj = { name: 'Không rõ', _id: '' };
 
           if (typeof book.author === 'object' && book.author?.name) {
@@ -138,21 +138,10 @@ export class AdminProductComponent {
             };
           } else if (typeof book.author === 'string') {
             const found = this.authors.find(a => a._id === book.author);
-            if (found) {
-              authorObj = {
-                _id: found._id || '',
-                name: found.name || 'Không rõ'
-              };
-            } else {
-              authorObj = { _id: book.author, name: 'Không rõ' };
-            }
+            authorObj = found ? { _id: found._id, name: found.name } : { _id: book.author, name: 'Không rõ' };
           }
 
-          return {
-            ...book,
-            id: book._id,
-            author: authorObj
-          };
+          return { ...book, id: book._id, author: authorObj };
         });
 
         this.filteredProducts = [...this.products];
