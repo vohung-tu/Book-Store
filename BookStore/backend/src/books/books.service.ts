@@ -1,16 +1,18 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Book, BookDocument } from './book.schema';
-import { isValidObjectId, Model, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Order } from 'src/order/order/order.schema';
 import { Author } from 'src/authors/authors.schema';
+import { Category, CategoryDocument } from 'src/categories/categories.schema';
 
 @Injectable()
 export class BooksService {
   constructor(
     @InjectModel(Book.name) private bookModel: Model<BookDocument>,
     @InjectModel(Author.name) private authorModel: Model<Author>,
-    @InjectModel(Order.name) private orderModel: Model<Order>
+    @InjectModel(Order.name) private orderModel: Model<Order>,
+    @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>
     ) {}
 
   async create(book: Book): Promise<Book> {
@@ -61,32 +63,33 @@ export class BooksService {
       await this.bookModel.findByIdAndDelete(id).exec();
   }
 
-  async findByCategory(category: string, page = 1, limit = 20) {
+  async getAllChildrenSlugs(parentId: string): Promise<string[]> {
+    const children = await this.categoryModel.find({ parentId }).lean();
+    let result: string[] = [];
+    for (const child of children) {
+      result.push(child.slug);
+      const subSlugs = await this.getAllChildrenSlugs(child._id.toString());
+      result = result.concat(subSlugs);
+    }
+    return result;
+  }
+
+  async findByCategory(slug: string, page = 1, limit = 20) {
+    const parent = await this.categoryModel.findOne({ slug }).lean();
+    if (!parent) return { items: [], total: 0, page, pages: 0 };
+
+    const childrenSlugs = await this.getAllChildrenSlugs(parent._id.toString());
+    const slugs = [parent.slug, ...childrenSlugs];
+
     const skip = (page - 1) * limit;
-    const q = { $or: [{ categoryName: category }, { categorySlug: category }] as any[] };
+    const q = { categoryName: { $in: slugs } };
 
     const [books, total] = await Promise.all([
-      this.bookModel
-        .find(q)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+      this.bookModel.find(q).skip(skip).limit(limit).lean(),
       this.bookModel.countDocuments(q),
     ]);
 
-    // (tuỳ chọn) nếu cần gắn authorName giống findAllBooks:
-    const authors = await this.authorModel.find().lean();
-    const authorMap = new Map(authors.map(a => [a._id.toString(), a.name]));
-    const items = books.map(book => ({
-      ...book,
-      authorName:
-        typeof book.author === 'object' && book.author && 'name' in (book.author as any)
-          ? (book.author as any).name
-          : authorMap.get(book.author as any) ?? 'Không rõ',
-    }));
-
-    return { items, total, page, pages: Math.ceil(total / limit) };
+    return { items: books, total, page, pages: Math.ceil(total / limit) };
   }
 
   async searchBooks(keyword: string): Promise<Book[]> {

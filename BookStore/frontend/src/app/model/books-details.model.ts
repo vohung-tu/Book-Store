@@ -6,7 +6,7 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
-  parentId?: string | null;
+  parentId?: string | { _id: string; name: string; slug: string } | null;
   children?: Category[];
 }
 

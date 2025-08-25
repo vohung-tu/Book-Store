@@ -49,27 +49,50 @@ export class CategoryComponent implements OnInit {
       this.route.paramMap.subscribe(params => {
         this.categorySlug = params.get('categoryName') || '';
 
-        // tên có dấu
-        this.displayName  = this.categoryService.nameOf(this.categorySlug);
-
+        // load sản phẩm theo category hiện tại
         this.loadProductsByCategory(this.categorySlug);
 
-        // breadcrumb
-        this.breadcrumbItems = [
-          { label: 'Trang chủ', url: '/' },
-          { label: this.displayName, url: `/category/${this.categorySlug}` }
-        ];
+        // gọi API lấy cây categories
+        this.categoryService.getTree().subscribe(tree => {
+          const path = this.findNodeWithAncestors(tree, this.categorySlug);
 
-        // lấy category hiện tại -> tìm sub categories
-        const cats = this.categoryService.currentList();
-        const current = cats.find(c => c.slug === this.categorySlug);
-        if (current?._id) {
-          this.loadSubCategories(current._id);
-        }
+          if (path && path.length > 0) {
+            // breadcrumb = Trang chủ + toàn bộ path
+            this.breadcrumbItems = [
+              { label: 'Trang chủ', url: '/' },
+              ...path.map(c => ({
+                label: c.name,
+                url: `/category/${c.slug}`
+              }))
+            ];
+
+            // lấy root (cha gốc nhất trong path) để hiển thị sidebar
+            this.categoriesTree = [path[0]];
+
+            // tên hiển thị là category cuối cùng trong path
+            this.displayName = path[path.length - 1].name;
+          }
+        });
       });
     });
+  }
 
-    this.categoryService.getTree().subscribe(tree => this.categoriesTree = tree);
+  /** Tìm node theo slug và trả về path cha → con → cháu */
+  findNodeWithAncestors(
+    nodes: Category[],
+    slug: string,
+    path: Category[] = []
+  ): Category[] | null {
+    for (const node of nodes) {
+      const newPath = [...path, node];
+      if (node.slug === slug) return newPath;
+
+      if (node.children?.length) {
+        const found = this.findNodeWithAncestors(node.children, slug, newPath);
+        if (found) return found;
+      }
+    }
+    return null;
   }
 
   loadProductsByCategory(slug: string) {

@@ -7,20 +7,24 @@
     <!-- Cây danh mục -->
     <h4>Danh mục</h4>
     <ul class="category-tree">
-      <li *ngFor="let cat of categoriesTree">
-        <span (click)="navigateToCategory(cat.slug)">{{ cat.name }}</span>
-        <ul *ngIf="cat.children?.length">
-          <li *ngFor="let sub of cat.children">
-            <span (click)="navigateToCategory(sub.slug)">{{ sub.name }}</span>
-            <ul *ngIf="sub.children?.length">
-              <li *ngFor="let child of sub.children">
-                <span (click)="navigateToCategory(child.slug)">{{ child.name }}</span>
-              </li>
-            </ul>
-          </li>
+      <ng-container *ngFor="let cat of categoriesTree">
+        <li>
+          <span (click)="navigateToCategory(cat.slug)">{{ cat.name }}</span>
+          <ul *ngIf="cat.children?.length">
+            <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: cat.children }"></ng-container>
+          </ul>
+        </li>
+      </ng-container>
+    </ul>
+
+    <ng-template #recursiveList let-children>
+      <li *ngFor="let child of children">
+        <span (click)="navigateToCategory(child.slug)">{{ child.name }}</span>
+        <ul *ngIf="child.children?.length">
+          <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: child.children }"></ng-container>
         </ul>
       </li>
-    </ul>
+    </ng-template>
 
     <!-- Lọc theo giá -->
     <h4>Lọc theo giá</h4>
