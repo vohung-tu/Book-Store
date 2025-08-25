@@ -13,12 +13,10 @@
             <span class="cate-name" (click)="navigateToCategory(cat.slug)">
               {{ cat.name }}
             </span>
-            <button class="expand-btn" *ngIf="cat.children?.length" (click)="toggleExpand(cat._id)">
-              {{ expandedIds.has(cat._id) ? '-' : '+' }}
-            </button>
           </div>
 
-          <ul *ngIf="expandedIds.has(cat._id)">
+          <!-- Luôn hiển thị children khi active hoặc khi là ancestor -->
+          <ul *ngIf="isExpanded(cat)">
             <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: cat.children }"></ng-container>
           </ul>
         </li>
@@ -32,26 +30,13 @@
             <span class="cate-name" (click)="navigateToCategory(sub.slug)">
               {{ sub.name }}
             </span>
-            <button class="expand-btn" *ngIf="sub.children?.length" (click)="toggleExpand(sub._id)">
-              {{ expandedIds.has(sub._id) ? '-' : '+' }}
-            </button>
           </div>
 
-          <ul *ngIf="expandedIds.has(sub._id)">
+          <ul *ngIf="isExpanded(sub)">
             <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: sub.children }"></ng-container>
           </ul>
         </li>
       </ng-container>
-    </ng-template>
-
-
-    <ng-template #recursiveList let-children>
-      <li *ngFor="let child of children">
-        <span (click)="navigateToCategory(child.slug)">{{ child.name }}</span>
-        <ul *ngIf="child.children?.length">
-          <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: child.children }"></ng-container>
-        </ul>
-      </li>
     </ng-template>
 
     <!-- Lọc theo giá -->
@@ -72,6 +57,7 @@
       <li (click)="onAuthorFilter('')">Tất cả</li>
     </ul>
   </aside>
+
 
   <!-- Danh sách sản phẩm -->
   <section class="category-products">

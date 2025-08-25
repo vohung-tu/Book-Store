@@ -185,4 +185,9 @@ export class CategoryComponent implements OnInit {
     }
   }
 
+  isExpanded(cat: Category): boolean {
+    if (cat.slug === this.activeCategorySlug) return true;
+    if (!cat.children?.length) return false;
+    return cat.children.some(child => this.isExpanded(child));
+  }
 }
