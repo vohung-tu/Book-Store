@@ -115,12 +115,26 @@ export class ProductItemComponent implements OnInit{
 
   addToCart(): void {
     if (!this.book) return;
-    this.cartService.addToCart({ ...this.book });
-    this.showToast.emit({
-      severity: 'success',
-      summary: 'Thêm thành công',
-      detail: 'Đã thêm vào giỏ hàng thành công!'
+
+    this.cartService.addToCart(this.book).subscribe({
+      next: () => {
+        this.showToast.emit({
+          severity: 'success',
+          summary: 'Thêm thành công',
+          detail: 'Đã thêm vào giỏ hàng!'
+        });
+      },
+      error: (err) => {
+        this.showToast.emit({
+          severity: 'error',
+          summary: 'Thêm thất bại',
+          detail: err?.error?.message || 'Vui lòng đăng nhập hoặc thử lại.'
+        });
+        // Nếu 401 → chuyển hướng đăng nhập
+        if (err.status === 401) {
+          // this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url }});
+        }
+      }
     });
   }
-
 }

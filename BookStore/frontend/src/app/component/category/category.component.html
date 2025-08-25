@@ -1,18 +1,57 @@
 <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
-<h2>Sản phẩm thuộc danh mục: {{ displayName }}</h2>
+<h2 class="category__title">Sản phẩm thuộc danh mục: {{ displayName }}</h2>
 
-<!-- <div class="card">
-    <p-megamenu [model]="items" />
-</div> -->
+<div class="category-layout">
+  <!-- Sidebar lọc -->
+  <aside class="sidebar">
+    <!-- Cây danh mục -->
+    <h4>Danh mục</h4>
+    <ul class="category-tree">
+      <li *ngFor="let cat of categoriesTree">
+        <span (click)="navigateToCategory(cat.slug)">{{ cat.name }}</span>
+        <ul *ngIf="cat.children?.length">
+          <li *ngFor="let sub of cat.children">
+            <span (click)="navigateToCategory(sub.slug)">{{ sub.name }}</span>
+            <ul *ngIf="sub.children?.length">
+              <li *ngFor="let child of sub.children">
+                <span (click)="navigateToCategory(child.slug)">{{ child.name }}</span>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
 
-<div class="product-container" *ngIf="products.length > 0; else noProducts">
-  <app-product-item
-    *ngFor="let product of products"
-    [book]="product"
-  ></app-product-item>
+    <!-- Lọc theo giá -->
+    <h4>Lọc theo giá</h4>
+    <ul class="filter-list">
+      <li (click)="onPriceFilter('low')">Dưới 100,000 đ</li>
+      <li (click)="onPriceFilter('medium')">100,000 đ - 300,000 đ</li>
+      <li (click)="onPriceFilter('high')">Trên 300,000 đ</li>
+      <li (click)="onPriceFilter('')">Tất cả</li>
+    </ul>
+
+    <!-- Lọc theo tác giả -->
+    <h4>Lọc theo tác giả</h4>
+    <ul class="filter-list">
+      <li *ngFor="let author of authors" (click)="onAuthorFilter(author)">
+        {{ author }}
+      </li>
+      <li (click)="onAuthorFilter('')">Tất cả</li>
+    </ul>
+  </aside>
+
+  <!-- Danh sách sản phẩm -->
+  <section class="category-products">
+    <div class="product-container" *ngIf="products.length > 0; else noProducts">
+      <app-product-item
+        *ngFor="let product of filteredProducts.length ? filteredProducts : products"
+        [book]="product"
+      ></app-product-item>
+    </div>
+
+    <ng-template #noProducts>
+      <p class="category__empty">Không có sản phẩm nào trong danh mục này.</p>
+    </ng-template>
+  </section>
 </div>
-
-<!-- Hiển thị thông báo nếu không có sản phẩm -->
-<ng-template #noProducts>
-  <p class="no-products">Không có sản phẩm nào trong danh mục này.</p>
-</ng-template>

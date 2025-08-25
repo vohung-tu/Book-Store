@@ -16,6 +16,8 @@ import { AuthorService } from '../../service/author.service';
 import { Author } from '../../model/author.model';
 import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
+import { CategoryService } from '../../service/category.service';
+import { Category } from '../../model/books-details.model';
 
 @Component({
   selector: 'app-admin-product',
@@ -52,6 +54,8 @@ export class AdminProductComponent {
   imagesInput: string = ''; 
   authors: Author[] = [];
 
+  categories: { label: string; value: string }[] = [];
+
   newProduct = {
     title: '',
     author: {},
@@ -68,28 +72,11 @@ export class AdminProductComponent {
   };
   selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
 
-  categories = [
-    { label: 'Sách Trong Nước', value: 'sach-trong-nuoc' },
-    { label: 'Truyện tranh - Manga', value: 'manga' },
-    { label: 'VPP - Dụng cụ học tập', value: 'vpp-dung-cu-hoc-sinh' },
-    { label: 'Đồ chơi', value: 'do-choi' },
-    { label: 'Làm đẹp', value: 'lam-dep' },
-    { label: 'Sách tham khảo', value: 'sach-tham-khao' },
-    { label: 'Sách ngoại văn', value: 'sach-ngoai-van' }
-  ];
-
-  categoryMap: { [key: string]: string } = {
-    'sach-trong-nuoc': 'Sách Trong Nước',
-    'manga': 'Truyện tranh - Manga',
-    'vpp-dung-cu-hoc-sinh': 'VPP - Dụng cụ học tập',
-    'do-choi': 'Đồ chơi',
-    'lam-dep': 'Làm đẹp',
-    'sach-tham-khao': 'Sách tham khảo',
-    'sach-ngoai-van': 'Sách ngoại văn'
-  };
-  
-
-  constructor(private http: HttpClient, private authorService: AuthorService, private messageService: MessageService) {}
+  constructor(
+    private http: HttpClient, 
+    private authorService: AuthorService, 
+    private messageService: MessageService,
+    private categoryService: CategoryService) {}
 
   ngOnInit(): void {
     
@@ -98,10 +85,18 @@ export class AdminProductComponent {
       this.authors = data;
       this.fetchProducts();
     });
+     // load categories từ API
+    this.categoryService.getCategories().subscribe((cats: Category[]) => {
+      this.categories = cats.map(c => ({
+        label: c.name,  // tên hiển thị
+        value: c.slug   // hoặc c._id nếu muốn lưu theo id
+      }));
+    });
   }
 
-  getCategoryLabel(slug: string): string {
-    return this.categoryMap[slug] || slug;
+  getCategoryLabel(value: string): string {
+    const hit = this.categories.find(c => c.value === value);
+    return hit ? hit.label : value;
   }
 
   stripHtmlTags(html: string): string {
@@ -131,10 +126,9 @@ export class AdminProductComponent {
   }
 
   fetchProducts() {
-    this.http.get<any[]>('https://book-store-3-svnz.onrender.com/books').subscribe({
+    this.http.get<any>('https://book-store-3-svnz.onrender.com/books').subscribe({
       next: data => {
-
-        this.products = data.map(book => {
+        this.products = data.items.map((book: any) => {
           let authorObj = { name: 'Không rõ', _id: '' };
 
           if (typeof book.author === 'object' && book.author?.name) {
@@ -165,7 +159,6 @@ export class AdminProductComponent {
       },
       error: err => console.error('❌ Lỗi khi lấy danh sách sản phẩm:', err)
     });
-
   }
 
   openAddProductDialog() {

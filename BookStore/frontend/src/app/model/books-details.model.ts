@@ -6,6 +6,8 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
+  parentId?: string | null;
+  children?: Category[];
 }
 
 export interface BookDetails {

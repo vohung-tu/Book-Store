@@ -7,7 +7,8 @@ import { Category } from '../model/books-details.model';
   providedIn: 'root'
 })
 export class CategoryService {
-  private apiUrl = 'https://book-store-3-svnz.onrender.com/admin/categories';
+  private apiUrlAdmin = 'https://book-store-3-svnz.onrender.com/admin/categories';
+  private apiUrl = 'https://book-store-3-svnz.onrender.com/categories';
   
   private headers() { return { Authorization: `Bearer ${this.auth.getToken()}`  }; };
   private list$ = new BehaviorSubject<Category[]>([]);
@@ -17,17 +18,25 @@ export class CategoryService {
     return this.http.get<Category[]>(this.apiUrl, { headers: this.headers() });
   }
 
+  getChildren(parentId: string): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.apiUrl}/${parentId}/children`);
+  }
+
+  getTree(): Observable<Category[]> {
+    return this.http.get<Category[]>('https://book-store-3-svnz.onrender.com/categories/tree');
+  }
+
   list()   { 
-    return this.http.get<any[]>(this.apiUrl, { headers: this.headers() }); 
+    return this.http.get<any[]>(this.apiUrlAdmin, { headers: this.headers() }); 
   }
-  create(body: { name: string; slug?: string }) { 
-    return this.http.post(this.apiUrl, body, { headers: this.headers() });
+  create(body: { name: string; slug?: string; parentId?: string }) { 
+    return this.http.post(this.apiUrlAdmin, body, { headers: this.headers() });
   }
-  update(id: string, body: { name?: string; slug?: string }) { 
-    return this.http.patch(`${this.apiUrl}/${id}`, body, { headers: this.headers() }); 
+  update(id: string, body: { name?: string; slug?: string; parentId?: string }) { 
+    return this.http.patch(`${this.apiUrlAdmin}/${id}`, body, { headers: this.headers() }); 
   }
   remove(id: string) { 
-    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.headers() }); 
+    return this.http.delete(`${this.apiUrlAdmin}/${id}`, { headers: this.headers() }); 
   }
 
   loadOnce() {
@@ -44,5 +53,9 @@ export class CategoryService {
 
   slugOf(slugOrObj: string | Category): string {
     return typeof slugOrObj === 'string' ? slugOrObj : (slugOrObj?.slug ?? '');
+  }
+
+  currentList(): Category[] {
+    return this.list$.value;
   }
 }

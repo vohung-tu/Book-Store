@@ -1,4 +1,3 @@
-// src/category/category.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { CreateCategoryDto, } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -21,4 +20,15 @@ export class CategoryAdminController {
 export class CategoryPublicController {
   constructor(private readonly service: CategoryService) {}
   @Get() findAll() { return this.service.findAll(); } // dùng cho menu FE
+
+  @Get(':id/children')
+  async getChildren(@Param('id') id: string) {
+    return this.service.findChildren(id);
+  }
+
+  @Get('tree')
+  getTree() {
+    return this.service.findTree();
+  }
+
 }

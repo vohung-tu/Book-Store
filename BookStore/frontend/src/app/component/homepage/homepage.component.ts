@@ -98,9 +98,13 @@ export class HomepageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setFavicon('assets/images/logo.png');
     this.categoryService.getCategories().subscribe({
-      next: (cats) => this.categories = cats,
+      next: (cats) => {
+        // ✅ chỉ giữ category cha (không có parentId)
+        this.categories = cats.filter(c => !c.parentId);
+      },
       error: (err) => console.error('❌ Lỗi load categories:', err)
     });
+
     this.authorService.getAuthors().subscribe(data => {
       this.authors = data;
     });

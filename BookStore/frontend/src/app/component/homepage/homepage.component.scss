@@ -340,16 +340,20 @@ p-tab:hover {
     .cate-child {
       width: 120px;
       height: 120px;
-      background: #94BBE9;
+      background: #105191;
       border-radius: 10px;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       img {
         padding-top: 10px;
-        border-radius: 5px;
+        // border-radius: 5px;
+        padding-left:10px;
+        padding-right: 10px;
       }
       span {
         font-size: 12px;
         padding: 0 5px;
+        font-weight: 500;
+        color: #fff;
       }
     }
   }

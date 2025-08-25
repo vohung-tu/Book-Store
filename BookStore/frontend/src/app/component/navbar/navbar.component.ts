@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -10,13 +10,15 @@ import { debounceTime, Observable, Subject } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CartService } from '../../service/cart.service';
-import { BookDetails } from '../../model/books-details.model';
+import { BookDetails, Category } from '../../model/books-details.model';
 import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { BooksService } from '../../service/books.service';
-
+import { MegaMenuItem } from 'primeng/api';
+import { CategoryService } from '../../service/category.service';
+import { MegaMenu, MegaMenuModule } from 'primeng/megamenu';
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
@@ -35,10 +37,12 @@ import { BooksService } from '../../service/books.service';
     OverlayBadgeModule,
     ButtonModule,
     FormsModule,
+    MegaMenuModule
   ],
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit, OnDestroy {
+  @ViewChild('megaMenu') megaMenu!: MegaMenu;
   isLoggedIn$!: Observable<boolean>;
   isLoading$!: Observable<boolean>;
   cartItemCount: number = 0;
@@ -47,15 +51,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
   currentUser: any;
   userRole: string | null = null;
   searchTerm = '';
+  showMenu = false;
   showSuggestions = false;
   suggestions: any[] = [];
   filteredSuggestions: string[] = [];
+  items: MegaMenuItem[] = [];
   private searchSubject = new Subject<string>();
+  activeCategory: Category | null = null;
+  categories: Category[] = [];
 
   constructor(private authService: AuthService,
     private cartService: CartService,
     private bookService: BooksService,
-    private router: Router
+    private router: Router,
+    private categoryService: CategoryService
   ) {
     this.cart$ = this.cartService.getCart();
     this.searchSubject.pipe(debounceTime(300)).subscribe((term) => {
@@ -82,6 +91,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.currentUser = this.authService.getCurrentUser();
     this.userRole = this.currentUser?.role || null;
     this.getCurrentUser();
+    this.categoryService.loadOnce().subscribe(cats => {
+      // chỉ lấy category cha
+      this.categories = cats.filter(c => !c.parentId);
+    });
   }
 
   signout(): void {
@@ -153,10 +166,25 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  navigateToCategory(category: string) {
-    if (!category) {
-      return;
-    }
-    this.router.navigate(['/category', category]);
+  navigateToCategory(slug: string) {
+    window.location.href = `/category/${slug}`;
   }
+
+  /** Convert category list thành MegaMenuItem[] */
+  buildMenu(cats: any[]): MegaMenuItem[] {
+    const parentCats = cats.filter(c => !c.parentId);
+    return parentCats.map(parent => ({
+      label: parent.name,
+      routerLink: `/category/${parent.slug}`,
+      items: parent.children?.length
+        ? parent.children.map((child: any) => [
+            {
+              label: child.name,
+              routerLink: `/category/${child.slug}`
+            }
+          ])
+        : []
+    }));
+  }
+
 }

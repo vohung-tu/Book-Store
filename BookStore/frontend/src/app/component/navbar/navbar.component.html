@@ -6,6 +6,35 @@
           <a routerLink="/home">
             <img src="assets/images/logo.png" alt="" width="180px" height="90px">
           </a>
+          <!-- 🔽 Nút menu icon -->
+         <div 
+          class="menu-toggle"
+          (mouseenter)="showMenu = true"
+          (mouseleave)="showMenu = false">
+          <i class="pi pi-bars"></i>
+
+          <!-- Mega Menu -->
+          <div class="mega-menu" *ngIf="showMenu">
+            <div class="mega-menu__sidebar">
+              <ul>
+                <li *ngFor="let cat of categories"
+                    (mouseenter)="activeCategory = cat"
+                    [class.active]="activeCategory?._id === cat._id">
+                  {{ cat.name }}
+                </li>
+              </ul>
+            </div>
+            <div class="mega-menu__content" *ngIf="activeCategory">
+              <h4>{{ activeCategory.name }}</h4>
+              <ul>
+                <li *ngFor="let sub of activeCategory.children"
+                    (click)="navigateToCategory(sub.slug)">
+                  {{ sub.name }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
           <!-- search -->
           <div class="search-container" (clickOutside)="hideSuggestions()">
             <i class="pi pi-search search-icon"></i>

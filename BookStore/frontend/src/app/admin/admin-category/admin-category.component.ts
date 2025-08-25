@@ -7,12 +7,14 @@ import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { Tag } from 'primeng/tag';
 import { CategoryService } from '../../service/category.service';
+import { DropdownModule } from 'primeng/dropdown';
 export interface AdminCategory {
   _id: string;
   name: string;
   slug: string;
   createdAt?: string;
   updatedAt?: string;
+  parentId?: string | null;
 }
 
 @Component({
@@ -24,6 +26,7 @@ export interface AdminCategory {
     DialogModule, 
     InputText, 
     ButtonModule,
+    DropdownModule,
     Tag
   ],
   templateUrl: './admin-category.component.html',
@@ -36,7 +39,11 @@ export class AdminCategoryComponent implements OnInit {
   show = false;
   loading = false;
   editId: string | null = null;
-  form = { name: '', slug: '' };
+  form: { name: string; slug: string; parentId: string | null } = {
+    name: '',
+    slug: '',
+    parentId: null
+  };
 
   // table
   rowsPerPage = 10;
@@ -63,18 +70,24 @@ export class AdminCategoryComponent implements OnInit {
 
   openCreate(): void {
     this.editId = null;
-    this.form = { name: '', slug: '' };
+    this.form = { name: '', slug: '', parentId: null };
     this.show = true;
   }
 
   openEdit(r: AdminCategory): void {
     this.editId = r._id;
-    this.form = { name: r.name, slug: r.slug };
+    this.form = { 
+      name: r.name, 
+      slug: r.slug, 
+      parentId: r.parentId || null 
+    };
     this.show = true;
   }
 
   save(): void {
-    const payload = { ...this.form };
+    const payload = { ...this.form,
+      parentId: this.form.parentId || undefined
+     };
     const req = this.editId
       ? this.api.update(this.editId, payload)
       : this.api.create(payload);
@@ -102,4 +115,11 @@ export class AdminCategoryComponent implements OnInit {
 
   // Optional: trackBy để table render nhanh
   trackById = (_: number, item: AdminCategory) => item._id;
+
+  /** Tìm tên danh mục cha */
+  parentNameOf(id?: string | null): string {
+    if (!id) return '—';
+    const found = this.rows.find(c => c._id === id);
+    return found ? found.name : '—';
+  }
 }

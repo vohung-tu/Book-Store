@@ -10,27 +10,23 @@
     [rows]="rowsPerPage"
     [rowHover]="true"
     [loading]="loading"
-    [tableStyle]="{ 'min-width': '600px' }"
+    [tableStyle]="{ 'min-width': '700px' }"
     [rowTrackBy]="trackById"
   >
     <ng-template pTemplate="header">
       <tr>
-        <th style="width: 40%">Tên</th>
-        <th style="width: 40%">Slug</th>
-        <th style="width: 20%; text-align: right">Thao tác</th>
+        <th style="width: 25%">Tên</th>
+        <th style="width: 25%">Slug</th>
+        <th style="width: 25%">Danh mục cha</th>
+        <th style="width: 25%; text-align: right">Thao tác</th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-r>
       <tr>
-        <td>
-          <div class="name-cell">
-            <span class="name">{{ r.name }}</span>
-          </div>
-        </td>
-        <td>
-          <p-tag [value]="r.slug"></p-tag>
-        </td>
+        <td>{{ r.name }}</td>
+        <td><p-tag [value]="r.slug"></p-tag></td>
+        <td>{{ r.parentId?.name || '—' }}</td>
         <td class="actions">
           <button pButton text icon="pi pi-pencil" (click)="openEdit(r)" aria-label="Sửa"></button>
           <button pButton text severity="danger" icon="pi pi-trash" (click)="del(r)" aria-label="Xóa"></button>
@@ -40,7 +36,7 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="3" class="empty">Chưa có danh mục nào.</td>
+        <td colspan="4" class="empty">Chưa có danh mục nào.</td>
       </tr>
     </ng-template>
   </p-table>
@@ -59,6 +55,17 @@
 
       <label for="slug">Slug (tùy chọn)</label>
       <input id="slug" pInputText [(ngModel)]="form.slug" placeholder="vd: sach-trong-nuoc" />
+
+      <label for="parentId">Thuộc danh mục cha</label>
+      <p-dropdown
+        id="parentId"
+        [options]="rows"
+        optionLabel="name"
+        optionValue="_id"
+        [(ngModel)]="form.parentId"
+        placeholder="-- Không có (Category gốc) --"
+        appendTo="body">
+      </p-dropdown>
 
       <div class="dialog-actions">
         <button pButton label="Hủy" (click)="show = false" class="btn-cancel"></button>

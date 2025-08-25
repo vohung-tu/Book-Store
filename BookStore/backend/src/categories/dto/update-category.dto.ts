@@ -5,4 +5,5 @@ export class UpdateCategoryDto {
   @IsOptional()
   @Matches(/^[a-z0-9-]+$/)
   slug?: string;
+  parentId?: string;
 }
