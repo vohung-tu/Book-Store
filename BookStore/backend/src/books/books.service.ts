@@ -74,22 +74,52 @@ export class BooksService {
     return result;
   }
 
-  async findByCategory(slug: string, page = 1, limit = 20) {
-    const parent = await this.categoryModel.findOne({ slug }).lean();
-    if (!parent) return { items: [], total: 0, page, pages: 0 };
-
-    const childrenSlugs = await this.getAllChildrenSlugs(parent._id.toString());
-    const slugs = [parent.slug, ...childrenSlugs];
-
+  async findByCategory(categorySlug: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
-    const q = { categoryName: { $in: slugs } };
+
+    // 🔎 Tìm category gốc từ slug
+    const parent = await this.categoryModel.findOne({ slug: categorySlug }).lean();
+    if (!parent) {
+      return { items: [], total: 0, page, pages: 0 };
+    }
+
+    // 🔎 Lấy toàn bộ children (con + cháu)
+    const collectChildren = async (parentId: string): Promise<string[]> => {
+      const children = await this.categoryModel.find({ parentId }).lean();
+      let ids = children.map(c => c.slug); // hoặc c._id
+      for (const child of children) {
+        ids = ids.concat(await collectChildren(child._id.toString()));
+      }
+      return ids;
+    };
+
+    const allSlugs = [parent.slug, ...(await collectChildren(parent._id.toString()))];
+
+    // 🔎 Query tất cả sách thuộc 1 trong các slug
+    const q = { categoryName: { $in: allSlugs } };
 
     const [books, total] = await Promise.all([
-      this.bookModel.find(q).skip(skip).limit(limit).lean(),
+      this.bookModel
+        .find(q)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
       this.bookModel.countDocuments(q),
     ]);
 
-    return { items: books, total, page, pages: Math.ceil(total / limit) };
+    // map authorName
+    const authors = await this.authorModel.find().lean();
+    const authorMap = new Map(authors.map(a => [a._id.toString(), a.name]));
+    const items = books.map(book => ({
+      ...book,
+      authorName:
+        typeof book.author === 'object' && book.author && 'name' in (book.author as any)
+          ? (book.author as any).name
+          : authorMap.get(book.author as any) ?? 'Không rõ',
+    }));
+
+    return { items, total, page, pages: Math.ceil(total / limit) };
   }
 
   async searchBooks(keyword: string): Promise<Book[]> {
