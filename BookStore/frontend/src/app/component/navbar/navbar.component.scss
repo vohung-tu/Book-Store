@@ -65,16 +65,27 @@
 
   .mega-menu__content {
     flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
     padding: 20px;
-    h4 {
-      margin-bottom: 10px;
+
+    h5 {
       font-weight: bold;
+      margin-bottom: 8px;
+      cursor: pointer;
+      &:hover {
+        color: #105191;
+      }
     }
+
     ul {
       list-style: none;
       padding: 0;
+      margin: 0;
+
       li {
-        padding: 5px 0;
+        padding: 4px 0;
         cursor: pointer;
         &:hover {
           color: #105191;

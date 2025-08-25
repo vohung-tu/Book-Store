@@ -34,7 +34,7 @@
       transition: color 0.2s;
 
       &:hover {
-        color: #e44d26;
+        color: #105191;
         font-weight: 500;
       }
     }
@@ -45,6 +45,34 @@
     border-left: 1px dashed #ccc;
     margin-top: 5px;
   }
+  .cate-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cate-name {
+    cursor: pointer;
+  }
+
+  .expand-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+}
+
+.category-tree li.active > .cate-row .cate-name {
+  font-weight: bold;
+  color: #105191;
+  padding-left: 4px;
+}
+
+.category-tree li.active {
+  background: #f0f8ff; /* màu nhạt để dễ nhìn */
+  border-left: 3px solid #105191;
 }
 
 /* Products */

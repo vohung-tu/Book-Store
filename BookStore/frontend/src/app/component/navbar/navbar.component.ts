@@ -91,9 +91,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.currentUser = this.authService.getCurrentUser();
     this.userRole = this.currentUser?.role || null;
     this.getCurrentUser();
-    this.categoryService.loadOnce().subscribe(cats => {
-      // chỉ lấy category cha
-      this.categories = cats.filter(c => !c.parentId);
+    this.categoryService.getTree().subscribe(cats => {
+      this.categories = cats; // ở đây categories có cả children
     });
   }
 

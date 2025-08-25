@@ -6,6 +6,7 @@
           <a routerLink="/home">
             <img src="assets/images/logo.png" alt="" width="180px" height="90px">
           </a>
+
           <!-- 🔽 Nút menu icon -->
          <div 
           class="menu-toggle"
@@ -26,15 +27,24 @@
             </div>
             <div class="mega-menu__content" *ngIf="activeCategory">
               <h4>{{ activeCategory.name }}</h4>
-              <ul>
-                <li *ngFor="let sub of activeCategory.children"
-                    (click)="navigateToCategory(sub.slug)">
-                  {{ sub.name }}
-                </li>
-              </ul>
+              <ng-container *ngIf="activeCategory.children?.length; else noChildren">
+              <div class="submenu-column" *ngFor="let sub of activeCategory.children">
+                <h5 (click)="navigateToCategory(sub.slug)">{{ sub.name }}</h5>
+                <ul *ngIf="sub.children?.length">
+                  <li *ngFor="let child of sub.children" (click)="navigateToCategory(child.slug)">
+                    {{ child.name }}
+                  </li>
+                </ul>
+              </div>
+            </ng-container>
+
+            <ng-template #noChildren>
+              <p style="color: gray; font-style: italic;">Chưa có danh mục con</p>
+            </ng-template>
             </div>
           </div>
         </div>
+        
           <!-- search -->
           <div class="search-container" (clickOutside)="hideSuggestions()">
             <i class="pi pi-search search-icon"></i>

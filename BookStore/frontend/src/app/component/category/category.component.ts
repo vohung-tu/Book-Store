@@ -29,11 +29,14 @@ export class CategoryComponent implements OnInit {
   breadcrumbItems: any[] = [];
   categorySlug = '';
   displayName = '';
+  noProductsMessage: string = '';
   filteredProducts: BookDetails[] = [];
   categoryName: Category | string = '';
   expanded = { subcategory: true, price: true };
   categoriesTree: Category[] = [];
+  expandedIds = new Set<string>();
   authors: string[] = [];
+  activeCategorySlug: string = '';
   selectedPrice = '';
   selectedAuthor = '';
   subCategories: Category[] = [];
@@ -48,6 +51,7 @@ export class CategoryComponent implements OnInit {
     this.categoryService.loadOnce().subscribe(() => {
       this.route.paramMap.subscribe(params => {
         this.categorySlug = params.get('categoryName') || '';
+        this.activeCategorySlug = this.categorySlug;
 
         // load sản phẩm theo category hiện tại
         this.loadProductsByCategory(this.categorySlug);
@@ -124,6 +128,7 @@ export class CategoryComponent implements OnInit {
 
   navigateToCategory(slug: string) {
     // khi click filter -> chuyển route
+    this.activeCategorySlug = slug;
     window.location.href = `/category/${slug}`;
   }
 
@@ -145,6 +150,13 @@ export class CategoryComponent implements OnInit {
     this.applyFilters();
   }
 
+  toggleExpand(id: string) {
+    if (this.expandedIds.has(id)) {
+      this.expandedIds.delete(id);
+    } else {
+      this.expandedIds.add(id);
+    }
+  }
 
   applyFilters() {
     this.filteredProducts = this.products.filter(product => {
@@ -160,6 +172,17 @@ export class CategoryComponent implements OnInit {
 
       return matchesPrice && matchesAuthor;
     });
+
+    // ✅ Nếu không có sản phẩm phù hợp
+    if (!this.filteredProducts.length) {
+      if (this.selectedPrice || this.selectedAuthor) {
+        this.noProductsMessage = 'Không có sản phẩm phù hợp với bộ lọc của bạn.';
+      } else {
+        this.noProductsMessage = 'Không có sản phẩm nào trong danh mục này.';
+      }
+    } else {
+      this.noProductsMessage = '';
+    }
   }
 
 }

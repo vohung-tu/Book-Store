@@ -8,14 +8,42 @@
     <h4>Danh mục</h4>
     <ul class="category-tree">
       <ng-container *ngFor="let cat of categoriesTree">
-        <li>
-          <span (click)="navigateToCategory(cat.slug)">{{ cat.name }}</span>
-          <ul *ngIf="cat.children?.length">
+        <li [class.active]="cat.slug === activeCategorySlug">
+          <div class="cate-row">
+            <span class="cate-name" (click)="navigateToCategory(cat.slug)">
+              {{ cat.name }}
+            </span>
+            <button class="expand-btn" *ngIf="cat.children?.length" (click)="toggleExpand(cat._id)">
+              {{ expandedIds.has(cat._id) ? '-' : '+' }}
+            </button>
+          </div>
+
+          <ul *ngIf="expandedIds.has(cat._id)">
             <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: cat.children }"></ng-container>
           </ul>
         </li>
       </ng-container>
     </ul>
+
+    <ng-template #recursiveList let-children>
+      <ng-container *ngFor="let sub of children">
+        <li [class.active]="sub.slug === activeCategorySlug">
+          <div class="cate-row">
+            <span class="cate-name" (click)="navigateToCategory(sub.slug)">
+              {{ sub.name }}
+            </span>
+            <button class="expand-btn" *ngIf="sub.children?.length" (click)="toggleExpand(sub._id)">
+              {{ expandedIds.has(sub._id) ? '-' : '+' }}
+            </button>
+          </div>
+
+          <ul *ngIf="expandedIds.has(sub._id)">
+            <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: sub.children }"></ng-container>
+          </ul>
+        </li>
+      </ng-container>
+    </ng-template>
+
 
     <ng-template #recursiveList let-children>
       <li *ngFor="let child of children">
@@ -47,15 +75,19 @@
 
   <!-- Danh sách sản phẩm -->
   <section class="category-products">
-    <div class="product-container" *ngIf="products.length > 0; else noProducts">
+    <div 
+      class="product-container" 
+      *ngIf="(filteredProducts.length > 0 || (!selectedPrice && !selectedAuthor && products.length > 0)); else noProducts">
+      
       <app-product-item
-        *ngFor="let product of filteredProducts.length ? filteredProducts : products"
+        *ngFor="let product of (filteredProducts.length > 0 ? filteredProducts : (!selectedPrice && !selectedAuthor ? products : []))"
         [book]="product"
       ></app-product-item>
     </div>
 
     <ng-template #noProducts>
-      <p class="category__empty">Không có sản phẩm nào trong danh mục này.</p>
+      <p class="category__empty">{{ noProductsMessage }}</p>
     </ng-template>
   </section>
+
 </div>
