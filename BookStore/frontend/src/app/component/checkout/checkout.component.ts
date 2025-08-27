@@ -246,61 +246,12 @@ export class CheckoutComponent implements OnInit {
     this.selectedWard = undefined;
   }
 
-  payWithVnpay() {
-    const orderId = Date.now().toString(); // tạo mã đơn hàng
-    const amount = this.discountedAmount + this.shippingFee;
-    console.log(amount);
-
-    this.http.get<{ url: string }>('https://book-store-3-svnz.onrender.com/vnpay/create-payment-url', {
-      params: {
-        amount: amount.toString(),
-        orderId,
-      }
-    }).subscribe({
-      next: (res) => {
-        if (res.url) {
-          window.open(res.url, '_blank'); // ✅ chuyển hướng tới VNPay
-        }
-      },
-      error: (err) => {
-        console.error('Lỗi khi gọi create-payment-url:', err);
-      }
-    });
-  }
-
   submitOrder() {
-    if (!this.userInfo?._id || !this.orderInfo.address) return;
-
-    // Nếu địa chỉ là "Địa chỉ khác", kiểm tra xem địa chỉ đó đã tồn tại chưa
-    if (this.selectedAddress === 'other') {
-      const newAddress = {
-        value: this.orderInfo.address,
-        isDefault: false
-      };
-
-      const exists = this.addresses.some(addr => addr.value === newAddress.value);
-      if (!exists) {
-        this.addresses.push(newAddress);
-        this.authService.updateAddress(this.userInfo?._id, this.addresses).subscribe({
-          next: res => console.log('Đã lưu địa chỉ mới'),
-          error: err => console.error('Lỗi khi lưu địa chỉ', err)
-        });
-      }
-    }
-
-    // Kiểm tra các trường thông tin người dùng
-    if (!this.orderInfo.name || !this.orderInfo.email || !this.orderInfo.address || !this.orderInfo.phone) {
+    if (!this.userInfo?._id || !this.orderInfo.address) {
       alert('Vui lòng nhập đủ thông tin!');
       return;
     }
 
-    // Kiểm tra userId có tồn tại
-    if (!this.userInfo || !this.userInfo._id) {
-      alert('Không tìm thấy thông tin người dùng, vui lòng đăng nhập lại!');
-      return;
-    }
-
-    // Kiểm tra danh sách sản phẩm
     if (!this.selectedBooks || this.selectedBooks.length === 0) {
       alert('Giỏ hàng trống!');
       return;
@@ -321,31 +272,59 @@ export class CheckoutComponent implements OnInit {
       phone: this.orderInfo.phone,
       address: this.orderInfo.address,
       total: this.totalAmount,
-      orderDate: new Date()
+      orderDate: new Date(),
+      payment: this.orderInfo.payment
     };
 
     this.orderService.createOrder(orderData).subscribe({
       next: (response) => {
-        alert('Đơn hàng đã được đặt thành công!');
-        // 🔽 Gọi API để cập nhật tồn kho
-        this.orderService.confirmPayment(response._id).subscribe({
-          next: () => {
-            this.updateBookQuantity(); // 🔄 Cập nhật UI
-          },
-          error: (err) => {
-            console.error('Lỗi cập nhật tồn kho:', err);
-          }
-        });
+        console.log('✅ Order created:', response);
 
-        localStorage.removeItem('cart');
-        this.cartService.clearCart();
-        this.router.navigate(['/']);
+        if (this.orderInfo.payment === 'vnpay') {
+          this.payWithVnpay();
+        } else if (this.orderInfo.payment === 'cod') {
+          alert('Đặt hàng thành công! Thanh toán COD');
+          this.afterOrderSuccess();
+        } else if (this.orderInfo.payment === 'bank') {
+          alert('Đặt hàng thành công! Vui lòng chuyển khoản.');
+          this.afterOrderSuccess();
+        } else if (this.orderInfo.payment === 'momo') {
+          alert('MoMo đang phát triển');
+        }
       },
       error: (err) => {
         console.error('❌ Lỗi khi đặt hàng:', err);
         alert('Đặt hàng thất bại, vui lòng thử lại!');
       }
     });
+  }
+
+  payWithVnpay() {
+    const orderId = Date.now().toString(); // tạo mã đơn hàng
+    const amount = this.discountedAmount + this.shippingFee;
+
+    this.http.get<{ url: string }>('https://book-store-3-svnz.onrender.com/vnpay/create-payment-url', {
+      params: {
+        amount: amount.toString(),
+        orderId,
+      }
+    }).subscribe({
+      next: (res) => {
+        if (res.url) {
+          // ✅ Điều hướng trực tiếp sang VNPAY
+          window.location.href = res.url;
+        }
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi create-payment-url:', err);
+      }
+    });
+  }
+
+  afterOrderSuccess() {
+    localStorage.removeItem('cart');
+    this.cartService.clearCart();
+    this.router.navigate(['/order-success']);
   }
 
   updateBookQuantity() {

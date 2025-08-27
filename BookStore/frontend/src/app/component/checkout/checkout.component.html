@@ -180,12 +180,20 @@
           />
           <div class="vnpay-class" style="padding: 10px; display: flex;">
             <img src="assets/images/vnpay.png" alt="" width="32px" height="32px">
-          <label for="payment4" style="padding-left: 10px;"> VNPAY</label>
+            <label for="payment4" style="padding-left: 10px;"> VNPAY</label>
           </div>
         </div>
+
         <div *ngIf="orderInfo.payment === 'vnpay'" class="ml-6">
-          <canvas #qrVnpayCanvas></canvas>
-          <p>Quét mã QR bằng ứng dụng VNPAY để thanh toán.</p>
+          <p>Nhấn nút bên dưới để thanh toán ngay qua VNPAY:</p>
+          <button 
+            pButton 
+            type="button" 
+            label="Thanh toán VNPAY" 
+            icon="pi pi-credit-card" 
+            class="p-button-danger"
+            (click)="payWithVnpay()">
+          </button>
         </div>
 
       </div>
@@ -249,4 +257,4 @@
 <!-- Nếu không có sản phẩm nào -->
 <div *ngIf="selectedBooks.length === 0" class="no-items">
   <p>Không có sản phẩm nào để thanh toán. Quay lại <a routerLink="/cart">giỏ hàng</a>.</p>
-</div>
+</div>  

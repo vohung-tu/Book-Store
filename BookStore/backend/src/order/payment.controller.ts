@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req, Res } from '@nestjs/common';
+import { Controller, Get, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { VnpayService } from './payment.service';
 import * as crypto from 'crypto';
@@ -10,10 +10,10 @@ export class VnpayController {
   @Get('create-payment-url')
   createPaymentUrl(@Query() query: any, @Req() req: Request) {
     const rawIp =
-    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-    req.socket.remoteAddress ||
-    '1.1.1.1';
-    const clientIp = rawIp === '::1' ? '1.1.1.1' : rawIp;
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket.remoteAddress ||
+      '127.0.0.1';
+    const clientIp = rawIp === '::1' ? '127.0.0.1' : rawIp;
 
     const url = this.vnpayService.createPaymentUrl(
       {
@@ -24,19 +24,18 @@ export class VnpayController {
       clientIp,
     );
 
-    return { url }; // ✅ Nest sẽ tự chuyển thành JSON
+    return { url };
   }
 
   @Get('vnpay-return')
-  handleVnpayReturn(@Query() query: any): any {
+  handleVnpayReturn(@Query() query: any) {
     const vnp_Params = { ...query };
-
     const secureHash = vnp_Params['vnp_SecureHash'];
-    const vnp_HashSecret = '3VS4C084VZ9J2SJ5H6O9PDD9GVEJSW91';
-    delete vnp_Params['vnp_SecureHash'];
-    delete vnp_Params['vnp_SecureHashType'];
+    const vnp_HashSecret = '42UVDXJJIS9UDHI5FOKD256NWKVFKBOF';
 
-    // 1. Sort keys
+    delete vnp_Params['vnp_SecureHash'];
+
+    // sort key
     const sortedParams = Object.keys(vnp_Params)
       .sort()
       .reduce((acc, key) => {
@@ -44,31 +43,26 @@ export class VnpayController {
         return acc;
       }, {} as Record<string, string>);
 
-    // 2. Create signData string
     const signData = Object.entries(sortedParams)
-      .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+      .map(([k, v]) => `${k}=${v}`)
       .join('&');
 
-    // 3. Generate secure hash
     const generatedHash = crypto
       .createHmac('sha512', vnp_HashSecret)
       .update(signData, 'utf-8')
       .digest('hex');
 
     if (secureHash === generatedHash) {
-      // ✅ Hash khớp: xử lý thành công
       const orderId = vnp_Params['vnp_TxnRef'];
       const responseCode = vnp_Params['vnp_ResponseCode'];
 
       if (responseCode === '00') {
-        // Thành công
         return { message: 'Thanh toán thành công', orderId };
       } else {
-        return { message: 'Thanh toán thất bại', responseCode };
+        return { message: 'Thanh toán thất bại', code: responseCode };
       }
     } else {
-      // ❌ Hash sai
-      return { message: 'Chữ ký không hợp lệ' };
+      return { message: 'Sai chữ ký, giao dịch không hợp lệ' };
     }
   }
 }
