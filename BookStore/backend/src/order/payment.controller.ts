@@ -36,7 +36,6 @@ export class VnpayController {
     delete vnp_Params['vnp_SecureHash'];
     delete vnp_Params['vnp_SecureHashType'];
 
-    // sort key
     const sortedParams = Object.keys(vnp_Params)
       .sort()
       .reduce((acc, key) => {
@@ -57,13 +56,12 @@ export class VnpayController {
       const orderId = vnp_Params['vnp_TxnRef'];
       const responseCode = vnp_Params['vnp_ResponseCode'];
 
-      if (responseCode === '00') {
-        return { message: 'Thanh toán thành công', orderId };
-      } else {
-        return { message: 'Thanh toán thất bại', code: responseCode };
-      }
+      return responseCode === '00'
+        ? { message: 'Thanh toán thành công', orderId }
+        : { message: 'Thanh toán thất bại', code: responseCode };
     } else {
       return { message: 'Sai chữ ký, giao dịch không hợp lệ' };
     }
   }
+
 }
