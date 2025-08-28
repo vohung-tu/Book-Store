@@ -34,6 +34,7 @@ export class VnpayController {
     const vnp_HashSecret = '42UVDXJJIS9UDHI5FOKD256NWKVFKBOF';
 
     delete vnp_Params['vnp_SecureHash'];
+    delete vnp_Params['vnp_SecureHashType'];
 
     // sort key
     const sortedParams = Object.keys(vnp_Params)
