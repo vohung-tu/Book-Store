@@ -142,7 +142,7 @@ const routes: Routes = [
     loadComponent: () =>
       import('./component/search-page/search-page.component').then(m => m.SearchPageComponent)
   },
-  { path: 'vnpay-return', component: VnpayReturnComponent },
+  { path: 'vnpay/vnpay-return', component: VnpayReturnComponent },
   {
     path: 'author/:id', // id hoặc slug
     component: AuthorDetailsComponent
