@@ -81,4 +81,11 @@ export class OrderService {
   async findOrdersByUserId(userId: string) {
     return this.orderModel.find({ user: userId }).sort({ createdAt: -1 }).lean();
   }
+
+  async updateStatusByTxnRef(txnRef: string, status: string) {
+    const order = await this.orderModel.findOne({ txnRef });
+    if (!order) throw new NotFoundException(`Không tìm thấy order với txnRef ${txnRef}`);
+    order.status = status;
+    return order.save();
+  }
 }

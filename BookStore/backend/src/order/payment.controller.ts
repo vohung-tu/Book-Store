@@ -2,10 +2,12 @@ import { Controller, Get, Query, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express'; 
 import { VnpayService } from './payment.service';
 import * as crypto from 'crypto';
+import { OrderService } from './order/order.service';
 
 @Controller('vnpay')
 export class VnpayController {
-  constructor(private readonly vnpayService: VnpayService) {}
+  constructor(private readonly vnpayService: VnpayService, 
+    private readonly ordersService: OrderService) {}
 
   @Get('create-payment-url')
   createPaymentUrl(@Query() query: any, @Req() req: Request) {
@@ -73,40 +75,33 @@ export class VnpayController {
     delete vnp_Params['vnp_SecureHash'];
     delete vnp_Params['vnp_SecureHashType'];
 
-    // 1. Sort keys
-    const sortedParams = Object.keys(vnp_Params)
-      .sort()
-      .reduce((acc, key) => {
-        acc[key] = vnp_Params[key];
-        return acc;
-      }, {} as Record<string, string>);
+    const sortedParams = Object.keys(vnp_Params).sort().reduce((acc, key) => {
+      acc[key] = vnp_Params[key];
+      return acc;
+    }, {} as Record<string, string>);
 
-    // 2. Build signData
     const signData = Object.entries(sortedParams)
       .map(([k, v]) => `${k}=${v}`)
       .join('&');
 
-    // 3. Generate hash
-    const generatedHash = crypto
-      .createHmac('sha512', vnp_HashSecret)
+    const generatedHash = crypto.createHmac('sha512', vnp_HashSecret)
       .update(signData, 'utf-8')
       .digest('hex');
 
     if (secureHash === generatedHash) {
       const rspCode = vnp_Params['vnp_ResponseCode'];
-      const orderId = vnp_Params['vnp_TxnRef'];
+      const txnRef = vnp_Params['vnp_TxnRef'];
 
       if (rspCode === '00') {
-        // ✅ Cập nhật DB: orderId = PAID
-        console.log('Thanh toán thành công:', orderId);
+        await this.ordersService.updateStatusByTxnRef(txnRef, 'paid');
+        console.log(`✅ Order ${txnRef} thanh toán thành công`);
       } else {
-        // ❌ Thanh toán thất bại
-        console.log('Thanh toán thất bại:', orderId, rspCode);
+        await this.ordersService.updateStatusByTxnRef(txnRef, 'failed');
+        console.log(`❌ Order ${txnRef} thất bại, code: ${rspCode}`);
       }
 
       return res.json({ RspCode: '00', Message: 'Confirm Success' });
     } else {
-      console.error('Sai chữ ký IPN:', query);
       return res.json({ RspCode: '97', Message: 'Invalid Signature' });
     }
   }
