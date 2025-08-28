@@ -11,7 +11,7 @@ export class VnpayService {
     const vnp_TmnCode = 'DK40Q8CI'; // ✅ thay bằng mã của bạn
     const vnp_HashSecret = '42UVDXJJIS9UDHI5FOKD256NWKVFKBOF'; // ✅ secret của bạn
     const vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-    const vnp_ReturnUrl = 'https://book-store-v302.onrender.com/vnpay/vnpay-return'; // ✅ sửa theo domain thực tế
+    const vnp_ReturnUrl = 'https://book-store-v302.onrender.com/#/vnpay-return'; // ✅ sửa theo domain thực tế
 
     const date = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
