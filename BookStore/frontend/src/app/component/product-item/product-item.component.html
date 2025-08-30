@@ -13,6 +13,9 @@
     <h5>{{ book.price | dotSeparator }} đ</h5>
     <div class="discount-badge">-{{ book.discount_percent }}%</div>
   </div>
+  <div class="sold-info" *ngIf="book.sold">
+    ⭐ Đã bán {{ book.sold }} cuốn
+  </div>
   <div class="rating" style="display: flex;" *ngIf="reviews.length > 0">
     <p-rating 
       [readonly]="true" 
@@ -21,6 +24,7 @@
     ></p-rating>
     <span class="rating-count">({{ reviews.length }})</span>
   </div>
+  
   <!-- Hover icons -->
   <div class="hover-icons">
     <p-button

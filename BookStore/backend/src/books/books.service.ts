@@ -139,9 +139,11 @@ export class BooksService {
         throw new BadRequestException('Số lượng tồn kho không đủ!');
     }
     book.quantity -= quantitySold;
+
+    book.sold = (book.sold || 0) + quantitySold;
     await book.save();
     return book;
-}
+  }
 
   async getBestSellers(): Promise<Book[]> {
     const bestSellers = await this.orderModel.aggregate([

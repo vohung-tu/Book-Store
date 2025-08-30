@@ -38,6 +38,9 @@ export class Book {
 
   @Prop({ required: true })
   quantity: number;
+
+  @Prop({ type: Number, default: 0 })
+  sold: number;
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);

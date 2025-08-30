@@ -27,4 +27,5 @@ export interface BookDetails {
   reviews?: Review[];
   [key: string]: any;
   cartItemId: string;
+  sold?: number;
 }
