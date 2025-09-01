@@ -8,7 +8,7 @@
           </a>
 
           <!-- 🔽 Nút menu icon -->
-         <div 
+        <div 
           class="menu-toggle"
           (mouseenter)="showMenu = true"
           (mouseleave)="showMenu = false">
@@ -19,8 +19,9 @@
             <div class="mega-menu__sidebar">
               <ul>
                 <li *ngFor="let cat of categories"
-                    (mouseenter)="activeCategory = cat"
-                    [class.active]="activeCategory?._id === cat._id">
+                  (mouseenter)="activeCategory = cat"
+                  (click)="navigateToCategory(cat.slug, $event)"
+                  [class.active]="activeCategory?._id === cat._id">
                   {{ cat.name }}
                 </li>
               </ul>

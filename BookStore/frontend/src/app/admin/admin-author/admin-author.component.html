@@ -73,7 +73,7 @@
     <ng-template pTemplate="body" let-author let-i="index">
       <tr>
         <td>
-          <img
+          <!-- <img
             *ngIf="author.avatar"
             [src]="'https://book-store-3-svnz.onrender.com' + author.avatar"
             (error)="author.avatar = null"
@@ -81,7 +81,17 @@
             width="50"
             height="50"
             style="border-radius: 50%; object-fit: cover;"
+          /> -->
+
+          <img
+            [src]="author.avatar ? 'https://book-store-3-svnz.onrender.com' + author.avatar : 'assets/images/def_avatar.png'"
+            (error)="onImgError($event)"
+            alt="avatar"
+            width="50"
+            height="50"
+            style="border-radius: 50%; object-fit: cover;"
           />
+
         </td>
         <td>{{ author.name }}</td>
         <td>

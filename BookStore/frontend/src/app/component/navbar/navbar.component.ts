@@ -165,7 +165,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  navigateToCategory(slug: string) {
+  navigateToCategory(slug: string, event?: MouseEvent) {
+    if (event) {
+      event.stopPropagation(); // tránh xung đột hover
+    }
     window.location.href = `/category/${slug}`;
   }
 

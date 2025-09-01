@@ -3,6 +3,18 @@
     <h2>Quản lý Category</h2>
     <button pButton label="Thêm danh mục" icon="pi pi-plus" (click)="openCreate()"></button>
   </div>
+  <div class="body-bar">
+    <div class="search-bar">
+      <i class="pi pi-search search-icon"></i>
+      <input
+        type="text"
+        pInputText
+        placeholder="Tìm kiếm danh mục..."
+        [(ngModel)]="searchText"
+        (input)="filterCategory()"
+      />
+    </div>
+  </div>
 
   <p-table
     [value]="rows"

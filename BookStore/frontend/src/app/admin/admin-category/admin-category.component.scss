@@ -15,6 +15,34 @@
     }
   }
 
+  .body-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    .search-bar {
+      position: relative;
+      width: 300px;
+
+      input {
+        width: 100%;
+        padding: 0.5rem 0.5rem 0.5rem 2rem;
+        border-radius: 999px;
+        border: 1px solid #ccc;
+      }
+
+      .search-icon {
+        position: absolute;
+        top: 50%;
+        left: 0.75rem;
+        transform: translateY(-50%);
+        color: #888;
+      }
+    }
+  }
+
+
   .name-cell {
     display: flex;
     align-items: center;

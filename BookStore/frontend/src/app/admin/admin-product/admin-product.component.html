@@ -60,6 +60,7 @@
         <th>Ngày phát hành</th>
         <th>Danh mục</th>
         <th>Số lượng</th>
+        <th>Đã bán</th>
         <th>Ảnh phụ</th>
         <th>Tính năng</th>
       </tr>
@@ -87,6 +88,7 @@
         <td>{{ product.publishedDate | date: 'dd/MM/yyyy' }}</td>
         <td>{{ getCategoryLabel(product.categoryName) }}</td>
         <td>{{ product.quantity }}</td>
+        <td>{{ product.sold }}</td>
         <td>
           <ng-container *ngIf="product.images?.length > 0; else noImages">
             <img

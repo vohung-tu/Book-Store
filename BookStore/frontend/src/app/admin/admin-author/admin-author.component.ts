@@ -89,6 +89,10 @@ export class AdminAuthorComponent implements OnInit{
     });
   }
 
+  onImgError(event: Event) {
+    (event.target as HTMLImageElement).src = 'assets/images/def_avatar.png';
+  }
+
   updateAuthor(id: string) {
     const formData = new FormData();
     formData.append('name', this.newAuthor.name);

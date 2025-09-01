@@ -42,7 +42,7 @@ export class BooksService {
         authorName = authorMap.get(book.author) ?? book.author ?? 'Không rõ';
       }
 
-      return { ...book, authorName };
+      return { ...book, authorName, sold: book.sold || 0 };
     });
 
     return { items, total, page, pages: Math.ceil(total / limit) };
@@ -145,16 +145,29 @@ export class BooksService {
     return book;
   }
 
-  async getBestSellers(): Promise<Book[]> {
+  async getBestSellers(limit = 10) {
     const bestSellers = await this.orderModel.aggregate([
-      { $unwind: "$products" }, // Tách từng sản phẩm trong đơn hàng
-      { $group: { _id: "$products._id", totalSold: { $sum: "$products.quantity" } } }, // Tính tổng số lượng bán
-      { $sort: { totalSold: -1 } }, // Sắp xếp theo số lượng bán giảm dần
-      { $limit: 10 } // Hiển thị tối đa 10 sản phẩm
+      { $unwind: "$products" },
+      { 
+        $group: { 
+          _id: "$products._id", 
+          totalSold: { $sum: "$products.quantity" } 
+        } 
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: limit }
     ]);
 
-    const bookIds = bestSellers.map(item => item._id);
-    return this.bookModel.find({ _id: { $in: bookIds } }).exec();
+    // Map thành dictionary để merge
+    const soldMap = new Map(bestSellers.map(b => [b._id.toString(), b.totalSold]));
+
+    const books = await this.bookModel.find({ _id: { $in: Array.from(soldMap.keys()) } }).lean();
+
+    return books.map(b => ({
+      ...b,
+      sold: soldMap.get(b._id.toString()) || b.sold || 0
+    }));
   }
+
 
 }

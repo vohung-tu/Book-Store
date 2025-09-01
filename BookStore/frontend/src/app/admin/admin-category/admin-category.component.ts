@@ -34,6 +34,8 @@ export interface AdminCategory {
 })
 export class AdminCategoryComponent implements OnInit {
   rows: AdminCategory[] = [];
+  allRows: any[] = [];
+  searchText: string = '';
 
   // dialog
   show = false;
@@ -52,13 +54,38 @@ export class AdminCategoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.fetchCategories();
+  }
+
+  fetchCategories() {
+    this.api.getCategories().subscribe((data: any[]) => {
+      this.allRows = data;
+      this.rows = [...this.allRows]; // copy ra để hiển thị
+    });
+  }
+
+  filterCategory() {
+    const keyword = this.removeDiacritics(this.searchText.trim().toLowerCase());
+
+    if (!keyword) {
+      this.rows = [...this.allRows];
+    } else {
+      this.rows = this.allRows.filter(cat =>
+        this.removeDiacritics(cat.name.toLowerCase()).includes(keyword)
+      );
+    }
+  }
+
+  private removeDiacritics(str: string): string {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
   load(): void {
     this.loading = true;
     this.api.list().subscribe({
       next: (res: any[]) => {
-        this.rows = res as AdminCategory[];
+        this.allRows = res as AdminCategory[];   // 🔥 luôn lưu vào allRows để filter
+        this.rows = [...this.allRows];           // hiển thị ban đầu
         this.loading = false;
       },
       error: (e) => {
