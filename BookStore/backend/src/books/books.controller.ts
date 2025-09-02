@@ -61,22 +61,21 @@ export class BooksController {
 
   @Post(':id/summary-ai')
   async generateSummary(@Param('id') id: string) {
-    try {
-      const book = await this.booksService.findOne(id);
-      if (!book) {
-        throw new NotFoundException('Book not found');
-      }
+    const book = await this.booksService.findOne(id);
 
-      const summary = await this.aiService.generateSummary(
-        book.title,
-        book.description || ''
-      );
-
-      return this.booksService.updateSummary(id, summary);
-    } catch (err) {
-      console.error('❌ Error generating summary:', err);
-      throw new InternalServerErrorException(err.message || 'AI summary failed');
+    if (!book) {
+      throw new NotFoundException('Book not found');
     }
+
+    // check mô tả rỗng
+    if (!book.description) {
+      throw new BadRequestException('Book description is empty, cannot summarize');
+    }
+
+    const summary = await this.aiService.generateSummary(book.title, book.description);
+
+    // Lưu vào DB
+    return this.booksService.updateSummary(id, summary);
   }
 
 }

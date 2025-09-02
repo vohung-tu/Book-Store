@@ -7,9 +7,12 @@ export class AiService {
   private client: OpenAI;
 
   constructor(private configService: ConfigService) {
+    const apiKey = this.configService.get<string>('OPENROUTER_API_KEY');
+    console.log('API Key loaded?', !!apiKey);
+
     this.client = new OpenAI({
       baseURL: 'https://openrouter.ai/api/v1',
-      apiKey: this.configService.get<string>('OPENROUTER_API_KEY'), // lấy từ .env
+      apiKey,
     });
   }
 
@@ -20,13 +23,15 @@ Mô tả: ${description}`;
 
     try {
       const res = await this.client.chat.completions.create({
-        model: 'openai/gpt-4o-mini', //  nhớ chọn model có trong OpenRouter
+        model: 'openai/gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
       });
+
       return res.choices[0].message?.content?.trim() ?? '';
     } catch (err) {
-      console.error('❌ AI summary error:', err);
+      console.error('❌ AI summary error:', err.response?.data || err.message);
       throw err;
     }
   }
 }
+
