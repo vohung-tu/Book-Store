@@ -11,10 +11,14 @@ import { AuthorsModule } from './authors/authors.module';
 import { AuthModule } from './users/auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { CategoryModule } from './categories/categories.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     BooksModule,
+    ConfigModule.forRoot({
+      isGlobal: true,   // để toàn bộ app dùng được process.env
+    }),
     MongooseModule.forRoot('mongodb+srv://hungtu:123456%40@bookstorepam.lzrno.mongodb.net/book_store_pam?retryWrites=true&w=majority&appName=BookstorePam'),
     UsersModule,
     AuthModule,

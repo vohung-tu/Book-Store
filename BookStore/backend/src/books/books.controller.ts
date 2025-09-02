@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException, Query, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Book } from './book.schema';
 import { AiService } from 'src/ai-helpers/ai.service';
@@ -61,17 +61,22 @@ export class BooksController {
 
   @Post(':id/summary-ai')
   async generateSummary(@Param('id') id: string) {
-    const book = await this.booksService.findOne(id);
+    try {
+      const book = await this.booksService.findOne(id);
+      if (!book) {
+        throw new NotFoundException('Book not found');
+      }
 
-    if (!book) {
-      throw new NotFoundException(`Book with id ${id} not found`);
+      const summary = await this.aiService.generateSummary(
+        book.title,
+        book.description || ''
+      );
+
+      return this.booksService.updateSummary(id, summary);
+    } catch (err) {
+      console.error('❌ Error generating summary:', err);
+      throw new InternalServerErrorException(err.message || 'AI summary failed');
     }
-
-    const summary = await this.aiService.generateSummary(
-      book.title,
-      book.description,
-    );
-
-    return this.booksService.updateSummary(id, summary);
   }
+
 }
