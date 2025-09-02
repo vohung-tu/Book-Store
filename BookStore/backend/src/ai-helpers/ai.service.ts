@@ -7,7 +7,7 @@ export class AiService {
   private client: OpenAI;
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get<string>('OPENROUTER_API_KEY');
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
     console.log('API Key loaded?', !!apiKey);
 
     this.client = new OpenAI({
