@@ -56,7 +56,11 @@ export class BooksService {
   }
 
   async updateSummary(id: string, summary: string) {
-    return this.bookModel.findByIdAndUpdate(id, { summary_ai: summary }, { new: true });
+    return this.bookModel.findByIdAndUpdate(
+      id,
+      { summary_ai: summary },
+      { new: true }
+    ).lean();
   }
 
   async findOne(id: string): Promise<Book | null> {
