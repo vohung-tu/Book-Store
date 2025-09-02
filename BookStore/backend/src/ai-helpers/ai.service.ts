@@ -8,7 +8,7 @@ export class AiService {
 
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    console.log('API Key loaded?', !!apiKey);
+    console.log('API Key loaded?', apiKey ? '✅ Có key' : '❌ Không có key');
 
     this.client = new OpenAI({
       baseURL: 'https://openrouter.ai/api/v1',
@@ -21,17 +21,12 @@ export class AiService {
 Tiêu đề: ${title}
 Mô tả: ${description}`;
 
-    try {
-      const res = await this.client.chat.completions.create({
-        model: 'openai/gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-      });
+    const res = await this.client.chat.completions.create({
+      model: 'openai/gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+    });
 
-      return res.choices[0].message?.content?.trim() ?? '';
-    } catch (err) {
-      console.error('❌ AI summary error:', err.response?.data || err.message);
-      throw err;
-    }
+    return res.choices[0].message?.content?.trim() ?? '';
   }
 }
 
