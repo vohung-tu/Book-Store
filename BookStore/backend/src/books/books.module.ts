@@ -8,6 +8,7 @@ import { Order, OrderSchema } from 'src/order/order/order.schema';
 import { AuthorsModule } from 'src/authors/authors.module';
 import { CategoryModule } from 'src/categories/categories.module';
 import { Category, CategorySchema } from 'src/categories/categories.schema';
+import { AiService } from 'src/ai-helpers/ai.service';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { Category, CategorySchema } from 'src/categories/categories.schema';
     CategoryModule,
     forwardRef(() => OrdersModule) // ✅ Tránh vòng lặp phụ thuộc
   ],
-  providers: [BooksService],
+  providers: [BooksService, AiService],
   controllers: [BooksController],
   exports: [BooksService]
 })

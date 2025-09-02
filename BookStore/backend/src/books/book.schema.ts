@@ -41,6 +41,9 @@ export class Book {
 
   @Prop({ type: Number, default: 0 })
   sold: number;
+
+  @Prop({ type: String, default: '' })
+  summary_ai: string;
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);

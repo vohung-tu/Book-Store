@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { Order } from 'src/order/order/order.schema';
 import { Author } from 'src/authors/authors.schema';
 import { Category, CategoryDocument } from 'src/categories/categories.schema';
+import { AiService } from 'src/ai-helpers/ai.service';
 
 @Injectable()
 export class BooksService {
@@ -12,11 +13,17 @@ export class BooksService {
     @InjectModel(Book.name) private bookModel: Model<BookDocument>,
     @InjectModel(Author.name) private authorModel: Model<Author>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
-    @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>
+    @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
+    private aiService: AiService
     ) {}
 
   async create(book: Book): Promise<Book> {
       const createdBook = new this.bookModel(book);
+      // 🔥 Gọi AI để sinh summary
+      if (book.description) {
+        const summary = await this.aiService.generateSummary(book.title, book.description);
+        book.summary_ai = summary;
+      }
       return createdBook.save();
   }
 
@@ -48,7 +55,9 @@ export class BooksService {
     return { items, total, page, pages: Math.ceil(total / limit) };
   }
 
-
+  async updateSummary(id: string, summary: string) {
+    return this.bookModel.findByIdAndUpdate(id, { summary_ai: summary }, { new: true });
+  }
 
   async findOne(id: string): Promise<Book | null> {
     return this.bookModel.findById(id).populate('author').exec(); // ✅ Tự động lấy dữ liệu tác giả từ DB

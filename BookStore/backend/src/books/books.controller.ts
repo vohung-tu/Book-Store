@@ -1,10 +1,13 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException, Query, NotFoundException } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Book } from './book.schema';
+import { AiService } from 'src/ai-helpers/ai.service';
 
 @Controller('books')
 export class BooksController {
-  constructor(private readonly booksService: BooksService) {}
+  constructor(private readonly booksService: BooksService,
+    private readonly aiService: AiService
+  ) {}
 
   @Post()
   create(@Body() book: Book): Promise<Book> {
@@ -54,5 +57,21 @@ export class BooksController {
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<void> {
     return this.booksService.delete(id);
+  }
+
+  @Post(':id/summary-ai')
+  async generateSummary(@Param('id') id: string) {
+    const book = await this.booksService.findOne(id);
+
+    if (!book) {
+      throw new NotFoundException(`Book with id ${id} not found`);
+    }
+
+    const summary = await this.aiService.generateSummary(
+      book.title,
+      book.description,
+    );
+
+    return this.booksService.updateSummary(id, summary);
   }
 }

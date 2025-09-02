@@ -29,9 +29,14 @@ export class BooksService {
     return this.http.get<BookDetails>(`${this.apiUrl}/${id}`).pipe(
       map(book => ({
         ...book,
-        id: book._id // Chuyển _id thành id
+        id: book._id, // Chuyển _id thành id
+        summary_ai: book['summary_ai'] || '' // Lấy thêm summary_ai từ BE
       }))
     );
+  }
+
+  generateSummary(id: string): Observable<BookDetails> {
+    return this.http.post<BookDetails>(`${this.apiUrl}/${id}/summary-ai`, {});
   }
 
   // lấy books by category

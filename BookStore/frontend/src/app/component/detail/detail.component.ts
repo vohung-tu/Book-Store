@@ -94,6 +94,9 @@ export class DetailComponent implements OnInit {
   authorId!: string;
   authors: Author[] = [];
   product: any;
+  summary: string = '';
+  showSummary: boolean = false;
+  loadingSummary: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -156,6 +159,31 @@ export class DetailComponent implements OnInit {
         { label: this.book.title }
       ];
     });
+  }
+
+  toggleSummary() {
+    if (this.showSummary) {
+      // Thu gọn
+      this.showSummary = false;
+      return;
+    }
+
+    // Mở rộng
+    this.showSummary = true;
+
+    if (!this.summary) {
+      this.loadingSummary = true;
+      this.bookService.generateSummary(this.book._id).subscribe({
+        next: (res) => {
+          this.summary = res.summary_ai || '';
+          this.loadingSummary = false;
+        },
+        error: () => {
+          this.summary = '⚠️ Có lỗi khi tạo tóm tắt, vui lòng thử lại.';
+          this.loadingSummary = false;
+        }
+      });
+    }
   }
 
   // 🖊️ Tải thông tin tác giả

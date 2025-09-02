@@ -1,4 +1,4 @@
-<div class="book-cover" *ngIf="books; else loading">
+<div class="book-cover" *ngIf="books">
   <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
 
   <div class="book-details-row">
@@ -107,8 +107,37 @@
     <div class="book-detail-2">
       <h3>Mô tả sản phẩm</h3>
       <p class="detailed-description" [innerHTML]="books.description || 'Không có mô tả chi tiết.'"></p>
+      <div class="book-summary">
+  <!-- Nút bấm gọi AI -->
+        <button 
+          pButton 
+          label="Xem thêm tóm tắt AI" 
+          icon="pi pi-sparkles" 
+          (click)="toggleSummary()"
+          class="summary-btn">
+        </button>
+
+        <!-- Vùng hiển thị tóm tắt -->
+        <div *ngIf="showSummary" class="summary-box">
+          <h3>Tóm tắt nội dung (AI)</h3>
+
+          <!-- Nếu chưa có summary thì gọi API -->
+          <p *ngIf="loadingSummary" class="loading">⏳ Đang tạo tóm tắt...</p>
+
+          <p *ngIf="!loadingSummary && summary">
+            {{ summary }}
+          </p>
+
+          <p *ngIf="!loadingSummary && !summary" class="empty">
+            Chưa có tóm tắt, vui lòng bấm nút để tạo.
+          </p>
+
+          <!-- Thu gọn -->
+          <a class="collapse-link" (click)="toggleSummary()">Thu gọn ▲</a>
+        </div>
+      </div>
+
     </div>
-  </div>
 
   <!-- Div 3: Đánh giá sản phẩm -->
   <div class="book-detail-3">

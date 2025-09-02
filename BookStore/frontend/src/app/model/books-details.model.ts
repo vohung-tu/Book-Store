@@ -28,4 +28,5 @@ export interface BookDetails {
   [key: string]: any;
   cartItemId: string;
   sold?: number;
+  summary_ai?: string;
 }
