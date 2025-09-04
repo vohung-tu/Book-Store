@@ -55,12 +55,23 @@ export class BooksService {
     return { items, total, page, pages: Math.ceil(total / limit) };
   }
 
-  async updateSummary(id: string, summary: string) {
-    return this.bookModel.findByIdAndUpdate(
-      id,
-      { summary_ai: summary },
-      { new: true }
-    ).lean();
+  async updateSummary(id: string, summary: string): Promise<Book> {
+    try {
+      const book = await this.bookModel.findByIdAndUpdate(
+        id,
+        { $set: { summary_ai: summary } }, // ✅ thêm field summary_ai
+        { new: true } // trả về document đã cập nhật
+      ).exec();
+
+      if (!book) {
+        throw new NotFoundException(`Book với ID ${id} không tồn tại`);
+      }
+
+      return book;
+    } catch (err) {
+      console.error('❌ updateSummary error:', err);
+      throw new InternalServerErrorException('Không thể cập nhật summary_ai cho sách');
+    }
   }
 
   async findOne(id: string): Promise<Book | null> {
