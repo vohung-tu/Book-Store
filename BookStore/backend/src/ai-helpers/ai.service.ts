@@ -23,7 +23,7 @@ Mô tả: ${description}`;
 
     try {
     const res = await this.client.chat.completions.create({
-      model: 'openrouter/openai/gpt-4o-mini',
+      model: 'openai/gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
     });
 

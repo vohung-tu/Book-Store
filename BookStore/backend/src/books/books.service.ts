@@ -18,13 +18,12 @@ export class BooksService {
     ) {}
 
   async create(book: Book): Promise<Book> {
-      const createdBook = new this.bookModel(book);
-      // 🔥 Gọi AI để sinh summary
-      if (book.description) {
-        const summary = await this.aiService.generateSummary(book.title, book.description);
-        book.summary_ai = summary;
-      }
-      return createdBook.save();
+    if (book.description) {
+      const summary = await this.aiService.generateSummary(book.title, book.description);
+      (book as any).summary_ai = summary;
+    }
+    const createdBook = new this.bookModel(book);
+    return createdBook.save();
   }
 
   async findAllBooks(page = 1, limit = 20): Promise<{items:any[]; total:number; page:number; pages:number}> {
