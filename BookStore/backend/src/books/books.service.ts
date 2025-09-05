@@ -19,7 +19,7 @@ export class BooksService {
 
   async create(book: Book): Promise<Book> {
     if (book.description) {
-      const summary = await this.aiService.generateSummary(book.title, book.description);
+      const summary = await this.aiService.generateSummary(book.title);
       (book as any).summary_ai = summary;
     }
     const createdBook = new this.bookModel(book);
