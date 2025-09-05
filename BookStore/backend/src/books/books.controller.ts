@@ -63,18 +63,11 @@ export class BooksController {
   async generateSummary(@Param('id') id: string) {
     const book = await this.booksService.findOne(id);
 
-    if (!book) {
-      throw new NotFoundException('Book not found');
-    }
+    if (!book) throw new NotFoundException('Book not found');
+    if (!book.title) throw new BadRequestException('Book title is missing');
 
-    // check mô tả rỗng
-    if (!book.description) {
-      throw new BadRequestException('Book description is empty, cannot summarize');
-    }
+    const summary = await this.aiService.generateSummary(book.title);
 
-    const summary = await this.aiService.generateSummary(book.title, book.description);
-
-    // Lưu vào DB
     return this.booksService.updateSummary(id, summary);
   }
 

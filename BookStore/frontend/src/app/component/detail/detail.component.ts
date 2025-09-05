@@ -163,12 +163,10 @@ export class DetailComponent implements OnInit {
 
   toggleSummary() {
     if (this.showSummary) {
-      // Thu gọn
       this.showSummary = false;
       return;
     }
 
-    // Mở rộng
     this.showSummary = true;
 
     if (!this.summary) {
