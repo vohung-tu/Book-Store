@@ -27,15 +27,19 @@ Viết tóm tắt ngắn gọn (3–5 câu) cho tiêu đề: "${title}" để m�
 
     try {
       const res = await this.client.chat.completions.create({
-        model: 'openai/gpt-5-mini', // sử dụng GPT-5-mini
+        model: 'openrouter/openai/gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
       });
 
-      console.log('✅ AI response snippet:', res.choices[0].message?.content?.slice(0, 100));
+      console.log('✅ AI response:', JSON.stringify(res, null, 2));
       return res.choices[0].message?.content?.trim() ?? '';
     } catch (err: any) {
-      console.error('❌ AI summary error:', err.response?.data || err.message);
-      throw new InternalServerErrorException('Không thể tạo tóm tắt AI');
+      if (err.response) {
+        console.error('❌ AI summary error response:', err.response.status, err.response.data);
+      } else {
+        console.error('❌ AI summary error:', err.message || err);
+      }
+      throw new Error('AI summary generation failed');
     }
   }
 }
