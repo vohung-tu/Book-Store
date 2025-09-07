@@ -12,6 +12,7 @@ import { AuthModule } from './users/auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { CategoryModule } from './categories/categories.module';
 import { ConfigModule } from '@nestjs/config';
+import { AiModule } from './ai-helpers/ai.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { ConfigModule } from '@nestjs/config';
     ReviewModule,
     AuthorsModule,
     CartModule,
-    CategoryModule
+    CategoryModule,
+    AiModule
   ],
   controllers: [AppController],
   providers: [AppService],
