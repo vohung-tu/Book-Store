@@ -7,12 +7,12 @@ export class AiService {
   private client: OpenAI;
 
   constructor(private configService: ConfigService) {
-    // const apiKey = this.configService.get<string>('OPENROUTER_API_KEY'); // should match env
-    // console.log('🔑 API Key loaded?', apiKey ? '✅ Có key' : '❌ Không có key');
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    console.log('API Key loaded?', apiKey ? '✅ Có key' : '❌ Không có key');
 
     this.client = new OpenAI({
       baseURL: 'https://openrouter.ai/api/v1',
-      apiKey: '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',
+      apiKey,
       // Optionally reflect your app appearance
       defaultHeaders: {
         'HTTP-Referer': 'https://book-store-v302.onrender.com/',
