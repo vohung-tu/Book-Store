@@ -163,26 +163,55 @@ export class DetailComponent implements OnInit {
 
   toggleSummary() {
     if (this.showSummary) {
+      // Thu gọn
       this.showSummary = false;
       return;
     }
 
+    // Mở rộng
     this.showSummary = true;
 
-    if (!this.summary) {
-      this.loadingSummary = true;
-      this.bookService.generateSummary(this.book._id).subscribe({
-        next: (res) => {
-          this.summary = res.summary_ai || '';
+    if (this.summary) return; // nếu đã có summary rồi thì chỉ hiển thị
+
+    this.loadingSummary = true;
+
+    // ✅ Gọi GET trước để check có summary chưa
+    this.bookService.getSummary(this.book._id).subscribe({
+      next: (res) => {
+        if (res && res !== 'Chưa có tóm tắt') {
+          // Có sẵn summary trong DB
+          this.summary = res;
           this.loadingSummary = false;
-        },
-        error: () => {
-          this.summary = '⚠️ Có lỗi khi tạo tóm tắt, vui lòng thử lại.';
-          this.loadingSummary = false;
+        } else {
+          // Không có -> gọi POST để tạo mới
+          this.bookService.generateSummary(this.book._id).subscribe({
+            next: (res) => {
+              this.summary = res.summary_ai || '';
+              this.loadingSummary = false;
+            },
+            error: () => {
+              this.summary = '⚠️ Có lỗi khi tạo tóm tắt, vui lòng thử lại.';
+              this.loadingSummary = false;
+            }
+          });
         }
-      });
-    }
+      },
+      error: () => {
+        // Nếu GET lỗi thì fallback sang POST
+        this.bookService.generateSummary(this.book._id).subscribe({
+          next: (res) => {
+            this.summary = res.summary_ai || '';
+            this.loadingSummary = false;
+          },
+          error: () => {
+            this.summary = '⚠️ Có lỗi khi tạo tóm tắt, vui lòng thử lại.';
+            this.loadingSummary = false;
+          }
+        });
+      }
+    });
   }
+
 
   // 🖊️ Tải thông tin tác giả
   private loadAuthorDetails(authorId: string): void {

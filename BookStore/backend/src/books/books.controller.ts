@@ -71,4 +71,10 @@ export class BooksController {
     return this.booksService.updateSummary(id, summary);
   }
 
+  @Get(':id/summary-ai')
+  async getSummary(@Param('id') id: string) {
+    const book = await this.booksService.findOne(id);
+    if (!book) throw new NotFoundException('Book not found');
+    return { summary_ai: book.summary_ai || 'Chưa có tóm tắt' };
+  }
 }

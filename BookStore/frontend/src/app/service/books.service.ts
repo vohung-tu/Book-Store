@@ -67,4 +67,9 @@ export class BooksService {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/best-sellers`);
   }
 
+  getSummary(id: string): Observable<string> {
+    return this.http.get<{ summary_ai: string }>(`${this.apiUrl}/${id}/summary-ai`)
+      .pipe(map(res => res.summary_ai));
+  }
+
 }   
