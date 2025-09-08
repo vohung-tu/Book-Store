@@ -27,7 +27,7 @@ Viết tóm tắt ngắn gọn (3–5 câu) cho tiêu đề: "${title}" để m�
 
     try {
       const res = await this.client.chat.completions.create({
-        model: 'openrouter/openai/gpt-4o-mini',
+        model: 'openai/gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
       });
 
