@@ -21,25 +21,37 @@ export class AiService {
     });
   }
 
-  async generateSummary(title: string): Promise<string> {
-    const prompt = `Bạn là trợ lý nội dung sách; 
-Viết tóm tắt ngắn gọn (3–5 câu) cho tiêu đề: "${title}" để mô tả hấp dẫn và dễ hiểu.`;
+  async generateSummary(title: string, description = ''): Promise<string> {
+  const prompt = `Bạn là một biên tập viên giới thiệu sách chuyên nghiệp (giống như Tiki). 
+Hãy viết phần mô tả sách với cấu trúc sau:
 
-    try {
-      const res = await this.client.chat.completions.create({
-        model: 'openai/gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-      });
+1. Mở đầu: Viết 1–2 câu ngắn gợi cảm xúc, có thể đặt câu hỏi để thu hút độc giả.
+2. Nội dung: Viết đoạn văn 4–6 câu tóm tắt cốt truyện hoặc ý chính của sách, ngắn gọn và dễ hiểu.
+3. Điểm nổi bật: Liệt kê 3–4 gạch đầu dòng những giá trị hoặc lợi ích mà cuốn sách mang lại cho độc giả.
+4. Tác giả: Viết 1–2 câu giới thiệu ngắn về tác giả (nếu có thông tin).
 
-      console.log('✅ AI response:', JSON.stringify(res, null, 2));
-      return res.choices[0].message?.content?.trim() ?? '';
-    } catch (err: any) {
-      if (err.response) {
-        console.error('❌ AI summary error response:', err.response.status, err.response.data);
-      } else {
-        console.error('❌ AI summary error:', err.message || err);
-      }
-      throw new Error('AI summary generation failed');
+Tiêu đề sách: "${title}" 
+${description ? `Mô tả thêm: ${description}` : ''}`;
+
+  try {
+    const res = await this.client.chat.completions.create({
+      model: 'openai/gpt-4o-mini',   // ✅ dùng model chuẩn
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    if (!res.choices || !res.choices[0]?.message?.content) {
+      throw new Error('AI không trả về nội dung');
     }
+
+    return res.choices[0].message.content.trim();
+  } catch (err: any) {
+    if (err.response) {
+      console.error('❌ AI summary error response:', err.response.status, err.response.data);
+    } else {
+      console.error('❌ AI summary error:', err.message || err);
+    }
+    throw new Error('AI summary generation failed');
   }
+}
+
 }
