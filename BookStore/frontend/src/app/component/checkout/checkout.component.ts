@@ -297,7 +297,9 @@ export class CheckoutComponent implements OnInit {
         alert('Đặt hàng thất bại, vui lòng thử lại!');
       }
     });
+    
   }
+  
 
   payWithVnpay() {
     const orderId = Date.now().toString(); // tạo mã đơn hàng
@@ -322,11 +324,16 @@ export class CheckoutComponent implements OnInit {
   }
 
   afterOrderSuccess() {
-    localStorage.removeItem('cart');
-    this.cartService.clearCart();
-    this.router.navigate(['/order-success']);
+    this.cartService.clearCart().subscribe({
+      next: () => {
+        console.log('🗑️ Giỏ hàng đã được xóa');
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        console.error('❌ Lỗi khi xóa giỏ hàng:', err);
+      }
+    });
   }
-
   updateBookQuantity() {
     this.booksService.getBookById(this.book.id!).subscribe((updatedBook) => {
       this.book.quantity = updatedBook.quantity; // 🔄 Cập nhật số lượng sách
