@@ -22,16 +22,18 @@ export class AiService {
   }
 
   async generateSummary(title: string, description = ''): Promise<string> {
-  const prompt = `Bạn là một biên tập viên giới thiệu sách chuyên nghiệp (giống như Tiki). 
-Hãy viết phần mô tả sách với cấu trúc sau:
+  const prompt = `Bạn là một trợ lý nội dung sách chuyên nghiệp. 
+  Hãy viết phần tóm tắt giới thiệu cho cuốn sách "${title}". 
+  Trình bày theo phong cách bìa sau sách, bao gồm:
 
-1. Mở đầu: Viết 1–2 câu ngắn gợi cảm xúc, có thể đặt câu hỏi để thu hút độc giả.
-2. Nội dung: Viết đoạn văn 4–6 câu tóm tắt cốt truyện hoặc ý chính của sách, ngắn gọn và dễ hiểu.
-3. Điểm nổi bật: Liệt kê 3–4 gạch đầu dòng những giá trị hoặc lợi ích mà cuốn sách mang lại cho độc giả.
-4. Tác giả: Viết 1–2 câu giới thiệu ngắn về tác giả (nếu có thông tin).
+  - Một đoạn mở đầu hấp dẫn, gợi ý lý do nên đọc.
+  - Mục "Nội dung": mô tả ngắn gọn chủ đề và hành trình chính của cuốn sách.
+  - Các ý quan trọng được liệt kê rõ ràng dưới dạng bullet point.
+  - Mục "Điểm nổi bật" hoặc "Vì sao nên đọc": nêu giá trị, lợi ích, điều độc giả nhận được.
+  - Mục "Đối tượng độc giả" hoặc "Tác giả" (nếu cần), để người đọc biết sách phù hợp với ai và do ai viết.
 
-Tiêu đề sách: "${title}" 
-${description ? `Mô tả thêm: ${description}` : ''}`;
+  Ngôn ngữ súc tích, dễ hiểu, lôi cuốn.
+  ${description ? `\nMô tả thêm: ${description}` : ''}`;
 
   try {
     const res = await this.client.chat.completions.create({

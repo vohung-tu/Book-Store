@@ -7,7 +7,7 @@
 <div class="author-details" *ngIf="author">
   <div class="info-1">
     <img
-      [src]="'https://book-store-3-svnz.onrender.com' + author.avatar"
+      [src]="author.avatar ? 'https://book-store-3-svnz.onrender.com' + author.avatar : 'assets/images/def_avatar.png'"
       alt="avatar"
       class="avatar-img"
     />

@@ -189,16 +189,18 @@ export class DetailComponent implements OnInit {
   formatSummary(summary: string): string {
     if (!summary) return '';
 
-    // Escape HTML nguy hiểm trước (chỉ escape < và >, không đụng tới *)
+    // Escape HTML nguy hiểm trước (chỉ escape < và >)
     let formatted = summary.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
     // Chuyển **text** -> <strong>text</strong>
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
-    // Chuyển các tiêu đề section thành <h4>
+    // Các tiêu đề section thành <h4>
     formatted = formatted.replace(/Mở đầu:/gi, "<h4>Mở đầu</h4>");
     formatted = formatted.replace(/Nội dung:/gi, "<h4>Nội dung</h4>");
     formatted = formatted.replace(/Điểm nổi bật:/gi, "<h4>Điểm nổi bật</h4>");
+    formatted = formatted.replace(/Vì sao nên đọc:/gi, "<h4>Vì sao nên đọc</h4>");
+    formatted = formatted.replace(/Đối tượng độc giả:/gi, "<h4>Đối tượng độc giả</h4>");
     formatted = formatted.replace(/Tác giả:/gi, "<h4>Tác giả</h4>");
 
     // Bullet points
@@ -215,7 +217,6 @@ export class DetailComponent implements OnInit {
 
     return formatted;
   }
-
 
   // 🖊️ Tải thông tin tác giả
   private loadAuthorDetails(authorId: string): void {
