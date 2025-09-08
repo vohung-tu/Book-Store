@@ -255,6 +255,32 @@ export class DetailComponent implements OnInit {
     });
   }
 
+  formatSummary(summary: string): string {
+    if (!summary) return '';
+
+    // Escape HTML trước (đề phòng AI trả về ký tự đặc biệt)
+    let formatted = summary.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    // Xử lý phần tiêu đề (Nội dung / Điểm nổi bật / Tác giả) thành <h4>
+    formatted = formatted.replace(/^Nội dung/gm, "<h4>Nội dung</h4>");
+    formatted = formatted.replace(/^Điểm nổi bật/gm, "<h4>Điểm nổi bật</h4>");
+    formatted = formatted.replace(/^Tác giả/gm, "<h4>Tác giả</h4>");
+
+    // Xử lý bullet points (bắt đầu bằng dấu - hoặc •)
+    formatted = formatted.replace(/^- (.*)$/gm, "<li>$1</li>");
+    formatted = formatted.replace(/^• (.*)$/gm, "<li>$1</li>");
+
+    // Gom <li> thành <ul>
+    formatted = formatted.replace(/(<li>.*<\/li>\n?)+/g, match => {
+      return `<ul>${match}</ul>`;
+    });
+
+    // Thay xuống dòng còn lại thành <br>
+    formatted = formatted.replace(/\n/g, "<br>");
+
+    return formatted;
+  }
+
   stripHtmlTags(html: string): string {
     const div = document.createElement('div');
     div.innerHTML = html;

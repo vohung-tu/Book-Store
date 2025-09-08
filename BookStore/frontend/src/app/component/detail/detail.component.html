@@ -67,10 +67,10 @@
             <a *ngIf="product.author?._id" 
               [routerLink]="['/author', product.author._id]"
               class="author-href" style="text-decoration: none; color: #105191">
-              {{ product.author.name || 'Không rõ' }}
+              {{ product?.author?.name || 'Không rõ' }}
             </a>
             <span *ngIf="!product.author?._id">
-              {{ product.author.name || 'Không rõ' }}
+              {{ product?.author?.name || 'Không rõ' }}
             </span>
           </td>
           <span *ngIf="!book.author?.name">Không rõ</span>
@@ -119,7 +119,7 @@
         <div *ngIf="showSummary" class="summary-box">
           <h3>Tóm tắt nội dung (AI)</h3>
           <p *ngIf="loadingSummary">⏳ Đang tạo tóm tắt...</p>
-          <p *ngIf="!loadingSummary && summary">{{ summary }}</p>
+          <p *ngIf="!loadingSummary && summary" [innerHTML]="formatSummary(summary)"></p>
           <p *ngIf="!loadingSummary && !summary" class="empty">
             Chưa có tóm tắt, vui lòng bấm nút để tạo.
           </p>
