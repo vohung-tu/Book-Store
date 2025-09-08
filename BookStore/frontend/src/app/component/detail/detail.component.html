@@ -64,12 +64,12 @@
           </div>
           <td style="display: flex;">
             <b>Tác giả: &nbsp;</b>
-            <a *ngIf="product.author?._id" 
-              [routerLink]="['/author', product.author._id]"
+            <a *ngIf="product?.author?._id" 
+              [routerLink]="['/author', product?.author?._id]"
               class="author-href" style="text-decoration: none; color: #105191">
               {{ product?.author?.name || 'Không rõ' }}
             </a>
-            <span *ngIf="!product.author?._id">
+            <span *ngIf="!product?.author?._id">
               {{ product?.author?.name || 'Không rõ' }}
             </span>
           </td>

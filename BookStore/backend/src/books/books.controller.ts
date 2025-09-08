@@ -66,10 +66,12 @@ export class BooksController {
     if (!book) throw new NotFoundException('Book not found');
     if (!book.title) throw new BadRequestException('Book title is missing');
 
-    const summary = await this.aiService.generateSummary(book.title);
+    // ✅ Chỉ generate, không lưu
+    const summary = await this.aiService.generateSummary(book.title, book.description);
 
-    return this.booksService.updateSummary(id, summary);
+    return { summary_ai: summary };
   }
+
 
   @Get(':id/summary-ai')
   async getSummary(@Param('id') id: string) {

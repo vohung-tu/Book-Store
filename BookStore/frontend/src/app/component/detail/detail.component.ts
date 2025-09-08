@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { BooksService } from '../../service/books.service';
 import { BookDetails } from '../../model/books-details.model';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -171,46 +171,20 @@ export class DetailComponent implements OnInit {
     // Mở rộng
     this.showSummary = true;
 
-    if (this.summary) return; // nếu đã có summary rồi thì chỉ hiển thị
-
+    // ✅ Luôn gọi AI tạo mới, không cache, không lấy từ DB
     this.loadingSummary = true;
-
-    // ✅ Gọi GET trước để check có summary chưa
-    this.bookService.getSummary(this.book._id).subscribe({
+    this.bookService.generateSummary(this.book._id).subscribe({
       next: (res) => {
-        if (res && res !== 'Chưa có tóm tắt') {
-          // Có sẵn summary trong DB
-          this.summary = res;
-          this.loadingSummary = false;
-        } else {
-          // Không có -> gọi POST để tạo mới
-          this.bookService.generateSummary(this.book._id).subscribe({
-            next: (res) => {
-              this.summary = res.summary_ai || '';
-              this.loadingSummary = false;
-            },
-            error: () => {
-              this.summary = '⚠️ Có lỗi khi tạo tóm tắt, vui lòng thử lại.';
-              this.loadingSummary = false;
-            }
-          });
-        }
+        this.summary = res.summary_ai || '';
+        this.loadingSummary = false;
       },
       error: () => {
-        // Nếu GET lỗi thì fallback sang POST
-        this.bookService.generateSummary(this.book._id).subscribe({
-          next: (res) => {
-            this.summary = res.summary_ai || '';
-            this.loadingSummary = false;
-          },
-          error: () => {
-            this.summary = '⚠️ Có lỗi khi tạo tóm tắt, vui lòng thử lại.';
-            this.loadingSummary = false;
-          }
-        });
+        this.summary = '⚠️ Có lỗi khi tạo tóm tắt, vui lòng thử lại.';
+        this.loadingSummary = false;
       }
     });
   }
+
 
   formatSummary(summary: string): string {
     if (!summary) return '';
@@ -463,13 +437,28 @@ export class DetailComponent implements OnInit {
   }
 
   addToCart(): void {
-    if (!this.book) {
-      console.error('Book data is undefined');
-      return;
-    }
-    this.cartService.addToCart({ ...this.book, quantity: this.quantity });
-    this.messageService.add({ severity: 'success', summary: 'Thêm thành công', detail: 'Đã thêm vào giỏ hàng thành công!', key: 'tr', life: 3000 });
+    if (!this.book) return;
+
+    this.cartService.addToCart(this.book).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thêm thành công',
+          detail: 'Đã thêm vào giỏ hàng!',
+          key: 'tr'
+        });
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Thêm thất bại',
+          detail: err?.error?.message || 'Vui lòng đăng nhập hoặc thử lại.',
+          key: 'tr'
+        });
+      }
+    });
   }
+
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
