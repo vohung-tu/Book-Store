@@ -1,8 +1,11 @@
 <div class="admin-coupons">
-  <h2>Quản lý Coupon</h2>
+  <div class="header">
+    <h2>Quản lý Coupon</h2>
+  </div>
 
-  <button pButton label="Thêm Coupon" icon="pi pi-plus" (click)="openDialog()"></button>
-
+  <div class="body-bar">
+    <button pButton label="Thêm Coupon" icon="pi pi-plus" (click)="openDialog()"></button>
+  </div>
   <p-table [value]="coupons" [paginator]="true" [rows]="10">
     <ng-template pTemplate="header">
       <tr>
@@ -12,7 +15,7 @@
         <th>Đơn tối thiểu</th>
         <th>Ngày hiệu lực</th>
         <th>Trạng thái</th>
-        <th>Hành động</th>
+        <th>Thao tác</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-c>
@@ -23,9 +26,9 @@
         <td>{{ c.minOrder | number }}₫</td>
         <td>{{ c.startDate | date }} - {{ c.endDate | date }}</td>
         <td><p-tag [value]="c.status" [severity]="c.status==='active'?'success':'danger'"></p-tag></td>
-        <td>
-          <button pButton icon="pi pi-pencil" (click)="editCoupon(c)"></button>
-          <button pButton icon="pi pi-trash" severity="danger" (click)="deleteCoupon(c._id!)"></button>
+        <td class="actions">
+          <button pButton text icon="pi pi-pencil" (click)="editCoupon(c)"></button>
+          <button pButton text icon="pi pi-trash" severity="danger" (click)="deleteCoupon(c._id!)"></button>
         </td>
       </tr>
     </ng-template>
@@ -35,8 +38,8 @@
     <form (ngSubmit)="saveCoupon()">
       <div class="p-fluid">
         <div class="p-field">
-          <label>Mã</label>
-          <input pInputText [(ngModel)]="selectedCoupon.code" name="code" required />
+          <label>Mã CODE</label>
+          <input pInputText type="text" [(ngModel)]="selectedCoupon.code" name="code" required />
         </div>
 
         <div class="p-field">
@@ -65,9 +68,10 @@
         </div>
       </div>
 
-      <p-footer>
+      <div class="dialog-actions">
+        <button pButton (click)="show = false" label="Hủy"></button>
         <button pButton type="submit" label="Lưu"></button>
-      </p-footer>
+      </div>
     </form>
   </p-dialog>
 </div>

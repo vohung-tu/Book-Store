@@ -1,14 +1,36 @@
 import { Component, OnInit } from '@angular/core';
 import { Coupon } from '../../model/coupon.model';
 import { CouponsService } from '../../service/coupon.service';
+import { Dialog } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
+import { CalendarModule } from 'primeng/calendar';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { DropdownModule } from 'primeng/dropdown';
+import { ButtonModule } from 'primeng/button';
 
 
 @Component({
   selector: 'app-coupons',
-  templateUrl: './coupons.component.html',
+  standalone: true,
+    imports: [
+      Dialog,
+      TableModule,
+      Tag,
+      CalendarModule,
+      CommonModule,
+      FormsModule,
+      ButtonModule,
+      DropdownModule
+    ],
+  templateUrl: './admin-coupon.component.html',
+  styleUrl: './admin-coupon.component.scss'
 })
 export class CouponsComponent implements OnInit {
   coupons: Coupon[] = [];
+  show = false;
+  loading = false;
   displayDialog = false;
   selectedCoupon: Coupon = {} as Coupon;
   isEdit = false;
