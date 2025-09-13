@@ -1,0 +1,13 @@
+export interface Coupon {
+  _id?: string;
+  code: string;
+  type: 'percent' | 'amount';        // đổi từ discountType -> type cho đồng bộ
+  value: number;
+  minOrder?: number;                 // đổi từ minOrderAmount
+  applicableProductIds?: string[];
+  startDate?: string;
+  endDate?: string;
+  usageCount?: number;
+  usageLimit?: number;
+  status?: 'active' | 'disabled' | 'expired';
+}

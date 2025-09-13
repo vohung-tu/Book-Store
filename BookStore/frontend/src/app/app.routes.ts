@@ -25,6 +25,7 @@ import { ResetPasswordComponent } from './component/user-info/reset-password/res
 import { ForgotPasswordComponent } from './component/forgot-password/forgot-password.component';
 import { ResetPasswordLinkComponent } from './component/reset-password-link/reset-password-link.component';
 import { AdminCategoryComponent } from './admin/admin-category/admin-category.component';
+import { CouponsComponent } from './admin/admin-coupon/admin-coupon.component';
 
 const routes: Routes = [
   {
@@ -135,6 +136,11 @@ const routes: Routes = [
         path: 'category',
         component: AdminCategoryComponent,
         title: 'Admin Category' 
+      },
+      {
+        path: 'coupon',
+        component: CouponsComponent,
+        title: 'Admin Coupon'
       }
     ],
   },

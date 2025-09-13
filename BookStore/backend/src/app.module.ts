@@ -13,6 +13,7 @@ import { CartModule } from './cart/cart.module';
 import { CategoryModule } from './categories/categories.module';
 import { ConfigModule } from '@nestjs/config';
 import { AiModule } from './ai-helpers/ai.module';
+import { CouponsModule } from './coupon/coupon.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { AiModule } from './ai-helpers/ai.module';
     AuthorsModule,
     CartModule,
     CategoryModule,
-    AiModule
+    AiModule,
+    CouponsModule
   ],
   controllers: [AppController],
   providers: [AppService],
