@@ -26,6 +26,7 @@ import { ForgotPasswordComponent } from './component/forgot-password/forgot-pass
 import { ResetPasswordLinkComponent } from './component/reset-password-link/reset-password-link.component';
 import { AdminCategoryComponent } from './admin/admin-category/admin-category.component';
 import { CouponsComponent } from './admin/admin-coupon/admin-coupon.component';
+import { GetCouponPageComponent } from './component/get-coupon-page/get-coupon-page.component';
 
 const routes: Routes = [
   {
@@ -152,6 +153,10 @@ const routes: Routes = [
   {
     path: 'author/:id', // id hoặc slug
     component: AuthorDetailsComponent
+  },
+  {
+    path: 'coupons',
+    component: GetCouponPageComponent
   }
 ];
 

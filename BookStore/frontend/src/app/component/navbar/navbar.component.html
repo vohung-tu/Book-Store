@@ -13,11 +13,13 @@
           (mouseenter)="showMenu = true"
           (mouseleave)="showMenu = false">
           <i class="pi pi-bars"></i>
+          <i class="pi pi-chevron-down"></i>
 
           <!-- Mega Menu -->
           <div class="mega-menu" *ngIf="showMenu">
             <div class="mega-menu__sidebar">
               <ul>
+                <h3 style="text-align: center;">Danh mục sản phẩm</h3>
                 <li *ngFor="let cat of categories"
                   (mouseenter)="activeCategory = cat"
                   (click)="navigateToCategory(cat.slug, $event)"

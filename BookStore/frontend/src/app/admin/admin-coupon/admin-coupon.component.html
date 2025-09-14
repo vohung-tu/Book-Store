@@ -10,6 +10,9 @@
     <ng-template pTemplate="header">
       <tr>
         <th>Mã</th>
+        <th>Tiêu đề</th>
+        <th>Mô tả</th>
+        <th>Điều kiện áp dụng</th>
         <th>Loại</th>
         <th>Giá trị</th>
         <th>Đơn tối thiểu</th>
@@ -21,6 +24,9 @@
     <ng-template pTemplate="body" let-c>
       <tr>
         <td>{{ c.code }}</td>
+        <td>{{ c.title }}</td>
+        <td>{{ c.description }}</td>
+        <td>{{ c.condition }}</td>
         <td>{{ c.type === 'percent' ? 'Giảm %' : 'Giảm tiền' }}</td>
         <td>{{ c.value }}{{ c.type === 'percent' ? '%' : '₫' }}</td>
         <td>{{ c.minOrder | number }}₫</td>
@@ -40,6 +46,16 @@
         <div class="p-field">
           <label>Mã CODE</label>
           <input pInputText type="text" [(ngModel)]="selectedCoupon.code" name="code" required />
+        </div>
+
+        <div class="p-field">
+          <label>Tiêu đề</label>
+          <input pInputText type="text" [(ngModel)]="selectedCoupon.title" name="title" required />
+        </div>
+
+        <div class="p-field">
+          <label>Mô tả</label>
+          <textarea pInputTextarea rows="3" [(ngModel)]="selectedCoupon.description" name="description"></textarea>
         </div>
 
         <div class="p-field">
@@ -65,6 +81,11 @@
         <div class="p-field">
           <label>Ngày kết thúc</label>
           <p-calendar [(ngModel)]="selectedCoupon.endDate" name="endDate" dateFormat="yy-mm-dd"></p-calendar>
+        </div>
+
+        <div class="p-field">
+          <label>Điều kiện sử dụng</label>
+          <textarea pInputTextarea rows="3" [(ngModel)]="selectedCoupon.condition" name="condition"></textarea>
         </div>
       </div>
 

@@ -31,6 +31,15 @@ export class Coupon {
 
   @Prop({ default: 'active' })
   status: 'active' | 'disabled' | 'expired';
+
+  @Prop({ required: true })
+  title: string;        
+
+  @Prop()
+  description: string;
+    
+  @Prop()
+  condition: string;
 }
 
 export const CouponSchema = SchemaFactory.createForClass(Coupon);

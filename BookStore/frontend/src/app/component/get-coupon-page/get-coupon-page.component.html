@@ -1,0 +1,57 @@
+<div class="coupon-page">
+  <div class="banner-top">
+    <img src="assets/images/sale_cuoi_nam.png" alt="" width="100%" height="700px">
+  </div>
+
+  <div class="header-top">
+    <img src="assets/images/header_top.png" alt="" width="100%" height="400px">
+  </div>
+
+  <!-- Danh sách coupon -->
+  <div class="coupon-list">
+    <div class="coupon-card" *ngFor="let c of coupons">
+      <div class="coupon-left">
+        <img src="assets/images/coupon-icon.png" alt="icon">
+        <span>{{ c.type === 'percent' ? 'Giảm %' : 'Giảm tiền' }}</span>
+      </div>
+
+      <div class="coupon-right">
+        <h4 class="title">
+          {{ c.title }}
+          <i class="pi pi-info-circle info-icon" (click)="showCode(c)"></i>
+        </h4>
+        <p class="condition">{{ c.description }}</p>
+
+        <div class="bottom-row">
+          <span class="expiry">HSD: {{ c.endDate | date:'dd/MM/yyyy' }}</span>
+          <button class="save-btn" (click)="showCode(c)">Lưu mã</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog hiển thị chi tiết -->
+  <p-dialog [(visible)]="showDetailDialog" [modal]="true" [style]="{width:'400px'}" header="Chi tiết mã giảm giá">
+    <div class="coupon-detail">
+      <div class="code-row">
+        <span class="label">Mã:</span>
+        <strong>{{ selectedCoupon?.code }}</strong>
+        <button pButton icon="pi pi-copy" class="p-button-text copy-btn" (click)="copyCode(selectedCoupon?.code)">
+          Sao chép
+        </button>
+      </div>
+
+      <div class="expiry">
+        <span class="label">Hạn sử dụng:</span> 
+        {{ selectedCoupon?.endDate | date:'dd/MM/yyyy' }}
+      </div>
+
+      <div class="condition" *ngIf="selectedCoupon?.condition">
+        <h4>Điều kiện sử dụng</h4>
+        <ul>
+          <li *ngFor="let line of selectedCoupon?.condition.split('\n')">{{ line }}</li>
+        </ul>
+      </div>
+    </div>
+  </p-dialog>
+</div>

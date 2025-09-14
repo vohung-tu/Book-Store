@@ -23,15 +23,21 @@
   position: relative;
   cursor: pointer;
   padding: 10px;
-  background: #fff;
   border-radius: 4px;
   height: 42px;
   top: 25px;
 
   i {
     font-size: 22px;
-    color: #333;
+    color: #fff;
+    padding-left: 8px;
+   
   }
+  i.pi-chevron-down {
+    font-size: 15px;
+    padding-bottom: 5px;
+  }
+  
 
   .mega-menu {
     position: absolute;
@@ -43,12 +49,16 @@
     width: 800px;
     min-height: 300px;
     z-index: 999;
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
   }
 
   .mega-menu__sidebar {
     width: 220px;
     background: #f8f8f8;
     border-right: 1px solid #ddd;
+    border-bottom-left-radius: 15px;
+
     ul {
       list-style: none;
       margin: 0; padding: 0;

@@ -2,7 +2,7 @@
   <p-toast position="top-right" key="tr"></p-toast>
 
   <div class="content-ads-1">
-    <img class="img-ads" src="assets/images/thang5.png" alt="">
+    <img class="img-ads" src="assets/images/ngay_hoi_sach.png" alt="" width="840px" height="340px">
     <div class="content-ads-2">
       <a routerLink="/">
         <img src="assets/images/ads_2.png" alt="">
@@ -19,6 +19,14 @@
         <a (click)="navigateToCategory(cat.slug); $event.stopPropagation()">
           <img [src]="imageFor(cat.slug)" [alt]="cat.name" width="120" height="75" loading="lazy" />
           <span>{{ cat.name }}</span>
+        </a>
+      </div>
+
+       <!-- Category hardcode cho Mã giảm giá -->
+      <div class="cate-child special-coupon">
+        <a routerLink="/coupons">
+          <img src="assets/images/coupon-icon.png" alt="Mã giảm giá" width="120" height="75" />
+          <span>Mã giảm giá</span>
         </a>
       </div>
     </div>
