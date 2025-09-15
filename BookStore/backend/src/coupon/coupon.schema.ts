@@ -40,6 +40,9 @@ export class Coupon {
     
   @Prop()
   condition: string;
+
+  @Prop()
+  categories: string[];
 }
 
 export const CouponSchema = SchemaFactory.createForClass(Coupon);

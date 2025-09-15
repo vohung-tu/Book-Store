@@ -9,7 +9,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
-
+import { CategoryService } from '../../service/category.service';
+import { Category } from '../../model/books-details.model';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
   selector: 'app-coupons',
@@ -22,6 +24,7 @@ import { ButtonModule } from 'primeng/button';
       CommonModule,
       FormsModule,
       ButtonModule,
+      MultiSelectModule,
       DropdownModule
     ],
   templateUrl: './admin-coupon.component.html',
@@ -38,15 +41,30 @@ export class CouponsComponent implements OnInit {
     { label: 'Giảm %', value: 'percent' },
     { label: 'Giảm tiền', value: 'amount' }
   ];
+  categoryOptions: { label: string; value: string }[] = [];
 
-  constructor(private couponService: CouponsService) {}
+  constructor(private couponService: CouponsService,
+    private categoryService: CategoryService) {}
 
   ngOnInit() {
     this.loadCoupons();
+    this.loadCategories();
   }
 
   loadCoupons() {
     this.couponService.getCoupons().subscribe(c => this.coupons = c);
+  }
+
+  loadCategories() {
+    this.categoryService.getCategories().subscribe({
+      next: (categories: Category[]) => {
+        this.categoryOptions = categories.map(c => ({
+          label: c.name,
+          value: c.slug // dùng slug để filter FE hoặc gửi lên BE
+        }));
+      },
+      error: (err) => console.error('❌ Lỗi khi load categories:', err)
+    });
   }
 
   openDialog() {

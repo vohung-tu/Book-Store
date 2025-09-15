@@ -9,10 +9,10 @@
 
   <!-- Danh sách coupon -->
   <div class="coupon-list">
-    <div class="coupon-card" *ngFor="let c of coupons">
+    <div class="coupon-card" *ngFor="let c of fixedCoupons">
       <div class="coupon-left">
         <img src="assets/images/coupon-icon.png" alt="icon">
-        <span>{{ c.type === 'percent' ? 'Giảm %' : 'Giảm tiền' }}</span>
+        <span>Giảm tiền</span>
       </div>
 
       <div class="coupon-right">
@@ -46,12 +46,42 @@
         {{ selectedCoupon?.endDate | date:'dd/MM/yyyy' }}
       </div>
 
-      <div class="condition" *ngIf="selectedCoupon?.condition">
+      <div class="condition" *ngIf="conditionLines.length > 0">
         <h4>Điều kiện sử dụng</h4>
         <ul>
-          <li *ngFor="let line of selectedCoupon?.condition.split('\n')">{{ line }}</li>
+          <li *ngFor="let line of conditionLines">{{ line }}</li>
         </ul>
       </div>
     </div>
   </p-dialog>
+
+  <div class="deal-doc-quyen">
+    <img src="assets/images/sale_20_10.png" alt="" width="100%" height="400px">
+    <img src="assets/images/coupon-1.jpg" alt="" width="100%" height="400px">
+  </div>
+
+  <div class="uu-dai-nganh">
+    <img src="assets/images/uu-dai-nganh-hang.png" alt="" width="100%" height="400px">
+    <div class="coupon-list">
+      <div class="coupon-card" *ngFor="let c of selectedCategorySlug ? getCouponsByCategory(selectedCategorySlug) : percentCoupons">
+        <div class="coupon-left">
+          <img src="assets/images/coupon-icon.png" alt="icon">
+          <span>Giảm {{ c.value }}%</span>
+        </div>
+
+        <div class="coupon-right">
+          <h4 class="title">
+            {{ c.title }}
+            <i class="pi pi-info-circle info-icon" (click)="showCode(c)"></i>
+          </h4>
+          <p class="condition">{{ c.description }}</p>
+
+          <div class="bottom-row">
+            <span class="expiry">HSD: {{ c.endDate | date:'dd/MM/yyyy' }}</span>
+            <button class="save-btn" (click)="showCode(c)">Lưu mã</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

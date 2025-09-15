@@ -12,6 +12,7 @@
         <th>Mã</th>
         <th>Tiêu đề</th>
         <th>Mô tả</th>
+        <th>Ngành hàng áp dụng</th>
         <th>Điều kiện áp dụng</th>
         <th>Loại</th>
         <th>Giá trị</th>
@@ -26,6 +27,14 @@
         <td>{{ c.code }}</td>
         <td>{{ c.title }}</td>
         <td>{{ c.description }}</td>
+        <td>
+          <span *ngIf="c.categories?.length; else noCategory">
+            {{ c.categories.join(', ') }}
+          </span>
+          <ng-template #noCategory>
+            <em>Áp dụng toàn bộ</em>
+          </ng-template>
+        </td>
         <td>{{ c.condition }}</td>
         <td>{{ c.type === 'percent' ? 'Giảm %' : 'Giảm tiền' }}</td>
         <td>{{ c.value }}{{ c.type === 'percent' ? '%' : '₫' }}</td>
@@ -81,6 +90,19 @@
         <div class="p-field">
           <label>Ngày kết thúc</label>
           <p-calendar [(ngModel)]="selectedCoupon.endDate" name="endDate" dateFormat="yy-mm-dd"></p-calendar>
+        </div>
+
+        <div class="p-field">
+          <label>Ngành hàng áp dụng</label>
+          <p-multiSelect
+            [options]="categoryOptions"
+            [(ngModel)]="selectedCoupon.categories"
+            name="categories"
+            optionLabel="label"
+            optionValue="value"
+            defaultLabel="Chọn danh mục"
+            display="chip">
+          </p-multiSelect>
         </div>
 
         <div class="p-field">

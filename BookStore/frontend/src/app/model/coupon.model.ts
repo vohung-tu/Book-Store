@@ -8,6 +8,7 @@ export interface Coupon {
   value: number;
   minOrder?: number;                 // đổi từ minOrderAmount
   applicableProductIds?: string[];
+  categories?: string[];
   startDate?: string;
   endDate?: string;
   usageCount?: number;

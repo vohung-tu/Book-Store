@@ -71,6 +71,9 @@
 
       <div class="header__top__right">
         <div class="header__top__right__cart">
+          <a class="bell-btn" mat-button>
+            <i class="pi pi-bell"></i>
+          </a>
           <a routerLink="/cart" class="cart-btn" mat-button>
             <i class="pi pi-shopping-cart"></i>
             <p-badge *ngIf="cartItemCount > 0" [value]="cartItemCount" severity="danger"></p-badge>
