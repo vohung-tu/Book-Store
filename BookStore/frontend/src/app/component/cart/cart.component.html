@@ -68,15 +68,77 @@
         </tr>
       </ng-template>
     </p-table>
-
-    <div class="cart-summary">
-      <div class="price-now">
-        <h3>Tổng tiền:</h3>
-        <span >{{ totalPrice | dotSeparator }} đ</span>
+    <div class="cart-top-section">
+  <!-- Hiển thị coupon đã lưu -->
+    <div class="cart-coupons" *ngIf="savedCoupons.length > 0">
+      <div class="coupon-header">
+        <span class="title"><i class="pi pi-ticket"></i> KHUYẾN MÃI</span>
+        <a class="view-more" (click)="toggleCouponView()">
+          {{ showAllCoupons ? 'Thu gọn' : 'Xem thêm' }}
+        </a>
       </div>
-      <p-divider></p-divider>
-      <p-button class="pay-btn" severity="success" label="THANH TOÁN" size="large" (click)="goToCheckout()"></p-button>
+
+      <!-- Hiển thị coupon chính -->
+      <div class="coupon-main" *ngFor="let c of displayedCoupons">
+        <div class="coupon-info">
+          <div class="coupon-title">{{ c.title }}</div>
+          <div class="coupon-desc">{{ c.description }}</div>
+          <div class="coupon-expiry">HSD: {{ c.endDate | date:'dd/MM/yyyy' }}</div>
+
+          <!-- Thanh tiến độ -->
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getProgress(c)"></div>
+          </div>
+        </div>
+
+        <button
+          class="btn-apply"
+          [disabled]="isCouponDisabled(c)"
+          (click)="applyCoupon(c)">
+          {{ isCouponDisabled(c) ? 'Mua thêm' : 'Áp mã' }}
+        </button>
+      </div>
+
+      <!-- Tag coupon đã áp dụng -->
+      <div class="applied-coupons" *ngIf="appliedCoupons.length > 0">
+        <div class="coupon-tag" *ngFor="let ac of appliedCoupons">
+          Mã {{ ac.code }}
+          <span class="remove" (click)="removeAppliedCoupon(ac)">×</span>
+        </div>
+        <small class="note">Có thể áp dụng đồng thời nhiều mã</small>
+      </div>
     </div>
+
+  <!-- Tổng tiền -->
+  <div class="cart-summary">
+    <div class="price-now">
+      <h3>Tạm tính:</h3>
+      <span>{{ originalTotal | dotSeparator }} đ</span>
+    </div>
+
+    <!-- Dòng giảm giá -->
+    <div class="discount" *ngIf="totalDiscount > 0">
+      <h3>Giảm giá:</h3>
+      <span>- {{ totalDiscount | dotSeparator }} đ</span>
+    </div>
+
+    <p-divider></p-divider>
+
+    <div class="price-final">
+      <h3>Tổng tiền phải trả:</h3>
+      <span>{{ totalPrice | dotSeparator }} đ</span>
+    </div>
+
+    <p-button 
+      class="pay-btn" 
+      severity="success" 
+      label="THANH TOÁN"
+      size="large" 
+      (click)="goToCheckout()">
+    </p-button>
+  </div>
+</div>
+
   </ng-container>
 </div>
 

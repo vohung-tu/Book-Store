@@ -195,54 +195,45 @@
             (click)="payWithVnpay()">
           </button>
         </div>
-
       </div>
-
-      <!-- <button (click)="placeOrder()">Đặt hàng</button> -->
-
-      <div class="mt-4 " style="display: flex;">
-        <input type="text" pInputText [(ngModel)]="discountCode" placeholder="Nhập mã giảm giá" name="discountCode" [ngModelOptions]="{standalone: true}"/>
-        <button pButton type="button" label="Áp dụng" icon="pi pi-check" class="custom-apply-btn" (click)="applyDiscountCode()"></button>
+     <!-- PHẦN HIỂN THỊ MÃ GIẢM GIÁ ĐÃ ÁP DỤNG -->
+    <div class="applied-coupons" *ngIf="appliedCoupons.length">
+      <h3><i class="pi pi-tags"></i> Mã giảm giá đã áp dụng</h3>
+      <div class="coupon-tags">
+        <span class="coupon-tag" *ngFor="let c of appliedCoupons">
+          <i class="pi pi-ticket"></i> {{ c.code }}
+          <span class="remove" (click)="removeCoupon(c)">
+            <i class="pi pi-times"></i>
+          </span>
+        </span>
       </div>
-      <div 
-      *ngIf="discountMessage"
-      [ngStyle]="{
-        color: isDiscountValid ? '#2e7d32' : '#d32f2f',
-        'font-size': '12px',
-        'margin-top': '5px'
-      }">
-      {{ discountMessage }}
     </div>
 
-      <!-- Hiển thị các mã giảm giá có sẵn -->
-      <div class="available-coupons mt-4">
-        <h3>Mã giảm giá có sẵn</h3>
-        <ul class="coupon-list">
-          <li *ngFor="let coupon of availableCoupons" 
-            (click)="selectCoupon(coupon.code)"
-            [ngClass]="{ 'selected': discountCode === coupon.code }" 
-            class="coupon-item">
-            <strong style="color: #d32f2f;">{{ coupon.code }}</strong> - {{ coupon.description }}
-          </li>
-        </ul>
+    <!-- TÓM TẮT GIÁ TRỊ THANH TOÁN -->
+    <div class="price-summary">
+      <div class="line">
+        <strong>Tạm tính:</strong>
+        <p>{{ totalAmount | dotSeparator }} đ</p>
       </div>
-      <div class="price-summary">
-        <div class="line">
-          <strong>Tạm tính:</strong>
-          <p>{{ discountedAmount | dotSeparator }} đ</p>
-        </div>
-        <div class="line">
-          <strong>Phí vận chuyển:</strong>
-          <p>{{ shippingFee  | dotSeparator  }} đ</p>
-        </div>
-        <p-divider />
-        <div class="line total">
-          <strong>Tổng tiền:</strong>
-          <p>{{ (discountedAmount + shippingFee) | dotSeparator }} đ</p>
-        </div>
+
+      <div class="line discount" *ngIf="totalDiscount > 0">
+        <strong>Giảm giá:</strong>
+        <p>- {{ totalDiscount | dotSeparator }} đ</p>
       </div>
-      
-     <button
+
+      <div class="line">
+        <strong>Phí vận chuyển:</strong>
+        <p>{{ shippingFee | dotSeparator }} đ</p>
+      </div>
+
+      <p-divider></p-divider>
+
+      <div class="line total">
+        <strong>Tổng thanh toán:</strong>
+        <p class="final-price">{{ (discountedAmount + shippingFee) | dotSeparator }} đ</p>
+      </div>
+
+      <button
         type="button"
         class="pay-btn"
         [disabled]="!canSubmitOrder"
@@ -250,6 +241,7 @@
       >
         <strong>ĐẶT HÀNG</strong>
       </button>
+    </div>
     </div>
   </div>
 </div>

@@ -28,6 +28,7 @@ import { BooksService } from '../../service/books.service';
 import { City, District, Ward } from '../user-info/address-book/address-book.component';
 import { Dialog, DialogModule } from 'primeng/dialog';
 import QRCode from 'qrcode';
+import { Coupon } from '../../model/coupon.model';
 export interface DiscountCode {
   code: string;
   minOrderAmount?: number;
@@ -67,10 +68,9 @@ export class CheckoutComponent implements OnInit {
   selectedBooks: BookDetails[] = [];
   totalAmount: number = 0;
   discountedAmount: number = 0;
+  totalDiscount: number = 0;
+
   userInfo: User | null = null;
-  discountCode: string = '';
-  discountMessage: string = '';
-  isDiscountValid: boolean = false; // true nếu mã hợp l
   addresses: Address[] = [];
   selectedAddress: string = '';
   currentUser: any;
@@ -83,26 +83,7 @@ export class CheckoutComponent implements OnInit {
   selectedWard: Ward | undefined;
   vietnamAddresses: City[] = [];
 
-  discountCodes: DiscountCode[] = [
-    {
-      code: 'GIAM10',
-      discountType: 'percentage',
-      value: 10,
-      minOrderAmount: 500000,
-    },
-    {
-      code: 'GIAM50K',
-      discountType: 'fixed',
-      value: 50000,
-      minOrderAmount: 300000,
-    },
-    {
-      code: 'MANGAONLY',
-      discountType: 'percentage',
-      value: 20,
-      applicableProductIds: ['67d476cebc4adca790816959', '67d47799bc4adca79081695b', '67d477d6bc4adca79081695c', '6808f1d2bb1a5697f5ee1698', '6820958784a25778e6197d2f', '683197de692b739c9c44b599', '6831c0e082b8e236bfe33cab'], // ID sản phẩm manga
-    }
-  ];
+  appliedCoupons: Coupon[] = []; 
 
   orderInfo = {
     name: '',
@@ -124,11 +105,6 @@ export class CheckoutComponent implements OnInit {
   };
   selectedCountryCode: string = "+84"; // Mặc định Việt Nam
   shippingFee = 25000;
-  availableCoupons = [
-    { code: 'GIAM10', description: 'Giảm 10% cho đơn hàng trên 500.000đ' },
-    { code: 'GIAM50K', description: 'Giảm 50K cho đơn hàng trên 300.000đ' },
-    { code: 'MANGAONLY', description: 'Giảm 20% khi mua manga' }
-  ];
   countries: any;
 
   constructor(
@@ -183,6 +159,12 @@ export class CheckoutComponent implements OnInit {
       0
     );
     this.discountedAmount = this.totalAmount;
+
+     // ✅ Lấy các mã đã applied từ localStorage
+    const savedCoupons = localStorage.getItem('appliedCoupons');
+    this.appliedCoupons = savedCoupons ? JSON.parse(savedCoupons) : [];
+
+    this.updateTotalWithCoupons();
     
     this.http.get<City[]>('/assets/json/vietnamAddress.json').subscribe((data) => {
       this.vietnamAddresses = data;
@@ -233,6 +215,29 @@ export class CheckoutComponent implements OnInit {
       !!this.orderInfo.address &&
       !!this.orderInfo.payment
     );
+  }
+
+  updateTotalWithCoupons() {
+    this.totalDiscount = 0;
+    this.discountedAmount = this.totalAmount;
+
+    this.appliedCoupons.forEach(c => {
+      let discount = 0;
+      if (c.type === 'percent') {
+        discount = this.totalAmount * (c.value / 100);
+      } else if (c.type === 'amount') {
+        discount = c.value;
+      }
+      this.totalDiscount += discount;
+    });
+
+    this.discountedAmount = Math.max(this.totalAmount - this.totalDiscount, 0);
+  }
+
+  removeCoupon(coupon: Coupon) {
+    this.appliedCoupons = this.appliedCoupons.filter(c => c.code !== coupon.code);
+    localStorage.setItem('appliedCoupons', JSON.stringify(this.appliedCoupons));
+    this.updateTotalWithCoupons();
   }
 
   onCityChange(): void {
@@ -407,40 +412,6 @@ export class CheckoutComponent implements OnInit {
       console.error('Có lỗi khi cập nhật địa chỉ', error);
     });
   }
-  // Áp dụng mã giảm giá
-  applyDiscountCode() {
-    const codeInput = this.discountCode.trim().toUpperCase();
-    const discount = this.discountCodes.find(d => d.code === codeInput);
-  
-    if (!discount) {
-      this.discountedAmount = this.totalAmount;
-      this.discountMessage = 'Mã giảm giá không hợp lệ.';
-      this.isDiscountValid = false;
-      return;
-    }
-  
-    let applicableAmount = this.getApplicableAmount(discount);
-  
-    if (applicableAmount === 0) {
-      this.discountedAmount = this.totalAmount;
-      this.discountMessage = 'Mã chỉ áp dụng cho sản phẩm cụ thể.';
-      this.isDiscountValid = false;
-      return;
-    }
-  
-    if (discount.minOrderAmount && applicableAmount < discount.minOrderAmount) {
-      this.discountedAmount = this.totalAmount;
-      this.discountMessage = `Đơn hàng cần tối thiểu ${discount.minOrderAmount.toLocaleString()}đ để áp dụng mã.`;
-      this.isDiscountValid = false;
-      return;
-    }
-  
-    const discountAmount = this.calculateDiscountAmount(discount, applicableAmount);
-  
-    this.discountedAmount = Math.max(this.totalAmount - discountAmount, 0);
-    this.discountMessage = `Đã áp dụng mã giảm: - ${discountAmount.toLocaleString()}đ`;
-    this.isDiscountValid = true;
-  }
   
   // Tính tổng áp dụng cho mã giảm giá theo sản phẩm
   getApplicableAmount(discount: DiscountCode): number {
@@ -462,10 +433,6 @@ export class CheckoutComponent implements OnInit {
     return 0;
   }
 
-  selectCoupon(code: string) {
-    this.discountCode = code;
-    this.applyDiscountCode(); // gọi luôn hàm áp dụng nếu muốn
-  }
 
   getDefaultAddress() {
     if (!this.currentUser || !this.currentUser.address || this.currentUser.address.length === 0) {

@@ -24,7 +24,12 @@
 
         <div class="bottom-row">
           <span class="expiry">HSD: {{ c.endDate | date:'dd/MM/yyyy' }}</span>
-          <button class="save-btn" (click)="showCode(c)">Lưu mã</button>
+          <button 
+            class="save-btn"
+            [disabled]="isSaved(c)" 
+            (click)="saveCoupon(c)">
+            {{ isSaved(c) ? 'Đã lưu' : 'Lưu mã' }}
+          </button>
         </div>
       </div>
     </div>
@@ -66,7 +71,7 @@
       <div class="coupon-card" *ngFor="let c of selectedCategorySlug ? getCouponsByCategory(selectedCategorySlug) : percentCoupons">
         <div class="coupon-left">
           <img src="assets/images/coupon-icon.png" alt="icon">
-          <span>Giảm {{ c.value }}%</span>
+          <span>Giảm {{ c.value }}</span>
         </div>
 
         <div class="coupon-right">
@@ -78,10 +83,16 @@
 
           <div class="bottom-row">
             <span class="expiry">HSD: {{ c.endDate | date:'dd/MM/yyyy' }}</span>
-            <button class="save-btn" (click)="showCode(c)">Lưu mã</button>
+            <button 
+              class="save-btn"
+              [disabled]="isSaved(c)" 
+              (click)="saveCoupon(c)">
+              {{ isSaved(c) ? 'Đã lưu' : 'Lưu mã' }}
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+<p-toast position="top-right"></p-toast>
