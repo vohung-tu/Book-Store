@@ -4,7 +4,7 @@ export interface Coupon {
   title: string;
   description: string;
   condition: string;
-  type: 'percent' | 'amount';        // đổi từ discountType -> type cho đồng bộ
+  type: 'percent' | 'amount';
   value: number;
   minOrder?: number;                 // đổi từ minOrderAmount
   applicableProductIds?: string[];

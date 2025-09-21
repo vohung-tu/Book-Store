@@ -2,13 +2,13 @@
   <p-toast position="top-right" key="tr"></p-toast>
 
   <div class="content-ads-1">
-    <img class="img-ads" src="assets/images/ngay_hoi_sach.png" alt="" width="840px" height="340px">
+    <img class="img-ads" src="assets/images/ngay_hoi_sach.webp" alt="" width="840px" height="340px" loading="lazy">
     <div class="content-ads-2">
       <a routerLink="/">
-        <img src="assets/images/ads_2.png" alt="">
+        <img src="assets/images/ads_2.webp" alt="" loading="lazy">
       </a>
       <a href="">
-        <img class="img-ads" src="assets/images/coupon.webp" alt="">
+        <img class="img-ads" src="assets/images/coupon.webp" alt="" loading="lazy">
       </a>
     </div>
   </div>
@@ -36,86 +36,155 @@
     <div class="flash-sale-countdown">
       <h1>Sách bán chạy</h1>
     </div>    
-    
+      
     <div class="flashsale-col">
       <div class="flashsale-col-1">
-        <p-carousel [value]="bestSellerBooks" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
+
+        <!-- ✅ Skeleton hiển thị khi đang load -->
+        <div *ngIf="isLoadingBestSeller" class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+
+        <!-- ✅ Carousel khi có dữ liệu -->
+        <p-carousel 
+          *ngIf="!isLoadingBestSeller && bestSellerBooks.length > 0"
+          [value]="bestSellerBooks"
+          [numVisible]="5"
+          [numScroll]="5"
+          [circular]="false"
+          [responsiveOptions]="responsiveOptions">
           <ng-template let-book pTemplate="item">
             <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
           </ng-template>
         </p-carousel>
+
+        <!-- ✅ Trường hợp không có sách -->
+        <p *ngIf="!isLoadingBestSeller && bestSellerBooks.length === 0">
+          Hiện chưa có sách bán chạy.
+        </p>
+
       </div>
     </div>
   </div>
 
   <p-divider class="custom-divider"></p-divider>
 
-  <div class="featured-books">
+  <div class="featured-books" #featuredTrigger>
     <div class="featured-title">
       <h1>Tủ sách nổi bật</h1>
     </div> 
     <div class="featured-body">
-      <p-carousel *ngIf="featuredBooks.length > 0" [value]="featuredBooks" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
+
+      <div *ngIf="isLoadingFeatured" class="skeleton-container">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+
+      <p-carousel *ngIf="!isLoadingFeatured && featuredBooks.length > 0"
+                  [value]="featuredBooks" [numVisible]="5" [numScroll]="5"
+                  [circular]="false" [responsiveOptions]="responsiveOptions">
         <ng-template let-book pTemplate="item">
           <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
         </ng-template>
       </p-carousel>
+
     </div>
   </div>
   
   <p-divider class="custom-divider"></p-divider>
   
-  <div class="new-release-books">
-      <div class="new-release-title">
-        <h1>Sách mới ra</h1>
-      </div> 
-      <div class="new-release-body">
-        <p-carousel *ngIf="newReleaseBooks.length > 0" [value]="newReleaseBooks" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
-          <ng-template let-book pTemplate="item">
-            <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
-          </ng-template>
-        </p-carousel>
+  <div class="new-release-books" #newReleaseTrigger>
+    <div class="new-release-title">
+      <h1>Sách mới ra</h1>
+    </div> 
+    <div class="new-release-body">
+
+      <div *ngIf="isLoadingNewRelease" class="skeleton-container">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
       </div>
+
+      <p-carousel *ngIf="!isLoadingNewRelease && newReleaseBooks.length > 0"
+                  [value]="newReleaseBooks" [numVisible]="5" [numScroll]="5"
+                  [circular]="false" [responsiveOptions]="responsiveOptions">
+        <ng-template let-book pTemplate="item">
+          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
+        </ng-template>
+      </p-carousel>
+
     </div>
+  </div>
+
   
   <p-divider class="custom-divider"></p-divider>
 
-  <div class="incomming-release-books">
+  <div class="incomming-release-books" #incomingTrigger>
     <div class="incomming-release-title">
       <h1>Sách sắp ra mắt</h1>
     </div> 
     <div class="incomming-release-body">
-      <p-carousel *ngIf="incommingReleaseBooks.length > 0" [value]="incommingReleaseBooks" [numVisible]="5" [numScroll]="5" [circular]="false" [responsiveOptions]="responsiveOptions">
+
+      <!-- ✅ Skeleton watermark khi đang load -->
+      <div *ngIf="isLoadingIncoming" class="skeleton-container">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+
+      <!-- ✅ Carousel khi có data -->
+      <p-carousel 
+        *ngIf="!isLoadingIncoming && incommingReleaseBooks.length > 0"
+        [value]="incommingReleaseBooks"
+        [numVisible]="5"
+        [numScroll]="5"
+        [circular]="false"
+        [responsiveOptions]="responsiveOptions">
         <ng-template let-book pTemplate="item">
-          <app-product-item [book]="book" [isUpcomingRelease]="true" (showToast)="handleToast($event)"></app-product-item>
+          <app-product-item 
+            [book]="book"
+            [isUpcomingRelease]="true"
+            (showToast)="handleToast($event)">
+          </app-product-item>
         </ng-template>
       </p-carousel>
+
+      <!-- ✅ Trường hợp không có sách -->
+      <p *ngIf="!isLoadingIncoming && incommingReleaseBooks.length === 0">
+        Hiện chưa có sách sắp phát hành.
+      </p>
     </div>
   </div>
   
   <p-divider class="custom-divider"></p-divider>
 
-  <div class="newest-col">
-    <p-tabs value="0" >
+  <div class="newest-col" #referenceTrigger>
+    <p-tabs value="0">
       <p-tablist>
-          <p-tab value="0">Sách Tham Khảo</p-tab>
-          <p-tab value="1">Sách Trong Nước</p-tab>
+        <p-tab value="0">Sách Tham Khảo</p-tab>
+        <p-tab value="1">Sách Trong Nước</p-tab>
       </p-tablist>
       <p-tabpanels>
+
+        <div *ngIf="isLoadingReference" class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+
         <p-tabpanel value="0">
-          <p-carousel [value]="sachThamKhao" [numVisible]="5" [numScroll]="3" [circular]="false" [responsiveOptions]="responsiveOptions">
+          <p-carousel *ngIf="!isLoadingReference && sachThamKhao.length > 0"
+                      [value]="sachThamKhao" [numVisible]="5" [numScroll]="3"
+                      [circular]="false" [responsiveOptions]="responsiveOptions">
             <ng-template let-book pTemplate="item">
               <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
             </ng-template>
           </p-carousel>
         </p-tabpanel>
+
         <p-tabpanel value="1">
-          <p-carousel [value]="sachTrongNuoc" [numVisible]="5" [numScroll]="3" [circular]="false" [responsiveOptions]="responsiveOptions">
+          <p-carousel *ngIf="!isLoadingReference && sachTrongNuoc.length > 0"
+                      [value]="sachTrongNuoc" [numVisible]="5" [numScroll]="3"
+                      [circular]="false" [responsiveOptions]="responsiveOptions">
             <ng-template let-book pTemplate="item">
               <app-product-item [book]="book"></app-product-item>
             </ng-template>
           </p-carousel>
         </p-tabpanel>
+
       </p-tabpanels>
     </p-tabs>
   </div>

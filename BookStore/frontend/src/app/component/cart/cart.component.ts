@@ -18,6 +18,7 @@ import { MessageService } from 'primeng/api';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Toast } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-cart',
@@ -37,6 +38,7 @@ import { Toast } from 'primeng/toast';
     DotSeparatorPipe,
     DividerModule,
     Toast,
+    DialogModule
     
   ],
   templateUrl: './cart.component.html',
@@ -49,7 +51,8 @@ export class CartComponent implements OnInit {
   totalPrice: number = 0;       // tổng tiền sau giảm giá
   originalTotal: number = 0;    // tổng gốc chưa giảm
   totalDiscount: number = 0;
-
+  showCouponDialog = false;
+  couponDialogVisible = false;
   selectedBooks: BookDetails[] = [];
 
   // Coupon
@@ -84,10 +87,7 @@ export class CartComponent implements OnInit {
   }
 
   toggleCouponView() {
-    this.showAllCoupons = !this.showAllCoupons;
-    this.displayedCoupons = this.showAllCoupons
-      ? this.savedCoupons
-      : this.savedCoupons.slice(0, 2);
+    this.couponDialogVisible = true;
   }
 
   /** 🧮 Tính tổng giá gốc */
@@ -107,30 +107,53 @@ export class CartComponent implements OnInit {
 
   /** ✅ Áp dụng mã */
   applyCoupon(coupon: Coupon) {
-    if (this.isCouponDisabled(coupon)) {
+  // ✅ Kiểm tra category trước (nếu coupon có yêu cầu category)
+  if (coupon.categories && coupon.categories.length > 0) {
+    const hasCategory = this.cartData.some(item =>
+      coupon.categories!.includes(item.categoryName?._id ?? '')
+    );
+
+    if (!hasCategory) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Không áp dụng được',
-        detail: 'Đơn hàng chưa đủ điều kiện để áp dụng mã này.'
+        detail: `Giỏ hàng không có sản phẩm thuộc danh mục yêu cầu để áp dụng mã.`,
       });
       return;
     }
-
-    if (!this.appliedCoupons.find(c => c.code === coupon.code)) {
-      this.appliedCoupons.push(coupon);
-
-      // ✅ Lưu appliedCoupons vào localStorage để checkout đọc lại được
-      localStorage.setItem('appliedCoupons', JSON.stringify(this.appliedCoupons));
-
-      this.updateTotalWithCoupons();
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Đã áp dụng',
-        detail: `Mã ${coupon.code} đã được áp dụng!`
-      });
-    }
   }
+
+  // ✅ Kiểm tra minOrder với hàm isCouponDisabled (chỉ tính các sản phẩm thuộc category)
+  if (this.isCouponDisabled(coupon)) {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Không áp dụng được',
+      detail: 'Đơn hàng chưa đủ điều kiện để áp dụng mã này.',
+    });
+    return;
+  }
+
+  // ✅ Chỉ cho phép 1 coupon giảm giá cùng lúc
+  if (this.appliedCoupons.length > 0) {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Chỉ áp dụng 1 mã giảm giá',
+      detail: 'Vui lòng xóa mã hiện tại trước khi áp mã mới.',
+    });
+    return;
+  }
+
+  // ✅ Lưu coupon vào appliedCoupons
+  this.appliedCoupons.push(coupon);
+  localStorage.setItem('appliedCoupons', JSON.stringify(this.appliedCoupons));
+  this.updateTotalWithCoupons();
+
+  this.messageService.add({
+    severity: 'success',
+    summary: 'Đã áp dụng',
+    detail: `Mã ${coupon.code} đã được áp dụng!`,
+  });
+}
 
 
   /** ❌ Gỡ mã */
@@ -141,9 +164,23 @@ export class CartComponent implements OnInit {
 
   /** 🚫 Check disable */
   isCouponDisabled(coupon: Coupon): boolean {
-    if (!coupon.minOrder) return false;
-    return this.originalTotal < coupon.minOrder;
-  }
+  // Nếu coupon có categories -> chỉ tính tổng của những sản phẩm thuộc categories đó
+  const applicableItems = this.cartData.filter(item => {
+    if (!coupon.categories || coupon.categories.length === 0) return true; // áp dụng cho mọi sản phẩm
+
+    // So sánh dựa vào tên category (hoặc slug, tùy bạn)
+    const itemCategoryName = item.categoryName?.name?.toLowerCase() ?? '';
+    return coupon.categories.some(c => c.toLowerCase() === itemCategoryName);
+  });
+
+  const applicableTotal = applicableItems.reduce(
+    (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+    0
+  );
+
+  return coupon.minOrder ? applicableTotal < coupon.minOrder : false;
+}
+
 
   /** 🔄 Update tổng tiền khi áp dụng mã */
   updateTotalWithCoupons() {

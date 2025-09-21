@@ -202,6 +202,27 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     this.filteredOrders = this.getOrdersByStatus(this.selectedTab);
   }
 
+  calculateDiscount(order: Order): number {
+    // Tổng giảm giá = tổng (giá gốc - giá thực trả) * số lượng
+    return order.products.reduce((acc, product) => {
+      const originalPrice = product.price;
+      const effectivePrice = product.flashsale_price > 0 
+        ? product.flashsale_price 
+        : (product.discount_percent > 0 
+            ? product.price * (1 - product.discount_percent / 100) 
+            : product.price);
+
+      const diff = originalPrice - effectivePrice;
+      return acc + (diff > 0 ? diff * product.quantity : 0);
+    }, 0);
+  }
+
+  getFinalTotal(order: Order): number {
+    const discount = this.calculateDiscount(order);
+    const shippingFee = 25000; // hoặc order.shippingFee nếu backend trả về
+    return Math.max((order.total - discount) + shippingFee, 0);
+  }
+  
   // Tính số đơn theo trạng thái (sử dụng lowercase để so sánh)
   getOrderCountByStatus(status: string): number {
     return status 
