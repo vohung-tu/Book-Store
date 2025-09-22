@@ -20,4 +20,11 @@ export class ReviewService {
   getAllReviews(): Observable<Review[]> {
     return this.http.get<Review[]>(this.baseUrl);
   }
+
+  getReviewsBulk(ids: string[]) {
+    return this.http.get<Record<string, any[]>>(
+      `${this.baseUrl}/bulk`,
+      { params: { ids: ids.join(',') } }
+    );
+  }
 }

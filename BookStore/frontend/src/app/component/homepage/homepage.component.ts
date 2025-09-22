@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
@@ -7,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { catchError, of, Subscription, timeout, timer } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { CarouselModule } from 'primeng/carousel';
 import { TabsModule } from 'primeng/tabs';
@@ -75,7 +76,8 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     private messageService: MessageService,
     private reviewService: ReviewService,
     private categoryService: CategoryService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   /** Map ảnh category */
@@ -123,6 +125,13 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.setupLazyObservers();
+    this.timerSubscription = timer(2000).subscribe(() => {
+      this.loadFeaturedBooks();
+      this.loadNewReleaseBooks();
+      this.loadIncomingReleaseBooks();
+      this.loadReferenceBooks();
+      this.cdr.markForCheck();
+    });
   }
 
   /** IntersectionObserver cho các section */
@@ -168,23 +177,22 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.featuredBooks.length > 0) return;
     this.isLoadingFeatured = true;
 
-    this.bookService.getBooks().subscribe((res) => {
-      const books = res ?? [];
-      const reviewRequests = books.map((book) =>
-        this.reviewService.getReviews(book._id).toPromise().then((reviews) => {
-          book.reviews = reviews;
-        })
-      );
+    this.bookService.getFeaturedBooks().subscribe((books) => {
+      const ids = books.map((b) => b._id);
+      this.reviewService.getReviewsBulk(ids).subscribe((reviewsMap) => {
+        books.forEach((book) => {
+          book.reviews = reviewsMap[book._id] ?? [];
+        });
 
-      Promise.all(reviewRequests).then(() => {
         this.featuredBooks = books.filter((book) => {
-          const avg =
-            book.reviews?.length
-              ? book.reviews.reduce((s, r) => s + r.rating, 0) / book.reviews.length
-              : 0;
+          const avg = (book.reviews?.length ?? 0) > 0
+            ? book.reviews!.reduce((s, r) => s + r.rating, 0) / book.reviews!.length
+            : 0;
           return avg >= 4;
         });
+
         this.isLoadingFeatured = false;
+        this.cdr.markForCheck();
       });
     });
   }
@@ -193,51 +201,24 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.newReleaseBooks.length > 0) return;
     this.isLoadingNewRelease = true;
 
-    this.bookService.getBooks().subscribe((res) => {
-      const today = new Date();
-      const ninetyDaysAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
-      this.newReleaseBooks = (res ?? []).filter((b) => {
-        const publishedDate = this.parseDateSafe(b.publishedDate);
-        return publishedDate && publishedDate >= ninetyDaysAgo && publishedDate <= today;
-      });
+    this.bookService.getNewReleases().subscribe((books) => {
+      this.newReleaseBooks = books ?? [];
       this.isLoadingNewRelease = false;
+      this.cdr.markForCheck();
     });
-  }
-
-  private parseDateSafe(value: any): Date | null {
-    if (!value) return null;
-
-    if (value instanceof Date) return value; // Date object trả về trực tiếp
-
-    if (typeof value === 'string') {
-      // ISO string hoặc "YYYY-MM-DD"
-      if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
-        return new Date(value);
-      }
-      // Nếu là "DD/MM/YYYY"
-      if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
-        const [day, month, year] = value.split('/');
-        return new Date(`${year}-${month}-${day}T00:00:00`);
-      }
-    }
-
-    return null;
   }
 
   private loadIncomingReleaseBooks() {
     if (this.incommingReleaseBooks.length > 0) return;
     this.isLoadingIncoming = true;
 
-    this.bookService.getBooks().subscribe((res) => {
-      const today = new Date();
-      const next90Days = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
-
-      this.incommingReleaseBooks = (res ?? []).filter((b) => {
-        const publishedDate = this.parseDateSafe(b.publishedDate);
-        return publishedDate && publishedDate > today && publishedDate <= next90Days;
-      });
-
+    this.bookService.getIncomingReleases().pipe(
+      timeout(3000),
+      catchError(() => of([] as BookDetails[]))
+    ).subscribe((books) => {
+      this.incommingReleaseBooks = books ?? [];
       this.isLoadingIncoming = false;
+      this.cdr.markForCheck();
     });
   }
 
@@ -245,25 +226,14 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.sachThamKhao.length > 0 || this.sachTrongNuoc.length > 0) return;
     this.isLoadingReference = true;
 
-    this.bookService.getBooks().subscribe((res) => {
-      const getSlug = (b: BookDetails) =>
-        typeof b.categoryName === 'string'
-          ? b.categoryName
-          : b.categoryName?.slug ?? '';
-
-      const buckets = (res ?? []).reduce(
-        (acc, b) => {
-          const slug = getSlug(b);
-          if (slug === 'sach-tham-khao') acc.tk.push(b);
-          if (slug === 'sach-trong-nuoc') acc.tn.push(b);
-          return acc;
-        },
-        { tk: [] as BookDetails[], tn: [] as BookDetails[] }
-      );
-
-      this.sachThamKhao = buckets.tk;
-      this.sachTrongNuoc = buckets.tn;
+    this.bookService.getReferenceBooks().pipe(
+      timeout(3000),
+      catchError(() => of({ sachThamKhao: [], sachTrongNuoc: [] }))
+    ).subscribe((res) => {
+      this.sachThamKhao = res.sachThamKhao;
+      this.sachTrongNuoc = res.sachTrongNuoc;
       this.isLoadingReference = false;
+      this.cdr.markForCheck();
     });
   }
 

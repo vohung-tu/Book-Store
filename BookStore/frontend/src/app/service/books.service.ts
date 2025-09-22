@@ -67,6 +67,24 @@ export class BooksService {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/best-sellers`);
   }
 
+  getFeaturedBooks() {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/featured`);
+  }
+
+  getNewReleases() {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/new-releases`);
+  }
+
+  getIncomingReleases(): Observable<BookDetails[]> {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/incoming`);
+  }
+
+  getReferenceBooks() {
+    return this.http.get<{ sachThamKhao: BookDetails[], sachTrongNuoc: BookDetails[] }>(
+      `${this.apiUrl}/reference`
+    );
+  }
+
   getSummary(id: string): Observable<string> {
     return this.http.get<{ summary_ai: string }>(`${this.apiUrl}/${id}/summary-ai`)
       .pipe(map(res => res.summary_ai));

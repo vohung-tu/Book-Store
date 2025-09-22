@@ -40,6 +40,26 @@ export class BooksController {
     return this.booksService.getBestSellers();
   }
 
+  @Get('featured')
+  async getFeaturedBooks() {
+    return this.booksService.getFeaturedBooks(10); // mặc định trả 10 sách
+  }
+
+  @Get('new-releases')
+  async getNewReleases() {
+    return this.booksService.getNewReleases(10);
+  }
+
+  @Get('incoming')
+  async getIncoming() {
+    return this.booksService.getIncomingReleases(10);
+  }
+
+  @Get('reference')
+  async getReferenceBooks() {
+    return this.booksService.getReferenceBooks();
+  }
+  
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Book | null> {
     // giữ đặc biệt nếu bạn có thêm slug khác thì xử lý trước ở đây

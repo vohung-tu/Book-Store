@@ -4,7 +4,7 @@ import { Author } from 'src/authors/authors.schema';
 
 export type BookDocument = Book & Document;
 
-@Schema()
+@Schema({ timestamps: true }) 
 export class Book {
   @Prop({ required: true })
   title: string;
@@ -47,4 +47,6 @@ export class Book {
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);
+BookSchema.index({ createdAt: -1 });
+BookSchema.index({ sold: -1 });
 BookSchema.index({ categoryName: 1 });

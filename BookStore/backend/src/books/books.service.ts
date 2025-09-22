@@ -26,32 +26,98 @@ export class BooksService {
     return createdBook.save();
   }
 
-  async findAllBooks(page = 1, limit = 20): Promise<{items:any[]; total:number; page:number; pages:number}> {
+  async findAllBooks(
+    page = 1,
+    limit = 20
+  ): Promise<{ items: any[]; total: number; page: number; pages: number }> {
     const skip = (page - 1) * limit;
 
-    // lấy sách + tổng song song
+    // ✅ Chỉ lấy các field cần thiết để render homepage
+    const projection = {
+      title: 1,
+      author: 1,
+      price: 1,
+      flashsale_price: 1,
+      discount_percent: 1,
+      coverImage: 1,
+      publishedDate: 1,
+      categoryName: 1,
+      quantity: 1,
+      sold: 1,
+    };
+
+    // ✅ Dùng index sort theo createdAt để Mongo không full collection scan
     const [books, total] = await Promise.all([
-      this.bookModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      this.bookModel.countDocuments()
+      this.bookModel
+        .find({}, projection)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.bookModel.countDocuments(),
     ]);
 
-    // lấy toàn bộ authors 1 lần và map như bạn đang làm
-    const authors = await this.authorModel.find().lean();
-    const authorMap = new Map(authors.map(a => [a._id.toString(), a.name]));
+    // ✅ Map author name 1 lần
+    const authors = await this.authorModel.find({}, { name: 1 }).lean();
+    const authorMap = new Map(authors.map((a) => [a._id.toString(), a.name]));
 
-    const items = books.map(book => {
+    const items = books.map((book) => {
       let authorName = 'Không rõ';
 
       if (typeof book.author === 'object' && book.author !== null && 'name' in book.author) {
         authorName = (book.author as any).name;
       } else if (typeof book.author === 'string') {
-        authorName = authorMap.get(book.author) ?? book.author ?? 'Không rõ';
+        authorName = authorMap.get(book.author) ?? 'Không rõ';
       }
 
-      return { ...book, authorName, sold: book.sold || 0 };
+      return {
+        ...book,
+        authorName,
+        sold: book.sold || 0,
+      };
     });
 
-    return { items, total, page, pages: Math.ceil(total / limit) };
+    return {
+      items,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    };
+  }
+
+  async getFeaturedBooks(limit = 10) {
+  // ✅ chỉ lấy các field cần thiết để hiển thị ở homepage
+    const projection = {
+      title: 1,
+      author: 1,
+      price: 1,
+      flashsale_price: 1,
+      discount_percent: 1,
+      coverImage: 1,
+      publishedDate: 1,
+      categoryName: 1,
+      sold: 1,
+    };
+
+    // ✅ query nhanh nhờ index createdAt
+    const books = await this.bookModel
+      .find({}, projection)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    // ✅ Lấy authorName chỉ 1 lần
+    const authors = await this.authorModel.find({}, { name: 1 }).lean();
+    const authorMap = new Map(authors.map((a) => [a._id.toString(), a.name]));
+
+    return books.map((book) => ({
+      ...book,
+      authorName:
+        typeof book.author === 'object' && book.author !== null && 'name' in book.author
+          ? (book.author as any).name
+          : authorMap.get(book.author as any) ?? 'Không rõ',
+      sold: book.sold || 0,
+    }));
   }
 
   async updateSummary(id: string, summary: string): Promise<Book> {
@@ -168,28 +234,112 @@ export class BooksService {
     return book;
   }
 
+  private bestSellerCache: { data: any[]; expires: number } | null = null;
+
   async getBestSellers(limit = 10) {
+    const now = Date.now();
+    if (this.bestSellerCache && this.bestSellerCache.expires > now) {
+      return this.bestSellerCache.data;
+    }
+
     const bestSellers = await this.orderModel.aggregate([
       { $unwind: "$products" },
-      { 
-        $group: { 
-          _id: "$products._id", 
-          totalSold: { $sum: "$products.quantity" } 
-        } 
-      },
+      { $group: { _id: "$products._id", totalSold: { $sum: "$products.quantity" } } },
       { $sort: { totalSold: -1 } },
       { $limit: limit }
     ]);
 
-    // Map thành dictionary để merge
     const soldMap = new Map(bestSellers.map(b => [b._id.toString(), b.totalSold]));
 
-    const books = await this.bookModel.find({ _id: { $in: Array.from(soldMap.keys()) } }).lean();
+    const books = await this.bookModel.find(
+      { _id: { $in: Array.from(soldMap.keys()) } },
+      { title: 1, coverImage: 1, price: 1, flashsale_price: 1, discount_percent: 1, sold: 1 }
+    ).lean();
 
-    return books.map(b => ({
+    const result = books.map(b => ({
       ...b,
       sold: soldMap.get(b._id.toString()) || b.sold || 0
     }));
+
+    // ✅ cache trong 60 giây
+    this.bestSellerCache = { data: result, expires: now + 60_000 };
+
+    return result;
+  }
+
+// sách mới ra
+  async getNewReleases(limit = 10) {
+    const today = new Date();
+    const ninetyDaysAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+
+    const projection = {
+      title: 1,
+      coverImage: 1,
+      price: 1,
+      flashsale_price: 1,
+      discount_percent: 1,
+      publishedDate: 1,
+      sold: 1,
+      categoryName: 1,
+    };
+
+    return this.bookModel
+      .find({ publishedDate: { $gte: ninetyDaysAgo, $lte: today } }, projection)
+      .sort({ publishedDate: -1 })
+      .limit(limit)
+      .lean();
+  }
+
+  // sách sắp ra mắt
+
+  async getIncomingReleases(limit = 10) {
+    const today = new Date();
+    const next90Days = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+    const projection = {
+      title: 1,
+      coverImage: 1,
+      price: 1,
+      flashsale_price: 1,
+      discount_percent: 1,
+      publishedDate: 1,
+      sold: 1,
+      categoryName: 1,
+    };
+
+    return this.bookModel
+      .find({ publishedDate: { $gt: today, $lte: next90Days } }, projection)
+      .sort({ publishedDate: 1 }) // sắp xếp ngày gần nhất lên đầu
+      .limit(limit)
+      .lean();
+  }
+
+  //reference book
+  async getReferenceBooks() {
+    const parentSlugs = ['sach-tham-khao', 'sach-trong-nuoc'];
+    const categories = await this.categoryModel.find({ slug: { $in: parentSlugs } }).lean();
+
+    // Lấy luôn slug của children nếu có
+    const childSlugs = await Promise.all(
+      categories.map(c => this.getAllChildrenSlugs(c._id.toString()))
+    );
+    const allSlugs = [...parentSlugs, ...childSlugs.flat()];
+
+    const books = await this.bookModel
+      .find({ categoryName: { $in: allSlugs } }, {
+        title: 1,
+        coverImage: 1,
+        price: 1,
+        flashsale_price: 1,
+        discount_percent: 1,
+        categoryName: 1,
+      })
+      .lean();
+
+    return {
+      sachThamKhao: books.filter((b) => b.categoryName === 'sach-tham-khao' || /* children condition */ allSlugs.includes(b.categoryName)),
+      sachTrongNuoc: books.filter((b) => b.categoryName === 'sach-trong-nuoc' || allSlugs.includes(b.categoryName)),
+    };
   }
 
 

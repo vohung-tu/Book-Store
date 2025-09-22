@@ -9,6 +9,12 @@ import { Review } from './review.schema';
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
+  @Get('bulk')
+  async getReviewsBulk(@Query('ids') ids: string) {
+    const bookIds = ids.split(','); // "id1,id2,id3"
+    return this.reviewService.getReviewsForManyBooks(bookIds);
+  }
+
   @Post()
   async create(@Body() createReviewDto: CreateReviewDto) {
     return await this.reviewService.create(createReviewDto);

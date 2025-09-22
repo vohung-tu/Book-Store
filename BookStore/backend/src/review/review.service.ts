@@ -24,5 +24,20 @@ export class ReviewService {
     return this.reviewModel.find({ productId }).exec();
   }
 
+  async getReviewsForManyBooks(bookIds: string[]) {
+    const reviews = await this.reviewModel.find({
+      productId: { $in: bookIds },
+    }).lean();
+
+    // Gom review theo bookId
+    const result: Record<string, any[]> = {};
+    for (const r of reviews) {
+      const id = r.productId.toString();
+      if (!result[id]) result[id] = [];
+      result[id].push(r);
+    }
+    return result;
+  }
+
   // Có thể thêm phương thức findByProductId nếu cần
 }
