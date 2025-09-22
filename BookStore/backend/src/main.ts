@@ -17,7 +17,7 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads',
   });
   // ✅ Tăng giới hạn body payload (ví dụ: 10MB)

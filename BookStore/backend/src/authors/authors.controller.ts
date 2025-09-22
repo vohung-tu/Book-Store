@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthorsService } from './authors.service';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Author } from './authors.schema';
 import { Types } from 'mongoose';
@@ -31,10 +31,9 @@ export class AuthorsController {
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({
-        destination: './uploads/authors',
+        destination: join(process.cwd(), 'uploads', 'authors'),
         filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
           cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
         },
       }),
@@ -72,10 +71,9 @@ export class AuthorsController {
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({
-        destination: './uploads/authors',
+        destination: join(process.cwd(), 'uploads', 'authors'),
         filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
           cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
         },
       }),
