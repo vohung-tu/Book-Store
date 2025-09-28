@@ -9,6 +9,7 @@ import {
   transition,
   animate
 } from '@angular/animations';
+import { ChatResponse, ChatService } from '../../service/chat.service';
 
 @Component({
   selector: 'app-chatbot',
@@ -34,29 +35,32 @@ import {
 export class ChatbotComponent {
   open = false;
   input = '';
-  messages: { role: 'user' | 'bot'; content: string }[] = [];
+  loading = false;
+  messages: { role: 'user' | 'bot'; content: string; quotes?: ChatResponse['quotes'] }[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private chatService: ChatService) {}
 
   toggle() {
     this.open = !this.open;
   }
 
   send() {
-    if (!this.input.trim()) return;
+    const text = this.input.trim();
+    if (!text) return;
 
-    this.messages.push({ role: 'user', content: this.input });
-
-    this.http.post<{ reply: string }>('/api/chat', { message: this.input })
-      .subscribe({
-        next: (res) => {
-          this.messages.push({ role: 'bot', content: res.reply });
-        },
-        error: () => {
-          this.messages.push({ role: 'bot', content: 'Xin lỗi, hệ thống đang bận. Vui lòng thử lại sau.' });
-        }
-      });
-
+    this.messages.push({ role: 'user', content: text });
+    this.loading = true;
     this.input = '';
+
+    this.chatService.sendMessage(text).subscribe({
+      next: (res) => {
+        this.messages.push({ role: 'bot', content: res.reply, quotes: res.quotes });
+        this.loading = false;
+      },
+      error: () => {
+        this.messages.push({ role: 'bot', content: 'Xin lỗi, hệ thống đang bận. Vui lòng thử lại sau.' });
+        this.loading = false;
+      }
+    });
   }
 }

@@ -18,7 +18,19 @@
   <!-- Chat Body -->
   <div class="chat-body">
     <div *ngFor="let msg of messages" [ngClass]="msg.role" class="chat-message">
-      {{ msg.content }}
+      <div>{{ msg.content }}</div>
+      <!-- Nếu có quotes thì hiển thị -->
+      <div *ngIf="msg.quotes?.length" class="quotes">
+        <div *ngFor="let q of msg.quotes" class="quote-item">
+          <span class="title">{{ q.title }}</span>
+          <span class="price">{{ q.price | currency:'VND':'symbol':'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div *ngIf="loading" class="chat-message bot">
+      Đang gõ...
     </div>
   </div>
 

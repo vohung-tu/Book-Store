@@ -98,6 +98,24 @@
   }
 }
 
+.quotes {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .quote-item {
+    background: #f1f1f1;
+    border-radius: 6px;
+    padding: 4px 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    .title { font-weight: 500; }
+    .price { color: #007bff; font-weight: bold; }
+  }
+}
+
 // Footer
 .chat-footer {
   display: flex;
