@@ -126,7 +126,7 @@ export class AdminProductComponent {
   }
 
   fetchProducts() {
-    this.http.get<any>('http://https://book-store-3-svnz.onrender.com//books?limit=1000').subscribe({
+    this.http.get<any>('https://book-store-3-svnz.onrender.com/books?limit=1000').subscribe({
       next: data => {
         this.products = (data.items || []).map((book: any) => {
           let authorObj = { name: 'Không rõ', _id: '' };
@@ -230,7 +230,7 @@ export class AdminProductComponent {
       this.editingProduct.images = additionalImages;
       this.editingProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
 
-      this.http.put(`http://https://book-store-3-svnz.onrender.com//books/${this.editingProduct.id}`, this.editingProduct).subscribe({
+      this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
         next: () => {
           this.fetchProducts();
           this.resetDialog();
@@ -250,7 +250,7 @@ export class AdminProductComponent {
       this.newProduct.images = additionalImages;
       this.newProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
 
-      this.http.post(`http://https://book-store-3-svnz.onrender.com//books`, this.newProduct).subscribe({
+      this.http.post(`https://book-store-3-svnz.onrender.com/books`, this.newProduct).subscribe({
         next: () => {
           this.fetchProducts();
           this.resetDialog();
@@ -317,7 +317,7 @@ export class AdminProductComponent {
   
   deleteProduct(product: any) {
     if (confirm(`Bạn có chắc muốn xoá sản phẩm "${product.title}"?`)) {
-      this.http.delete(`http://https://book-store-3-svnz.onrender.com//books/${product.id}`).subscribe({
+      this.http.delete(`https://book-store-3-svnz.onrender.com/books/${product.id}`).subscribe({
         next: () => {
           this.products = this.products.filter(p => p.id !== product.id);
           this.messageService.add({

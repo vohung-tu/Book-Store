@@ -234,7 +234,7 @@ export class DetailComponent implements OnInit {
     this.authorService.getAuthors().subscribe(authors => {
       this.authors = authors;
 
-      this.http.get<any>(`http://https://book-store-3-svnz.onrender.com//books/${productId}`)
+      this.http.get<any>(`https://book-store-3-svnz.onrender.com/books/${productId}`)
         .subscribe(book => {
           let authorObj = { name: 'Không rõ', _id: '' };
 
