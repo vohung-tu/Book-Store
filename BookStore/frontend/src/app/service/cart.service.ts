@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root',
 })
 export class CartService {
-  private API_URL = 'http://localhost:3000/cart';
+  private API_URL = 'http://https://book-store-3-svnz.onrender.com//cart';
   private cartSubject = new BehaviorSubject<BookDetails[]>([]);
   cart$ = this.cartSubject.asObservable();
 

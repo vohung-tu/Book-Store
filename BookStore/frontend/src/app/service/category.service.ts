@@ -7,8 +7,8 @@ import { Category } from '../model/books-details.model';
   providedIn: 'root'
 })
 export class CategoryService {
-  private apiUrlAdmin = 'http://localhost:3000/admin/categories';
-  private apiUrl = 'http://localhost:3000/categories';
+  private apiUrlAdmin = 'http://https://book-store-3-svnz.onrender.com//admin/categories';
+  private apiUrl = 'http://https://book-store-3-svnz.onrender.com//categories';
   
   private headers() { return { Authorization: `Bearer ${this.auth.getToken()}`  }; };
   private list$ = new BehaviorSubject<Category[]>([]);
@@ -23,7 +23,7 @@ export class CategoryService {
   }
 
   getTree(): Observable<Category[]> {
-    return this.http.get<Category[]>('http://localhost:3000/categories/tree');
+    return this.http.get<Category[]>('http://https://book-store-3-svnz.onrender.com//categories/tree');
   }
 
   list()   { 
@@ -41,7 +41,7 @@ export class CategoryService {
 
   loadOnce() {
     if (this.list$.value.length) return of(this.list$.value);
-    return this.http.get<Category[]>('http://localhost:3000/categories')
+    return this.http.get<Category[]>('http://https://book-store-3-svnz.onrender.com//categories')
       .pipe(tap(cats => this.list$.next(cats as Category[])));
   }
 

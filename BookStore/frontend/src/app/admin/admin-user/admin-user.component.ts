@@ -60,7 +60,7 @@ export class AdminUserComponent implements OnInit {
   fetchUsers() {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.http.get<any[]>('http://localhost:3000/auth/', { headers }).subscribe({
+    this.http.get<any[]>('http://https://book-store-3-svnz.onrender.com//auth/', { headers }).subscribe({
       next: (data) => {
         this.users = data;
         this.filteredUsers = data; // để bảng hiển thị ban đầu
@@ -170,14 +170,14 @@ export class AdminUserComponent implements OnInit {
     };  
   
     if (this.isEditMode) {
-      this.http.put(`http://localhost:3000/auth/${this.user._id}`, updatedUser, { headers }).subscribe(() => {
+      this.http.put(`http://https://book-store-3-svnz.onrender.com//auth/${this.user._id}`, updatedUser, { headers }).subscribe(() => {
         this.fetchUsers();
         this.cancelEdit();
         this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật người dùng thành công!' });
         this.displayDialog = false;
       });
     } else {
-      this.http.post('http://localhost:3000/admin/create-user', updatedUser, { headers }).subscribe(() => {
+      this.http.post('http://https://book-store-3-svnz.onrender.com//admin/create-user', updatedUser, { headers }).subscribe(() => {
         this.fetchUsers();
         this.user = this.getEmptyUser();
         this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo người dùng thành công!' });
@@ -197,7 +197,7 @@ export class AdminUserComponent implements OnInit {
   deleteUser(user: any) {
     const userId = user._id;
     if (confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
-      this.http.delete(`http://localhost:3000/auth/${userId}`).subscribe(() => {
+      this.http.delete(`http://https://book-store-3-svnz.onrender.com//auth/${userId}`).subscribe(() => {
         this.fetchUsers();
         this.messageService.add({
           severity: 'success',

@@ -5,7 +5,7 @@ import { Author } from '../model/author.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthorService {
-  private apiUrl = 'http://localhost:3000/authors';
+  private apiUrl = 'http://https://book-store-3-svnz.onrender.com//authors';
 
   constructor(private http: HttpClient) {}
 
@@ -14,11 +14,11 @@ export class AuthorService {
   }
 
   addAuthor(authorData: FormData): Observable<any> {
-    return this.http.post('http://localhost:3000/authors', authorData);
+    return this.http.post('http://https://book-store-3-svnz.onrender.com//authors', authorData);
   }
 
   updateAuthor(id: string, authorData: FormData): Observable<any> {
-    return this.http.put(`http://localhost:3000/authors/${id}`, authorData);
+    return this.http.put(`http://https://book-store-3-svnz.onrender.com//authors/${id}`, authorData);
   }
 
   deleteAuthor(id: string): Observable<void> {
