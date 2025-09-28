@@ -24,6 +24,7 @@ import { AuthorService } from '../../service/author.service';
 import { ReviewService } from '../../service/review.service';
 import { CategoryService } from '../../service/category.service';
 import { ProductItemComponent } from '../product-item/product-item.component';
+import { ChatbotComponent } from '../chatbot/chatbot.component';
 
 @Component({
   selector: 'app-homepage',
@@ -39,6 +40,7 @@ import { ProductItemComponent } from '../product-item/product-item.component';
     ToastModule,
     DividerModule,
     ButtonModule,
+    ChatbotComponent
   ],
   providers: [MessageService],
 })
@@ -117,7 +119,8 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     // ✅ thêm loading cho best seller
     this.isLoadingBestSeller = true;
     this.bookService.getBestSellers().subscribe((bestSellers) => {
-      this.bestSellerBooks = bestSellers;
+      this.bestSellerBooks = (bestSellers ?? [])
+      .sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0));
       this.isLoadingBestSeller = false;
     });
   }

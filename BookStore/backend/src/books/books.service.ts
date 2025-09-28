@@ -86,7 +86,7 @@ export class BooksService {
   }
 
   async getFeaturedBooks(limit = 10) {
-  // ✅ chỉ lấy các field cần thiết để hiển thị ở homepage
+    // ✅ Lấy danh sách sách mới nhất (chỉ field cần thiết)
     const projection = {
       title: 1,
       author: 1,
@@ -95,29 +95,46 @@ export class BooksService {
       discount_percent: 1,
       coverImage: 1,
       publishedDate: 1,
-      categoryName: 1,
-      sold: 1,
+      categoryName: 1
     };
 
-    // ✅ query nhanh nhờ index createdAt
     const books = await this.bookModel
       .find({}, projection)
-      .sort({ createdAt: -1 })
-      .limit(limit)
+      .sort({ createdAt: -1 }) // lấy sách mới trước, lát nữa sẽ sort lại theo sold
+      .limit(limit * 2) // lấy dư ra để sau khi sort vẫn đủ số lượng
       .lean();
 
-    // ✅ Lấy authorName chỉ 1 lần
+    // ✅ Map tên tác giả chỉ một lần
     const authors = await this.authorModel.find({}, { name: 1 }).lean();
-    const authorMap = new Map(authors.map((a) => [a._id.toString(), a.name]));
+    const authorMap = new Map(authors.map(a => [a._id.toString(), a.name]));
 
-    return books.map((book) => ({
+    // ✅ Lấy tổng số đã bán từ orders
+    const soldStats = await this.orderModel.aggregate([
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products._id",
+          totalSold: { $sum: "$products.quantity" }
+        }
+      }
+    ]);
+    const soldMap = new Map(soldStats.map(s => [s._id.toString(), s.totalSold]));
+
+    // ✅ Ghép sold + authorName vào books
+    const booksWithSold = books.map(book => ({
       ...book,
       authorName:
-        typeof book.author === 'object' && book.author !== null && 'name' in book.author
+        typeof book.author === "object" && book.author !== null && "name" in book.author
           ? (book.author as any).name
-          : authorMap.get(book.author as any) ?? 'Không rõ',
-      sold: book.sold || 0,
+          : authorMap.get(book.author as any) ?? "Không rõ",
+      sold: soldMap.get(book._id.toString()) ?? 0
     }));
+
+    // ✅ Sort giảm dần theo sold
+    const sortedBooks = booksWithSold.sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0));
+
+    // ✅ Trả về top N
+    return sortedBooks.slice(0, limit);
   }
 
   async updateSummary(id: string, summary: string): Promise<Book> {

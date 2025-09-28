@@ -21,6 +21,7 @@ import { MessageService } from 'primeng/api';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ToastModule } from 'primeng/toast';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,7 @@ import { ToastModule } from 'primeng/toast';
     ToastModule,
     MatDatepickerModule,
     MatNativeDateModule,
-       
+    BrowserAnimationsModule
   ],
   providers: [
     BooksService,

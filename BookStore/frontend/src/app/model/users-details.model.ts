@@ -17,4 +17,6 @@ export interface User {
   role: 'admin' | 'user';
   note: string;
   payment: string;
+  createdAt?: string;  // ✅ thêm
+  updatedAt?: string;
 }

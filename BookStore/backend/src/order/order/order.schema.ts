@@ -1,5 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
+
+@Schema({ _id: false }) // subdocument không cần _id riêng
+export class OrderProduct {
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Book', required: true })
+  book: Types.ObjectId; // ✅ rõ ràng là bookId tham chiếu đến Book
+
+  @Prop({ required: true })
+  title: string;
+
+  @Prop({ required: true })
+  price: number;
+
+  @Prop({ required: true })
+  quantity: number;
+
+  @Prop()
+  coverImage: string;
+}
+
+const OrderProductSchema = SchemaFactory.createForClass(OrderProduct);
 
 @Schema({ timestamps: true })
 export class Order extends Document {
@@ -12,8 +32,8 @@ export class Order extends Document {
   @Prop()
   note?: string;
 
-  @Prop({ required: true, type: Array })
-  products: any[];
+  @Prop({ type: [OrderProductSchema], required: true })
+  products: OrderProduct[];
 
   @Prop()
   name: string;
@@ -27,12 +47,14 @@ export class Order extends Document {
   @Prop()
   total: number;
 
-  @Prop({ enum: ['pending', 'processing', 'shipping', 'completed', 'cancelled', 'returned'], default: 'pending' })
+  @Prop({
+    enum: ['pending', 'processing', 'shipping', 'completed', 'cancelled', 'returned'],
+    default: 'pending'
+  })
   status: string;
 
   @Prop()
   orderDate: Date;
-
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

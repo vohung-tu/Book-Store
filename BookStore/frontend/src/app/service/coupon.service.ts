@@ -5,7 +5,7 @@ import { Coupon } from '../model/coupon.model';
 
 @Injectable({ providedIn: 'root' })
 export class CouponsService {
-  private apiUrl = 'https://book-store-3-svnz.onrender.com/coupons';
+  private apiUrl = 'http://localhost:3000/coupons';
 
   constructor(private http: HttpClient) {}
 

@@ -1,0 +1,22 @@
+<div class="chatbot-button" (click)="toggle()">💬</div>
+
+<div
+  class="chatbot-window"
+  *ngIf="open"
+  @slideFade>
+  <div class="chat-header">
+    Hỗ trợ trực tuyến
+    <button (click)="toggle()">✖</button>
+  </div>
+
+  <div class="chat-body">
+    <div *ngFor="let msg of messages" [ngClass]="msg.role">
+      {{ msg.content }}
+    </div>
+  </div>
+
+  <div class="chat-footer">
+    <input [(ngModel)]="input" (keyup.enter)="send()" placeholder="Nhập tin nhắn..." />
+    <button (click)="send()">Gửi</button>
+  </div>
+</div>

@@ -1,48 +1,138 @@
 <div class="dashboard">
-  <div class="card-total">
-    <p-card class="card">
+  <!-- ===== HÀNG 1: KPI Cards ===== -->
+  <div class="kpi-row">
+    <p-card class="kpi-card">
       <div class="card-header">
         <p>Đơn Hàng</p>
         <i class="pi pi-shopping-cart icon"></i>
       </div>
       <div class="card-body">
-        <h3 class="main-value"> {{ totalOrders }}</h3>
-        <p class="additional-info">24 mới kể từ lần ghé thăm trước</p>
+        <h3 class="main-value">{{ totalOrders }}</h3>
+        <p class="additional-info">Tổng số đơn hàng</p>
       </div>
     </p-card>
-    <p-card class="card">
+
+    <p-card class="kpi-card">
       <div class="card-header">
         <p>Người Dùng</p>
         <i class="pi pi-user icon"></i>
       </div>
       <div class="card-body">
-        <h3 class="main-value"> {{ totalUsers }}</h3>
-        <p class="additional-info">24 mới kể từ lần ghé thăm trước</p>
+        <h3 class="main-value">{{ totalUsers }}</h3>
+        <p class="additional-info">Tổng số tài khoản</p>
       </div>
     </p-card>
-    <p-card class="card">
+
+    <p-card class="kpi-card">
       <div class="card-header">
-        <p>Tổng Cộng</p>
+        <p>Doanh Thu</p>
         <i class="pi pi-dollar icon"></i>
       </div>
       <div class="card-body">
         <h3 class="main-value">{{ totalRevenue | dotSeparator }} VND</h3>
-        <p class="additional-info">%52+ kể từ tháng trước</p>
+        <p class="additional-info">Tổng doanh thu</p>
       </div>
     </p-card>
-    <p-card class="card">
+
+    <p-card class="kpi-card">
       <div class="card-header">
         <p>Bình Luận</p>
-        <i class="pi pi-shopping-cart icon"></i>
+        <i class="pi pi-comments icon"></i>
       </div>
       <div class="card-body">
         <h3 class="main-value">{{ totalComments }}</h3>
-        <p class="additional-info">Đã trả lời</p>
+        <p class="additional-info">Tổng số bình luận</p>
       </div>
     </p-card>
   </div>
-   <div class="chart-container">
-    <h2>Xu hướng doanh thu</h2>
-      <p-chart type="line" [data]="revenueChartData" [options]="revenueChartOptions"></p-chart>
+
+  <!-- ===== HÀNG 2: Biểu đồ Doanh thu + Trạng thái đơn hàng ===== -->
+  <div class="chart-row">
+    <div class="chart-block chart-left">
+      <p-card>
+        <h3>Xu hướng doanh thu</h3>
+        <!-- <div class="chart-wrapper"> -->
+          <p-chart type="line" [data]="revenueChartData" [options]="revenueChartOptions"></p-chart>
+        <!-- </div> -->
+      </p-card>
+    </div>
+
+    <div class="chart-block chart-right">
+      <p-card>
+        <h3>Đơn hàng theo trạng thái</h3>
+        <div class="chart-wrapper">
+          <p-chart type="doughnut" [data]="orderStatusChartData" [options]="orderStatusChartOptions"></p-chart>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- ===== HÀNG 3: Top sách bán chạy + Doanh thu theo danh mục ===== -->
+  <div class="chart-row">
+    <div class="chart-block chart-left">
+      <p-card>
+        <h3>Top Sách Bán Chạy</h3>
+        <p-table [value]="topBooks" responsiveLayout="scroll">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Ảnh</th>
+              <th>Tên sách</th>
+              <th>Đã bán</th>
+              <th>Doanh thu</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-book>
+            <tr>
+              <td><img [src]="book.coverImage" width="40" class="border-round shadow-1" /></td>
+              <td>{{ book.title }}</td>
+              <td>{{ book.sold }}</td>
+              <td>{{ book.revenue | number: '1.0-0' }} VND</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+
+    <div class="chart-block chart-right">
+      <p-card>
+        <h3>Doanh Thu Theo Danh Mục</h3>
+        <!-- <div class="chart-wrapper"> -->
+          <p-chart type="bar" [data]="categoryChartData" [options]="categoryChartOptions"></p-chart>
+        <!-- </div> -->
+      </p-card>
+    </div>
+  </div>
+  <!-- HÀNG 4: Người dùng mới + Top khách hàng -->
+  <div class="chart-row">
+    <div class="chart-block chart-left">
+      <p-card>
+        <h3>Người dùng mới theo tháng</h3>
+        <!-- <div class="chart-wrapper"> -->  
+        <p-chart type="bar" [data]="userGrowthChartData" [options]="chartOptions"></p-chart>
+        <!-- </div> -->
+      </p-card>
+    </div>
+
+    <div class="chart-block chart-right">
+      <p-card>
+        <h3>Top Khách Hàng</h3>
+        <p-table [value]="topCustomers" responsiveLayout="scroll">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Tên</th>
+              <th>Số đơn</th>
+              <th>Tổng chi tiêu</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-c>
+            <tr>
+              <td>{{ c.name }}</td>
+              <td>{{ c.orderCount }}</td>
+              <td>{{ c.totalSpent | number: '1.0-0' }} VND</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
   </div>
 </div>

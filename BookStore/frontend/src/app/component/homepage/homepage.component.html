@@ -223,7 +223,7 @@
         <a [routerLink]="['/author', author._id]" class="author-item">
           <img 
             *ngIf="author.avatar" 
-            [src]="'https://book-store-3-svnz.onrender.com' + author.avatar" 
+            [src]="'http://localhost:3000' + author.avatar" 
             alt="{{ author.name }}"
             class="author-avatar"
           />
@@ -291,5 +291,5 @@
   </div>
   
 </ng-container>
-
+<app-chatbot></app-chatbot>
 

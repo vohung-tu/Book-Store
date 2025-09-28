@@ -29,13 +29,12 @@ export class OrderController {
       throw new NotFoundException('Đơn hàng không tồn tại!');
     }
 
-    // 🔽 Cập nhật số lượng tồn kho cho từng sách trong đơn hàng
     for (const item of order.products) {
-      await this.booksService.updateStock(item.bookId, item.quantity);
+      await this.booksService.updateStock(item.book.toString(), item.quantity);
     }
-
     return { message: 'Thanh toán thành công, đã cập nhật tồn kho!' };
   }
+
   
   @Patch(':id/status')
   async updateStatus(@Param('id') id: string, @Body() updateStatusDto: UpdateStatusDto) {

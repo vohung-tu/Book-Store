@@ -33,6 +33,8 @@ export class AdminAuthorComponent implements OnInit{
     description: '',
     avatar: null
   };
+  searchText: string = '';
+  filteredAuthors: Author[] = [];
   previewImage: string | ArrayBuffer | null = null;
 
   constructor(private authorService: AuthorService) {}
@@ -43,7 +45,10 @@ export class AdminAuthorComponent implements OnInit{
 
   fetchAuthors() {
     this.authorService.getAuthors().subscribe({
-      next: (data) => this.authors = data,
+      next: (data) => {
+        this.authors = data;
+        this.filteredAuthors = [...this.authors]; // 🔥 gán lại để có dữ liệu hiển thị
+      },
       error: (err) => console.error(err)
     });
   }
@@ -51,6 +56,14 @@ export class AdminAuthorComponent implements OnInit{
   openAddDialog() {
     this.newAuthor = { name: '', description: '', avatar: '' };
     this.showAddDialog = true;
+  }
+
+  filterAuthors() {
+    const keyword = this.searchText.toLowerCase();
+    this.filteredAuthors = this.authors.filter(a =>
+      a.name.toLowerCase().includes(keyword) ||
+      (a.description?.toLowerCase().includes(keyword))
+    );
   }
 
   onImageSelected(event: Event) {
@@ -111,7 +124,7 @@ export class AdminAuthorComponent implements OnInit{
 
   openEditDialog(author: Author) {
     this.newAuthor = { ...author }; // Sao chép dữ liệu tác giả vào biến mới
-    this.previewImage = 'https://book-store-3-svnz.onrender.com' + author.avatar; // Hiển thị ảnh cũ
+    this.previewImage = 'http://localhost:3000' + author.avatar; // Hiển thị ảnh cũ
     this.showEditDialog = true;
   }
 

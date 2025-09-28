@@ -37,8 +37,24 @@ export class OrderService {
     }
   }
 
-  async findAll(): Promise<Order[]> {
-    return this.orderModel.find().sort({ createdAt: -1 }).exec();
+  async findAll(): Promise<any[]> {
+    const orders = await this.orderModel.find().sort({ createdAt: -1 }).lean();
+
+    // Lấy danh sách sách (dạng phân trang)
+    const allBooks = await this.booksService.findAllBooks();
+    const bookItems = allBooks.items ?? [];
+
+    return orders.map(order => ({
+      ...order,
+      products: order.products.map(prod => {
+        const productId = (prod as any)._id?.toString?.();
+        const book = bookItems.find(b => b._id.toString() === productId);
+        return {
+          ...prod,
+          categoryName: book?.categoryName ?? { name: 'Khác' }
+        };
+      })
+    }));
   }
 
   async findById(orderId: string): Promise<Order | null> {

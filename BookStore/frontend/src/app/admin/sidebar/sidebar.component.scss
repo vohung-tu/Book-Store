@@ -1,43 +1,63 @@
 .sidebar {
-  width: 200px;
-  height: calc(100vh - 64px); // Trừ chiều cao topbar (ví dụ: 60px)
-  background-color: #e4ebf8;
-  color: rgb(59 130 246 / .5);
-  padding: 20px;
+  width: 220px;
+  height: calc(100vh - 64px);
+  background-color: #f5f7fb;
+  padding: 1.5rem 1rem;
   position: fixed;
-  top: 64px; // nằm dưới topbar
+  top: 64px;
   left: 0;
   transition: transform 0.3s ease;
-  z-index: 999; // dưới topbar (nếu topbar là 1000)
-  overflow-y: auto;
-}
+  z-index: 999;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
 
-.sidebar.collapsed {
-  transform: translateX(-100%);
-}
+  &.collapsed {
+    transform: translateX(-100%);
+  }
 
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
 
-.sidebar li {
-  margin: 25px 0;
-}
+  li {
+    margin-bottom: 0.75rem;
+  }
 
-.sidebar a {
-  color: rgba(22, 43, 77, 0.6); // màu mặc định hơi mờ
-  text-decoration: none;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: color 0.1s ease, font-weight 0.1s ease;
-}
-.sidebar a:hover,
-.sidebar a:focus,
-.sidebar a.active { // nếu có class active, có thể gán từ Angular router
-  color: rgba(22, 43, 77, 0.9); // màu đậm hơn
-  font-weight: 600;
+  a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    color: #374151;
+    font-size: 0.95rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    i {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    &:hover {
+      background-color: rgba(59, 130, 246, 0.1);
+      color: #2563eb;
+
+      i {
+        opacity: 1;
+      }
+    }
+
+    &.active {
+      background-color: rgba(59, 130, 246, 0.15);
+      color: #2563eb;
+      font-weight: 600;
+
+      i {
+        color: #2563eb;
+        opacity: 1;
+      }
+    }
+  }
 }

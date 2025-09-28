@@ -1,6 +1,22 @@
 <div class="admin-authors">
-  <h2>Quản lý Tác giả</h2>
-  <button pButton label="Thêm tác giả" icon="pi pi-plus" (click)="openAddDialog()"></button>
+  <div class="toolbar">
+    <h2>Quản lý Tác giả</h2>
+    <button pButton label="Thêm tác giả" icon="pi pi-plus" (click)="openAddDialog()"></button>
+  </div>
+
+  <!-- Thanh search -->
+  <div class="body-bar">
+    <div class="search-bar">
+      <i class="pi pi-search search-icon"></i>
+      <input
+        type="text"
+        pInputText
+        placeholder="Tìm kiếm tác giả..."
+        [(ngModel)]="searchText"
+        (input)="filterAuthors()"
+      />
+    </div>
+  </div>
 
     <!-- Dialog thêm tác giả -->
   <p-dialog header="Thêm Tác giả" [(visible)]="showAddDialog" [modal]="true" [style]="{width: '700px'}">
@@ -60,7 +76,7 @@
     </ng-template>
   </p-dialog>
 
-  <p-table [value]="authors" [paginator]="true" [rows]="5" [responsiveLayout]="'scroll'">
+  <p-table [value]="filteredAuthors" [paginator]="true" [rows]="5" [responsiveLayout]="'scroll'">
     <ng-template pTemplate="header">
       <tr>
         <th>Ảnh đại diện</th>
@@ -73,18 +89,9 @@
     <ng-template pTemplate="body" let-author let-i="index">
       <tr>
         <td>
-          <!-- <img
-            *ngIf="author.avatar"
-            [src]="'https://book-store-3-svnz.onrender.com' + author.avatar"
-            (error)="author.avatar = null"
-            alt="avatar"
-            width="50"
-            height="50"
-            style="border-radius: 50%; object-fit: cover;"
-          /> -->
 
           <img
-            [src]="author.avatar ? 'https://book-store-3-svnz.onrender.com' + author.avatar : 'assets/images/def_avatar.png'"
+            [src]="author.avatar ? 'http://localhost:3000' + author.avatar : 'assets/images/def_avatar.webp'"
             (error)="onImgError($event)"
             alt="avatar"
             width="50"

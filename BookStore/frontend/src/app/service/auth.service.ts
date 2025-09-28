@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   providedIn: 'root',
 })
 export class AuthService {
-  private API_URL = 'https://book-store-3-svnz.onrender.com/auth';
+  private API_URL = 'http://localhost:3000/auth';
   private isBrowser: boolean;
 
   private isLoggedInSubject = new BehaviorSubject<boolean>(false);
@@ -117,7 +117,7 @@ export class AuthService {
   }
 
   checkEmailExists(email: string): Observable<boolean> {
-    return this.http.get<{ exists: boolean }>(`https://book-store-3-svnz.onrender.com/auth/check-email?email=${email}`)
+    return this.http.get<{ exists: boolean }>(`http://localhost:3000/auth/check-email?email=${email}`)
       .pipe(map(res => res.exists));
   }
 
@@ -138,6 +138,12 @@ export class AuthService {
           this.isLoggedInSubject.next(true);
         }
       })
+    );
+  }
+
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.API_URL}`).pipe(
+      tap(users => console.log('Danh sách users:', users)) // Kiểm tra dữ liệu trong console
     );
   }
 
@@ -200,7 +206,7 @@ export class AuthService {
 
   requestPasswordReset(email: string) {
     return this.http.post<{ message: string; resetToken?: string }>(
-      'https://book-store-3-svnz.onrender.com/auth/forgot-password', // hoặc env
+      'http://localhost:3000/auth/forgot-password', // hoặc env
       { email }
     );
   }

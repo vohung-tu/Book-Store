@@ -310,7 +310,7 @@ export class CheckoutComponent implements OnInit {
     const orderId = Date.now().toString(); // tạo mã đơn hàng
     const amount = this.discountedAmount + this.shippingFee;
 
-    this.http.get<{ url: string }>('https://book-store-3-svnz.onrender.com/vnpay/create-payment-url', {
+    this.http.get<{ url: string }>('http://localhost:3000/vnpay/create-payment-url', {
       params: {
         amount: amount.toString(),
         orderId,

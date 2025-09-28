@@ -5,89 +5,98 @@
   margin-top: 64px;
 }
 
-/* 4 cột cho card-total */
-.card-total {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-.card {
-  text-align: center;
-  padding: 1rem;
-}
-
-.card-header .icon {
-  font-size: 2rem;
-  color: #007bff;
-}
-
-.main-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.additional-info {
-  font-size: 0.85rem;
-  color: #6c757d;
-}
-
-/* 2 cột cho card-progress */
-.card-progress {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-p-card.shadow {
-  padding: 1rem;
-}
-
-/* Bên trong mỗi p-card (best-selling products) */
-.product-row {
+/* ===== KPI Cards ===== */
+.kpi-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .kpi-card {
+    flex: 1 1 calc(25% - 1rem);
+    min-width: 220px;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+
+      .icon {
+        font-size: 1.6rem;
+        color: #726e6e;
+      }
+    }
+
+    .main-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+
+    .additional-info {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+  }
 }
 
-.product-info {
-  flex: 1;
-}
-
-.product-name {
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.product-category {
-  font-size: 0.85rem;
-  color: #6b7280;
-}
-
-.product-stats {
-  width: 40%;
+/* ===== Chart Row (Doanh thu + Trạng thái đơn / Top sách + Danh mục) ===== */
+.chart-row {
   display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .chart-block {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-left {
+    flex: 1; /* chiếm 2/3 */
+  }
+
+  .chart-right {
+    flex: 1; /* chiếm 1/3 */
+  }
+}
+
+/* ===== Chart Wrapper ===== */
+.chart-wrapper {
+  height: 400px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 0.5rem;
+
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+.chart-row.row-50 {
+  .chart-left,
+  .chart-right {
+    flex: 1; /* Mỗi block 50% */
+  }
 }
 
-.product-percent {
-  font-weight: 500;
-}
+/* Responsive: trên màn nhỏ, xếp dọc */
+@media (max-width: 768px) {
+  .chart-row {
+    flex-direction: column;
 
-.chart-container {
-  width: 100%;
-  max-width: 600px;
-  min-height: 300px;
-  margin: auto;
-}
-
-.p-chart {
-  width: 100%;
-  height: 100%;
-}
-
-canvas {
-  height: 300px !important;
+    .chart-left,
+    .chart-right {
+      flex: 1 1 100%;
+    }
+  }
 }

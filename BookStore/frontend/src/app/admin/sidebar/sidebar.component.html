@@ -1,11 +1,39 @@
 <nav class="sidebar" [ngClass]="{ 'collapsed': !visible }">
   <ul>
-    <li><a routerLink="/admin/dashboard" routerLinkActive="active"> <i class="pi pi-chart-bar"></i> Dashboard</a></li>
-    <li><a routerLink="/admin/user"><i class="pi pi-users"></i> User</a></li>
-    <li><a routerLink="/admin/product"><i class="pi pi-shopping-bag"></i> Product</a></li>
-    <li><a routerLink="/admin/order"><i class="pi pi-shopping-cart"></i> Order</a></li>
-    <li><a routerLink="/admin/author"><i class="pi pi-users"></i> Authors</a></li>
-    <li><a routerLink="/admin/category"><i class="pi pi-users"></i> Categories</a></li>
-    <li><a routerLink="/admin/coupon"><i class="pi pi-users"></i> Coupons</a></li>
+    <li>
+      <a routerLink="/admin/dashboard" routerLinkActive="active">
+        <i class="pi pi-chart-line"></i> <span>Dashboard</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/user" routerLinkActive="active">
+        <i class="pi pi-users"></i> <span>Users</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/product" routerLinkActive="active">
+        <i class="pi pi-shopping-bag"></i> <span>Products</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/order" routerLinkActive="active">
+        <i class="pi pi-shopping-cart"></i> <span>Orders</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/author" routerLinkActive="active">
+        <i class="pi pi-book"></i> <span>Authors</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/category" routerLinkActive="active">
+        <i class="pi pi-tags"></i> <span>Categories</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/admin/coupon" routerLinkActive="active">
+        <i class="pi pi-ticket"></i> <span>Coupons</span>
+      </a>
+    </li>
   </ul>
 </nav>
