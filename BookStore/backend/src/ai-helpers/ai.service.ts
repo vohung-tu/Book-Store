@@ -73,4 +73,31 @@ export class AiService {
     }
   }
 
+   async detectIntent(message: string): Promise<{ intent: string; keywords: string[] }> {
+    const systemPrompt = `Bạn là bộ phân loại intent cho chatbot bán sách.
+Trả về JSON theo định dạng:
+{"intent": "get_cheapest_books|search_books_by_title|other", "keywords": ["..."]}
+
+- Nếu người dùng hỏi sách rẻ nhất, intent = "get_cheapest_books".
+- Nếu hỏi về sách theo tên (vd: "One Piece tập nào", "có sách Clean Code không"), intent = "search_books_by_title" và keywords là các tên sách tìm được.
+- Nếu không rõ, intent = "other".`;
+
+    try {
+      const res = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0,
+      });
+
+      return JSON.parse(res.choices[0].message?.content || '{}');
+    } catch (e) {
+      console.error('❌ Detect intent error:', e);
+      return { intent: 'other', keywords: [] };
+    }
+  }
+
 }

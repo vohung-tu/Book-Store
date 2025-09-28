@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   trigger,
@@ -10,6 +9,8 @@ import {
   animate
 } from '@angular/animations';
 import { ChatResponse, ChatService } from '../../service/chat.service';
+import { AuthService } from '../../service/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-chatbot',
@@ -32,16 +33,43 @@ import { ChatResponse, ChatService } from '../../service/chat.service';
     ])
   ]
 })
-export class ChatbotComponent {
+export class ChatbotComponent implements OnInit{
   open = false;
   input = '';
   loading = false;
   messages: { role: 'user' | 'bot'; content: string; quotes?: ChatResponse['quotes'] }[] = [];
 
-  constructor(private chatService: ChatService) {}
+  constructor(private chatService: ChatService,
+    private authService: AuthService, // 👈 kiểm tra login
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    if (this.authService.isLoggedIn()) {
+      this.chatService.getHistory().subscribe({
+        next: (history) => {
+          this.messages = history.map((m) => ({
+            role: m.role,
+            content: m.content
+          }));
+        },
+        error: (err) => console.error('❌ Load history error:', err)
+      });
+    }
+  }
 
   toggle() {
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/signin']); 
+      return;
+    }
     this.open = !this.open;
+
+    if (this.open && this.messages.length === 0) {
+      this.chatService.getWelcome().subscribe((res) => {
+        this.messages.push({ role: 'bot', content: res.reply });
+      });
+    }
   }
 
   send() {
