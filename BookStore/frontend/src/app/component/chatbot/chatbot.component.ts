@@ -1,48 +1,50 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ChatService, ChatResponse } from '../../service/chat.service';
+import { AuthService } from '../../service/auth.service';
+import { marked } from 'marked';
 import {
   trigger,
-  state,
   style,
-  transition,
-  animate
+  animate,
+  transition
 } from '@angular/animations';
-import { ChatResponse, ChatService } from '../../service/chat.service';
-import { AuthService } from '../../service/auth.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-chatbot',
   standalone: true,
-    imports: [
-      CommonModule,
-      FormsModule
-    ],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './chatbot.component.html',
   styleUrls: ['./chatbot.component.scss'],
   animations: [
     trigger('slideFade', [
-      transition(':enter', [ // Khi element được thêm vào DOM
+      transition(':enter', [
         style({ opacity: 0, transform: 'translateY(20px)' }),
         animate('0.3s ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
       ]),
-      transition(':leave', [ // Khi element bị xóa khỏi DOM
+      transition(':leave', [
         animate('0.2s ease-in', style({ opacity: 0, transform: 'translateY(20px)' }))
       ])
     ])
   ]
 })
-export class ChatbotComponent implements OnInit{
+export class ChatbotComponent implements OnInit {
   open = false;
   input = '';
   loading = false;
-  messages: { role: 'user' | 'bot'; content: string; quotes?: ChatResponse['quotes'] }[] = [];
+  messages: { role: 'user' | 'bot'; content: string; quotes?: ChatResponse['quotes']; type?: 'suggestion' }[] = [];
 
-  constructor(private chatService: ChatService,
-    private authService: AuthService, // 👈 kiểm tra login
-    private router: Router
-  ) {}
+  constructor(
+    private chatService: ChatService,
+    private authService: AuthService,
+    private router: Router,
+    private sanitizer: DomSanitizer
+  ) {
+    marked.use({ async: false });
+  }
 
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
@@ -58,18 +60,32 @@ export class ChatbotComponent implements OnInit{
     }
   }
 
+  formatMessage(content: string): SafeHtml {
+    const rawHtml = marked(content, { breaks: true }) as string;
+    return this.sanitizer.bypassSecurityTrustHtml(rawHtml);
+  }
+
   toggle() {
     if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/signin']); 
+      this.router.navigate(['/signin']);
       return;
     }
+
     this.open = !this.open;
 
     if (this.open && this.messages.length === 0) {
-      this.chatService.getWelcome().subscribe((res) => {
-        this.messages.push({ role: 'bot', content: res.reply });
+      this.messages.push({
+        role: 'bot',
+        type: 'suggestion',
+        content: 'Nhấn <b>Bắt đầu</b> để trò chuyện với trợ lý AI 👇'
       });
     }
+  }
+
+  startChat() {
+    this.chatService.getWelcome().subscribe((res) => {
+      this.messages.push({ role: 'bot', content: res.reply });
+    });
   }
 
   send() {

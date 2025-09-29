@@ -65,7 +65,7 @@
   }
 }
 
-// Body
+// Chat Body
 .chat-body {
   flex: 1;
   padding: 12px;
@@ -73,46 +73,180 @@
   background: #f9fafb;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+// Message Wrapper
+.chat-message-wrapper {
+  display: flex;
+  align-items: flex-start;
   gap: 8px;
+  margin-bottom: 10px;
 
-  .chat-message {
-    padding: 8px 12px;
-    border-radius: 12px;
-    max-width: 80%;
-    word-wrap: break-word;
-    animation: slideIn 0.25s ease forwards;
+  &.bot {
+    justify-content: flex-start;
+  }
 
-    &.user {
-      align-self: flex-end;
-      background: #007bff;
-      color: white;
-      border-bottom-right-radius: 4px;
+  &.user {
+    justify-content: flex-end;
+  }
+}
+
+// Avatar
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* Bubble sẽ co dãn chiếm phần còn lại */
+.bubble {
+  background: #f1f3f5;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  word-wrap: break-word;
+  animation: slideIn 0.25s ease forwards;
+  line-height: 1.4;
+
+  .bot-header {
+    font-weight: 600;
+    font-size: 13px;
+    color: #007bff;
+    margin-bottom: 2px;
+  }
+}
+
+/* User bubble căn phải, màu xanh */
+.chat-message-wrapper.user .bubble {
+  background: #007bff;
+  color: white;
+  border-bottom-right-radius: 4px;
+
+  a {
+    color: #fff;
+    text-decoration: underline;
+  }
+}
+
+/* Bot bubble căn trái, màu xám nhạt */
+.chat-message-wrapper.bot .bubble {
+  background: #f1f3f5;
+  color: #222;
+  border-bottom-left-radius: 4px;
+}
+
+
+// Markdown content
+.bubble b, .bubble strong {
+  font-weight: 600;
+}
+
+.bubble i, .bubble em {
+  font-style: italic;
+}
+
+.bubble ul, .bubble ol {
+  padding-left: 18px;
+  margin: 4px 0;
+}
+
+.bubble a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Quotes (sách gợi ý)
+.quotes {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .quote-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .quote-img {
+      width: 50px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
 
-    &.bot {
-      align-self: flex-start;
-      background: #e9ecef;
-      color: #222;
-      border-bottom-left-radius: 4px;
+    .quote-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .title {
+        font-weight: 500;
+        color: #007bff;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .price {
+        color: #007bff;
+        font-weight: bold;
+        font-size: 14px;
+      }
     }
   }
 }
 
-.quotes {
-  margin-top: 4px;
+// Suggestion box
+.suggestion-box {
+  margin-top: 8px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  justify-content: center;
+}
 
-  .quote-item {
-    background: #f1f1f1;
-    border-radius: 6px;
-    padding: 4px 8px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    .title { font-weight: 500; }
-    .price { color: #007bff; font-weight: bold; }
+.start-btn {
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #0056b3, #0096d6);
+    transform: scale(1.05);
   }
 }
 
@@ -156,7 +290,7 @@
   }
 }
 
-// Keyframe for message animation
+// Animation for message
 @keyframes slideIn {
   from {
     opacity: 0;

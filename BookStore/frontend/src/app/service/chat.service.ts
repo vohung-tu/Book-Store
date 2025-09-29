@@ -4,9 +4,15 @@ import { Observable } from 'rxjs';
 
 export interface ChatResponse {
   reply: string;
-  quotes: { _id: string; title: string; price: number; slug?: string }[];
+  quotes: {
+    _id: string;
+    title: string;
+    price: number;
+    slug?: string;
+    link?: string;
+    coverImage?: string;
+  }[];
 }
-
 @Injectable({
   providedIn: 'root'
 })

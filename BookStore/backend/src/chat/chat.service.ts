@@ -14,101 +14,148 @@ export class ChatService {
   ) {}
 
   async handleMessage(message: string, userId: string) {
-    // Lưu tin nhắn user trước
     await this.saveMessage(userId, 'user', message);
 
-    // 1️⃣ Detect intent bằng AI
+    // 1️⃣ Nhờ AI detect intent 6 loại hỗ trợ
     const intent = await this.aiService.detectIntent(message);
 
-    if (intent.intent === 'get_cheapest_books') {
-      return this.handleCheapestBooks(userId, message);
+    switch (intent.intent) {
+      case 'get_cheapest_books':
+        return this.handleCheapestBooks(userId, message);
+
+      case 'search_books_by_title':
+        return this.handleSearchBooksByTitle(userId, message, intent.keywords);
+
+      case 'compare_books':
+        return this.handleCompareBooks(userId, message, intent.keywords);
+
+      case 'recommend_books':
+        return this.handleRecommendBooks(userId, message);
+
+      case 'order_support':
+        return this.handleOrderSupport(userId);
+
+      case 'promotion_info':
+        return this.handlePromotionInfo(userId);
+
+      default:
+        break;
     }
 
-    if (intent.intent === 'search_books_by_title') {
-      return this.handleSearchBooksByTitle(userId, message, intent.keywords);
-    }
-
-    // 2️⃣ Báo giá thủ công nếu detect bằng regex
+    // 2️⃣ Báo giá thủ công (fallback)
     const priceIntent = this.detectPriceIntent(message);
     if (priceIntent.isAskPrice) {
-      if (!priceIntent.titles.length) {
-        const botReply = 'Bạn muốn xem giá của cuốn nào ạ?';
-        await this.saveMessage(userId, 'bot', botReply);
-        return { reply: botReply, quotes: [] };
-      }
       const quotes = await this.findBooks(priceIntent.titles);
+      if (!priceIntent.titles.length) {
+        return this.replyAndSave(userId, 'Bạn muốn xem giá của cuốn nào ạ?');
+      }
       if (!quotes.length) {
-        const botReply = 'Không tìm thấy sách nào khớp với yêu cầu.';
-        await this.saveMessage(userId, 'bot', botReply);
-        return { reply: botReply, quotes: [] };
+        return this.replyAndSave(userId, 'Không tìm thấy sách nào khớp với yêu cầu.');
       }
       const botReply = quotes.map((b) => `• ${b.title}: ${this.formatVND(b.price)}`).join('\n');
       await this.saveMessage(userId, 'bot', botReply);
       return { reply: `Báo giá:\n${botReply}`, quotes };
     }
 
-    // 3️⃣ Nếu không có intent đặc biệt → gọi AI trả lời tự do
-    const aiReply = await this.aiService.chatWithAI(
-      'Bạn là nhân viên hỗ trợ trực tuyến của cửa hàng sách. Trả lời ngắn gọn, thân thiện, ưu tiên tiếng Việt.',
-      message,
+    // 3️⃣ Fallback AI general
+    return this.replyAndSave(
+      userId,
+      await this.aiService.chatWithAI(
+        'Bạn là nhân viên hỗ trợ trực tuyến của cửa hàng sách. Trả lời ngắn gọn, thân thiện, ưu tiên tiếng Việt.',
+        message,
+      )
     );
-    await this.saveMessage(userId, 'bot', aiReply);
-    return { reply: aiReply, quotes: [] };
   }
 
-  // === Intent handlers ===
+  // === Handlers cho các intent ===
   private async handleCheapestBooks(userId: string, message: string) {
     const cheapest = await this.bookModel.find().sort({ price: 1 }).limit(5).lean();
-
-    if (!cheapest.length) {
-      return { reply: 'Xin lỗi, hiện không có sách nào trong hệ thống.', quotes: [] };
-    }
+    if (!cheapest.length) return this.replyAndSave(userId, 'Xin lỗi, hiện không có sách nào trong hệ thống.');
 
     const context = cheapest.map((b, i) => `${i + 1}. ${b.title} - ${this.formatVND(b.price)}`).join('\n');
-    const prompt = `Người dùng hỏi: "${message}".
-Dưới đây là danh sách 5 sách rẻ nhất:
-${context}
-
-Hãy giới thiệu top 3 cuốn rẻ nhất kèm giá một cách thân thiện.`;
-
     const aiReply = await this.aiService.chatWithAI(
       'Bạn là nhân viên hỗ trợ bán sách.',
-      prompt,
+      `Người dùng hỏi: "${message}". Đây là top 5 sách rẻ nhất:\n${context}\nGiới thiệu top 3 cuốn rẻ nhất.`
     );
-
     await this.saveMessage(userId, 'bot', aiReply);
     return { reply: aiReply, quotes: cheapest };
   }
 
   private async handleSearchBooksByTitle(userId: string, message: string, keywords: string[]) {
-    if (!keywords?.length) {
-      return { reply: 'Bạn muốn tìm sách nào? Vui lòng nhập rõ tên sách.', quotes: [] };
-    }
+    if (!keywords?.length) return this.replyAndSave(userId, 'Bạn muốn tìm sách nào? Vui lòng nhập rõ tên sách.');
 
     const regexes = keywords.map((k) => new RegExp(k, 'i'));
     const books = await this.bookModel.find({ title: { $in: regexes } }).sort({ title: 1 }).lean();
 
-    if (!books.length) {
-      return { reply: 'Xin lỗi, không tìm thấy sách phù hợp.', quotes: [] };
-    }
+    if (!books.length) return this.replyAndSave(userId, 'Xin lỗi, không tìm thấy sách phù hợp.');
 
-    const context = books.map((b) => `- ${b.title} (${this.formatVND(b.price)})`).join('\n');
-    const prompt = `Người dùng hỏi: "${message}".
-Danh sách sách phù hợp tìm được:
-${context}
+    // ✅ thêm trường link cho mỗi sách
+    const quotes = books.map((b) => ({
+      _id: b._id,
+      title: b.title,
+      price: b.price,
+      link: `/details/${b._id}`,
+      coverImage: b.coverImage,
+    }));
 
-Hãy liệt kê các tựa sách kèm giá, khuyến khích người dùng mua.`;
-
+    const context = quotes.map((b) => `- ${b.title} (${this.formatVND(b.price)})`).join('\n');
     const aiReply = await this.aiService.chatWithAI(
       'Bạn là nhân viên hỗ trợ bán sách.',
-      prompt,
+      `Người dùng hỏi: "${message}". Đây là sách tìm được:\n${context}\nHãy trả lời gọn gàng, khuyến khích mua.`
     );
 
     await this.saveMessage(userId, 'bot', aiReply);
-    return { reply: aiReply, quotes: books };
+    return { reply: aiReply, quotes };
   }
 
-  // === DB Helpers ===
+  private async handleCompareBooks(userId: string, message: string, keywords: string[]) {
+    if (keywords.length < 2) {
+      return this.replyAndSave(userId, 'Vui lòng nhập ít nhất 2 tên sách để so sánh.');
+    }
+    const regexes = keywords.map((k) => new RegExp(k, 'i'));
+    const books = await this.bookModel.find({ title: { $in: regexes } }).lean();
+    if (!books.length) return this.replyAndSave(userId, 'Không tìm thấy sách để so sánh.');
+
+    const context = books.map((b) => `- ${b.title}: ${this.formatVND(b.price)}`).join('\n');
+    const aiReply = await this.aiService.chatWithAI(
+      'Bạn là chuyên gia so sánh sách.',
+      `Người dùng hỏi: "${message}". Thông tin sách tìm được:\n${context}\nSo sánh giá và gợi ý lựa chọn hợp lý.`
+    );
+    return this.replyAndSave(userId, aiReply, books);
+  }
+
+  private async handleRecommendBooks(userId: string, message: string) {
+    const topBooks = await this.bookModel.find().sort({ sold: -1 }).limit(5).lean();
+    const context = topBooks.map((b) => `- ${b.title} (${this.formatVND(b.price)})`).join('\n');
+    const aiReply = await this.aiService.chatWithAI(
+      'Bạn là tư vấn viên bán sách.',
+      `Người dùng yêu cầu tư vấn sách: "${message}". Đây là top sách bán chạy:\n${context}\nHãy gợi ý phù hợp.`
+    );
+    return this.replyAndSave(userId, aiReply, topBooks);
+  }
+
+  private async handleOrderSupport(userId: string) {
+    const reply = `Bạn có thể đặt hàng trực tiếp qua giỏ hàng trên website. 
+1. Chọn sách muốn mua, nhấn "Thêm vào giỏ". 
+2. Vào giỏ hàng, nhấn "Thanh toán". 
+3. Điền thông tin nhận hàng và xác nhận.`;
+    return this.replyAndSave(userId, reply);
+  }
+
+  private async handlePromotionInfo(userId: string) {
+    const reply = `Hiện đang có các khuyến mãi hấp dẫn: 
+- Giảm 10% cho đơn từ 200k. 
+- Freeship cho đơn từ 300k. 
+Bạn có muốn xem danh sách coupon đang hoạt động không?`;
+    return this.replyAndSave(userId, reply);
+  }
+
+  // === Helpers ===
+  private async replyAndSave(userId: string, content: string, quotes: any[] = []) {
+    await this.saveMessage(userId, 'bot', content);
+    return { reply: content, quotes };
+  }
+
   async getHistory(userId: string) {
     const history = await this.historyModel.findOne({ userId }).lean();
     return history?.messages ?? [];
@@ -141,13 +188,9 @@ Hãy liệt kê các tựa sách kèm giá, khuyến khích người dùng mua.`
     return n.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
   }
 
-  // === Welcome Message ===
   async getWelcomeMessage(userId: string) {
     const topBooks = await this.bookModel.find().sort({ createdAt: -1 }).limit(5).lean();
-
-    const bookList = topBooks
-      .map((b) => `- ${b.title} (${this.formatVND(b.price)})`)
-      .join('\n');
+    const bookList = topBooks.map((b) => `- ${b.title} (${this.formatVND(b.price)})`).join('\n');
 
     const systemPrompt = `Bạn là nhân viên hỗ trợ bán sách.
 Ngữ cảnh:
@@ -166,9 +209,7 @@ Hãy giới thiệu ngắn gọn những việc bạn có thể làm cho khách 
 Viết lời chào thân thiện, tự nhiên (giống như Tiki), và liệt kê gọn gàng dưới dạng số thứ tự.`;
 
     const aiReply = await this.aiService.chatWithAI(systemPrompt, 'Hãy gợi ý các chức năng bạn có thể giúp.');
-
     await this.saveMessage(userId, 'bot', aiReply);
-
     return { reply: aiReply };
   }
 }

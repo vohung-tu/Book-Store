@@ -8,7 +8,7 @@
   class="chatbot-window"
   *ngIf="open"
   @slideFade>
-  
+
   <!-- Header -->
   <div class="chat-header">
     <span>💬 Trợ Lý AI</span>
@@ -17,20 +17,49 @@
 
   <!-- Chat Body -->
   <div class="chat-body">
-    <div *ngFor="let msg of messages" [ngClass]="msg.role" class="chat-message">
-      <div>{{ msg.content }}</div>
-      <!-- Nếu có quotes thì hiển thị -->
-      <div *ngIf="msg.quotes?.length" class="quotes">
-        <div *ngFor="let q of msg.quotes" class="quote-item">
-          <span class="title">{{ q.title }}</span>
-          <span class="price">{{ q.price | currency:'VND':'symbol':'1.0-0' }}</span>
+    <div *ngFor="let msg of messages" class="chat-message-wrapper" [ngClass]="msg.role">
+
+      <!-- BOT MESSAGE -->
+      <ng-container *ngIf="msg.role === 'bot'">
+        <div class="avatar">
+          <img src="assets/images/chatbot-drupal.webp" alt="Trợ lý AI" />
         </div>
-      </div>
+
+        <!-- ✅ Đặt bubble chung flex với avatar -->
+        <div class="bubble">
+          <div class="bot-header">Trợ lý AI</div>
+          <div class="content" [innerHTML]="formatMessage(msg.content)"></div>
+          <!-- Nếu là suggestion, hiện nút bắt đầu -->
+          <div *ngIf="msg.type === 'suggestion'" class="suggestion-box">
+            <button class="start-btn" (click)="startChat()">Bắt đầu</button>
+          </div>
+
+          <div *ngIf="msg.quotes?.length" class="quotes">
+            <div *ngFor="let q of msg.quotes" class="quote-item">
+              <img *ngIf="q.coverImage" [src]="q.coverImage" alt="{{ q.title }}" class="quote-img" />
+              <div class="quote-info">
+                <a [routerLink]="q.link" class="title">{{ q.title }}</a>
+                <span class="price">{{ q.price | currency:'VND':'symbol':'1.0-0' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+          <!-- USER MESSAGE -->
+      <ng-container *ngIf="msg.role === 'user'">
+        <div class="bubble">
+          <div class="content" [innerHTML]="formatMessage(msg.content)"></div>
+        </div>
+      </ng-container>
     </div>
 
     <!-- Loading indicator -->
     <div *ngIf="loading" class="chat-message bot">
-      Đang gõ...
+      <div class="avatar">
+        <img src="assets/images/chatbot-avatar.png" alt="Trợ lý AI" />
+      </div>
+      <div class="bubble typing">Đang suy nghĩ...</div>
     </div>
   </div>
 
