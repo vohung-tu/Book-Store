@@ -39,8 +39,7 @@ import { ChatbotComponent } from '../chatbot/chatbot.component';
     ProductItemComponent,
     ToastModule,
     DividerModule,
-    ButtonModule,
-    ChatbotComponent
+    ButtonModule
   ],
   providers: [MessageService],
 })

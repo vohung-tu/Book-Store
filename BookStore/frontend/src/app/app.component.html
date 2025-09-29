@@ -1,7 +1,4 @@
 <div class="app-wrapper">
-  <!-- <div class="top-banner" *ngIf="!isAdminPage() && !isAuthPage()">
-    <img class="top-banner-img" src="assets/images/top-banner.jpg" alt="" />
-  </div> -->
 
   <app-navbar *ngIf="!isAdminPage()"></app-navbar>
 
@@ -11,3 +8,5 @@
 
   <app-footer *ngIf="!isAdminPage() && !isAuthPage()"></app-footer>
 </div>
+<app-chatbot></app-chatbot>
+

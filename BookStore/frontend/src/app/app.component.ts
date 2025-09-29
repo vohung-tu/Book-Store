@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from './component/navbar/navbar.component';
 import { FooterComponent } from './component/footer/footer.component';
 import { ButtonModule } from 'primeng/button';
+import { ChatbotComponent } from './component/chatbot/chatbot.component';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,7 @@ import { ButtonModule } from 'primeng/button';
     NavbarComponent,
     FooterComponent,
     ButtonModule,
+    ChatbotComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'] // Sửa đây
