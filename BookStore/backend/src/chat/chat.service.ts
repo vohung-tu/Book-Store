@@ -75,7 +75,7 @@ export class ChatService {
     const context = cheapest.map((b, i) => `${i + 1}. ${b.title} - ${this.formatVND(b.price)}`).join('\n');
     const aiReply = await this.aiService.chatWithAI(
       'Bạn là nhân viên hỗ trợ bán sách.',
-      `Người dùng hỏi: "${message}". Đây là top 5 sách rẻ nhất:\n${context}\nGiới thiệu top 3 cuốn rẻ nhất.`
+      `Người dùng hỏi: "${message}". Đây là top 5 sách rẻ nhất:\n${context}\nGiới thiệu top 5 cuốn rẻ nhất.`
     );
     await this.saveMessage(userId, 'bot', aiReply);
     return { reply: aiReply, quotes: cheapest };
