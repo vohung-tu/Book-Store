@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Order } from './order.schema';
+import { Model, Types } from 'mongoose';
+import { Order, OrderProduct } from './order.schema';
 import { BooksService } from 'src/books/books.service';
 import { UpdateStatusDto } from './update-status.dto';
 
@@ -9,33 +9,50 @@ import { UpdateStatusDto } from './update-status.dto';
 export class OrderService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<Order>,
-    private booksService: BooksService // ✅ Inject BooksService để cập nhật tồn kho
+    private booksService: BooksService 
   ) {}
 
   async create(createOrderDto: any): Promise<Order> {
     try {
-      console.log('createOrderDto:', createOrderDto);
       if (!Array.isArray(createOrderDto.products)) {
         throw new BadRequestException('Danh sách sản phẩm không hợp lệ!');
       }
 
-      // 🔽 Giảm số lượng tồn kho cho từng sản phẩm trong đơn hàng
-      for (const item of createOrderDto.products) {
-        console.log('Book ID:', item._id); // ✅ Kiểm tra dữ liệu
-
-        if (!item._id) {
+      // Chuẩn hóa products
+      const products = createOrderDto.products.map((item: any) => {
+        const bookId = item.book || item._id; // chấp nhận cả book hoặc _id
+        if (!bookId) {
           throw new BadRequestException('Sách không có ID hợp lệ!');
         }
-        await this.booksService.updateStock(item._id, item.quantity);
+
+        return {
+          book: new Types.ObjectId(bookId), // ✅ đảm bảo có field book
+          title: item.title,
+          price: item.price,
+          quantity: item.quantity,
+          coverImage: item.coverImage,
+        };
+      });
+
+      // Cập nhật tồn kho
+      for (const p of products) {
+        await this.booksService.updateStock(p.book.toString(), p.quantity);
       }
 
-      const newOrder = new this.orderModel(createOrderDto);
+      // Tạo order
+      const newOrder = new this.orderModel({
+        ...createOrderDto,
+        products, // ✅ thay products đã chuẩn hóa
+        orderDate: new Date(),
+      });
+
       return await newOrder.save();
     } catch (error) {
       console.error('Create Order Error:', error);
       throw new InternalServerErrorException('Failed to create order');
     }
   }
+
 
   async findAll(): Promise<any[]> {
     const orders = await this.orderModel.find().sort({ createdAt: -1 }).lean();
@@ -58,7 +75,10 @@ export class OrderService {
   }
 
   async findById(orderId: string): Promise<Order | null> {
-    const order = await this.orderModel.findById(orderId).exec();
+    const order = await this.orderModel
+      .findById(orderId)
+      .populate('products.book')
+      .exec();
     if (!order) {
       throw new NotFoundException(`Đơn hàng với ID ${orderId} không tồn tại!`);
     }
@@ -67,8 +87,23 @@ export class OrderService {
 
   async updateStatus(orderId: string, updateStatusDto: UpdateStatusDto): Promise<Order> {
     const order = await this.orderModel.findById(orderId);
-    if (!order) {
-      throw new NotFoundException('Order not found');
+    if (!order) throw new NotFoundException('Order not found');
+
+    // Nếu trạng thái mới là "completed" → cập nhật tồn kho
+    if (updateStatusDto.status === 'completed') {
+      for (const item of order.products as any[]) {
+        const bookId =
+          typeof item.book === 'object'
+            ? (item.book as any)?._id?.toString?.()
+            : (item.book as unknown as Types.ObjectId)?.toString?.();
+
+        if (!bookId) {
+          console.warn('⚠️ Không tìm thấy bookId cho item:', item);
+          continue;
+        }
+
+        await this.booksService.updateStock(bookId, item.quantity);
+      }
     }
 
     order.status = updateStatusDto.status;

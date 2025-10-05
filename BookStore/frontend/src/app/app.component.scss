@@ -1,27 +1,65 @@
 html, body {
   height: 100%;
   margin: 0;
+  padding: 0;
+  overflow-x: auto;         /* ✅ Cho phép cuộn ngang */
+  overflow-y: auto;
+  scroll-behavior: smooth;  /* ✅ Cuộn mượt */
+  background-color: #fff;
+  font-family: 'Segoe UI', Roboto, sans-serif;
 }
 
+/* ✅ Đặt min-width để khi responsive, trang không bị bóp vỡ */
+body {
+  display: block;
+  min-width: 768px; /* hoặc 1024px nếu layout rộng hơn */
+}
+
+/* ✅ Bao toàn bộ app */
 .app-wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+/* ✅ Nội dung chính tự co giãn */
 .main-content {
   flex: 1;
+  width: 100%;
+  overflow-x: auto; /* ⚡ Khi phần nội dung tràn ngang, sẽ xuất hiện thanh cuộn riêng */
 }
 
+/* ✅ Banner phía trên */
 .top-banner {
   height: 93.74px;
-}
-
-.top-banner-img {
   width: 100%;
-  height: 100%;
+  overflow: hidden;
+
+  .top-banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
+/* ✅ Footer không tràn ra ngoài */
+app-footer {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* ✅ Chatbot nằm cố định */
+app-chatbot {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* ✅ Nút back-to-top */
 .back-to-top {
   position: fixed;
   bottom: 30px;
@@ -29,4 +67,35 @@ html, body {
   z-index: 999;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: opacity 0.3s ease-in-out;
+}
+
+/* ✅ Thanh cuộn đẹp hơn */
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #007bff;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* ✅ Responsive fix cho mobile */
+@media (max-width: 768px) {
+  body {
+    min-width: 600px;
+  }
+
+  .main-content {
+    overflow-x: scroll;
+  }
+
+  app-chatbot {
+    right: 10px;
+    bottom: 10px;
+  }
 }

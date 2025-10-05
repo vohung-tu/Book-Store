@@ -25,16 +25,18 @@ export class OrderController {
   @Patch(':orderId/confirm-payment')
   async confirmPayment(@Param('orderId') orderId: string) {
     const order = await this.orderService.findById(orderId);
-    if (!order) {
-      throw new NotFoundException('Đơn hàng không tồn tại!');
-    }
+    if (!order) throw new NotFoundException('Đơn hàng không tồn tại!');
 
     for (const item of order.products) {
-      await this.booksService.updateStock(item.book.toString(), item.quantity);
+      const bookId = item.book.toString(); // ✅ book là ObjectId
+      await this.booksService.updateStock(bookId, item.quantity);
     }
-    return { message: 'Thanh toán thành công, đã cập nhật tồn kho!' };
-  }
 
+    order.status = 'processing'; // ✅ sau thanh toán thì chuyển sang "processing"
+    await order.save();
+
+    return { message: '✅ Thanh toán thành công, tồn kho đã cập nhật!' };
+  }
   
   @Patch(':id/status')
   async updateStatus(@Param('id') id: string, @Body() updateStatusDto: UpdateStatusDto) {

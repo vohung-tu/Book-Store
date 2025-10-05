@@ -4,7 +4,7 @@ import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 @Schema({ _id: false }) // subdocument không cần _id riêng
 export class OrderProduct {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Book', required: true })
-  book: Types.ObjectId; // ✅ rõ ràng là bookId tham chiếu đến Book
+  book: Types.ObjectId;
 
   @Prop({ required: true })
   title: string;
