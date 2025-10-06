@@ -5,18 +5,27 @@ import { JwtAuthGuard } from './jwt.auth.guard';
 import { UsersService } from '../users.service';
 import { AuthService } from './auth.service';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { LoyaltyService } from 'src/loyalty/loyalty.service';
 
 @Controller('auth')
 export class AuthController {
     constructor(
         private readonly usersService: UsersService,
-        private readonly authService: AuthService
+        private readonly authService: AuthService,
+        private readonly loyaltyService: LoyaltyService
     ) {}
 
     @UseGuards(AuthGuard('jwt'))
     @Get('me')
     getProfile(@Req() req) {
         return req.user;
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('loyalty/me')
+    async getMyLoyalty(@Req() req) {
+    const userId = req.user._id;
+    return this.loyaltyService.getUserLoyalty(userId);
     }
 
     @Get('user-info')
@@ -72,4 +81,6 @@ export class AuthController {
     async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.authService.updateUser(id, updateUserDto);
     }
+
+    
 }

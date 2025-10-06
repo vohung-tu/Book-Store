@@ -27,6 +27,8 @@ import { ResetPasswordLinkComponent } from './component/reset-password-link/rese
 import { AdminCategoryComponent } from './admin/admin-category/admin-category.component';
 import { CouponsComponent } from './admin/admin-coupon/admin-coupon.component';
 import { GetCouponPageComponent } from './component/get-coupon-page/get-coupon-page.component';
+import { CustomerLoyaltyComponent } from './admin/admin-customer-loyalty/customer-loyalty.component';
+import { UserLoyaltyComponent } from './component/user-info/user-loyalty/user-loyalty.component';
 
 const routes: Routes = [
   {
@@ -66,7 +68,8 @@ const routes: Routes = [
       { path: '', component: LayoutUserComponent }, // Mặc định hiện thông tin user
       { path: 'address-book', component: AddressBookComponent },
       { path: 'user-order', component: UserOrderComponent },
-      { path: 'reset-pass', component: ResetPasswordComponent}
+      { path: 'reset-pass', component: ResetPasswordComponent},
+      { path: 'user-loyalty', component: UserLoyaltyComponent}
     ]
   },
   {
@@ -142,6 +145,11 @@ const routes: Routes = [
         path: 'coupon',
         component: CouponsComponent,
         title: 'Admin Coupon'
+      },
+      {
+        path: 'loyal-custom',
+        component: CustomerLoyaltyComponent,
+        title: 'Admin Loyal'
       }
     ],
   },

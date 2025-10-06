@@ -15,6 +15,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AiModule } from './ai-helpers/ai.module';
 import { CouponsModule } from './coupon/coupon.module';
 import { ChatModule } from './chat/chat.module';
+import { LoyaltyModule } from './loyalty/loyalty.module';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { ChatModule } from './chat/chat.module';
     CategoryModule,
     AiModule,
     CouponsModule,
-    ChatModule
+    ChatModule,
+    LoyaltyModule
   ],
   controllers: [AppController],
   providers: [AppService],

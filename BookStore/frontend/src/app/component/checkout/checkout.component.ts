@@ -265,7 +265,7 @@ export class CheckoutComponent implements OnInit {
     const orderData = {
       userId: this.userInfo._id,
       products: this.selectedBooks.map(book => ({
-        _id: book._id,
+        book: book._id,
         quantity: book.quantity,
         title: book.title,
         price: book.price,

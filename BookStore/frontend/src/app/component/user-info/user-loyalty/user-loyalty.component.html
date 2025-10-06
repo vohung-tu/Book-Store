@@ -1,0 +1,64 @@
+<div class="loyalty-container" *ngIf="user">
+  <h2 class="title">Khách hàng thân thiết</h2>
+
+  <div class="card-loyalty">
+    <div class="info">
+      <div class="user-header">
+        <img src="assets/images/member-card.png" alt="Membership" class="member-img" />
+        <div>
+          <h3>{{ user.fullName }}</h3>
+          <p class="email">{{ user.email }}</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <p><strong>Tổng chi tiêu:</strong> {{ user.totalSpent | number:'1.0-0' }} VND</p>
+        <p><strong>Đơn hàng hoàn tất:</strong> {{ user.orderCount }}</p>
+      </div>
+
+      <div class="level-section">
+        <div class="level-row">
+          <div class="level-info">
+            <img src="assets/images/crown.svg" alt="Cấp độ" class="level-icon animate-glow" />
+            <span class="level-tag" [ngClass]="user.level">{{ getLevelName(user.level) }}</span>
+          </div>
+          <span class="level-next"> Mục tiêu: {{ getNextLevel(user.level) }}</span>
+        </div>
+
+        <div class="progress-wrapper">
+          <div class="progress-bar">
+            <div 
+              class="progress active"
+              [style.width.%]="progressPercent"
+            ></div>
+          </div>
+          <div class="progress-labels">
+            <span>Member</span>
+            <span>Silver</span>
+            <span>Gold</span>
+            <span>Diamond</span>
+          </div>
+        </div>
+
+        <p class="goal-text">
+          Cần thêm <strong>{{ getRemaining(user.totalSpent) | number:'1.0-0' }} VND</strong>
+          để đạt hạng <b>{{ getNextLevel(user.level) }}</b>
+        </p>
+      </div>
+
+      <!-- Quyền lợi thành viên -->
+      <div class="benefit-section">
+        <h3>🎁 Quyền lợi thành viên</h3>
+
+        <div class="benefit-item" *ngFor="let b of getBenefits(user.level)">
+          <img [src]="b.icon" alt="icon" class="benefit-icon" />
+          <div class="benefit-content">
+            <p class="benefit-title">{{ b.title }}</p>
+            <p class="benefit-desc">{{ b.desc }}</p>
+            <a *ngIf="b.link" [href]="b.link" class="benefit-link" target="_blank">Xem thêm tại {{ b.linkText }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

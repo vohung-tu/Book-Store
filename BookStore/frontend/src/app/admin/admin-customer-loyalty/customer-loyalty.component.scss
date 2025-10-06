@@ -1,0 +1,43 @@
+.loyalty-admin-wrapper {
+  padding: 2rem;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-top: 64px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    h2 {
+      font-weight: 600;
+      color: #1f2d3d;
+    }
+
+    .filter-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  ::ng-deep .p-dialog-content {
+    overflow-y: auto !important;
+    max-height: 70vh !important;
+  }
+
+  ::ng-deep .p-dropdown-panel {
+    z-index: 2000 !important;
+  }
+
+  ::ng-deep .p-tag {
+    text-transform: capitalize;
+    font-weight: 500;
+  }
+
+  ::ng-deep .p-dialog {
+    overflow: visible !important;
+  }
+}

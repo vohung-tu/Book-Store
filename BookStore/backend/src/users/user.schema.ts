@@ -57,6 +57,16 @@ export class User {
   @Prop()
   payment: string;
 
+  @Prop({ default: 0 })
+  totalSpent: number;
+
+  @Prop({
+    type: String,
+    enum: ['member', 'silver', 'gold', 'diamond'],
+    default: 'member',
+  })
+  level: string;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

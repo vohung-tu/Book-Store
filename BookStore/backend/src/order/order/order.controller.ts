@@ -27,20 +27,28 @@ export class OrderController {
     const order = await this.orderService.findById(orderId);
     if (!order) throw new NotFoundException('Đơn hàng không tồn tại!');
 
+    // ✅ Cập nhật tồn kho khi thanh toán thành công
     for (const item of order.products) {
-      const bookId = item.book.toString(); // ✅ book là ObjectId
-      await this.booksService.updateStock(bookId, item.quantity);
+      const bookId =
+        (item.book?._id || item.book || item._id)?.toString?.();
+      if (bookId) {
+        await this.booksService.updateStock(bookId, item.quantity);
+      }
     }
 
-    order.status = 'processing'; // ✅ sau thanh toán thì chuyển sang "processing"
+    order.status = 'processing';
     await order.save();
 
-    return { message: '✅ Thanh toán thành công, tồn kho đã cập nhật!' };
+    return { message: '✅ Thanh toán thành công, đơn hàng chuyển sang chờ xử lý!' };
   }
   
   @Patch(':id/status')
-  async updateStatus(@Param('id') id: string, @Body() updateStatusDto: UpdateStatusDto) {
-    return this.orderService.updateStatus(id, updateStatusDto);
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() updateStatusDto: UpdateStatusDto
+  ) {
+    const updated = await this.orderService.updateStatus(id, updateStatusDto);
+    return { message: 'Cập nhật trạng thái thành công', order: updated };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -54,5 +62,11 @@ export class OrderController {
   @UseGuards(JwtAuthGuard)
   getMyOrders(@Request() req) {
     return this.orderService.findOrdersByUserId(req.user._id);
+  }
+
+  @Get('admin/backfill-products-book')
+  async backfill() {
+    const modified = await this.orderService.backfillProductsBook();
+    return { modified };
   }
 }

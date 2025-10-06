@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
-@Schema({ _id: false }) // subdocument không cần _id riêng
+@Schema({ _id: false })
 export class OrderProduct {
+  _id?: Types.ObjectId;
+
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Book', required: true })
   book: Types.ObjectId;
 
@@ -23,8 +25,8 @@ const OrderProductSchema = SchemaFactory.createForClass(OrderProduct);
 
 @Schema({ timestamps: true })
 export class Order extends Document {
-  @Prop({ required: true })
-  userId: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
 
   @Prop({ required: true })
   address: string;
@@ -44,7 +46,7 @@ export class Order extends Document {
   @Prop()
   email: string;
 
-  @Prop()
+  @Prop({ required: true })
   total: number;
 
   @Prop({

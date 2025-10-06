@@ -1,0 +1,75 @@
+<div class="loyalty-admin-wrapper">
+  <div class="header">
+    <h2>Quản lý khách hàng thân thiết</h2>
+    <div class="filter-section">
+      <label for="levelFilter">Lọc theo cấp độ:</label>
+      <p-dropdown
+        [options]="levelOptions"
+        [(ngModel)]="selectedLevel"
+        (onChange)="filterByLevel()"
+        placeholder="Tất cả cấp độ"
+        appendTo="body">
+      </p-dropdown>
+    </div>
+  </div>
+
+  <p-table [value]="filteredCustomers" [paginator]="true" [rows]="8" [responsiveLayout]="'scroll'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Tên</th>
+        <th>Email</th>
+        <th>Tổng chi tiêu</th>
+        <th>Cấp độ</th>
+        <th>Thao tác</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-c>
+      <tr>
+        <td>{{ c.fullName }}</td>
+        <td>{{ c.email }}</td>
+        <td>{{ c.totalSpent | currency:'VND' }}</td>
+        <td>
+          <p-tag [value]="getLevelName(c.level)" [severity]="getSeverity(c.level)"></p-tag>
+        </td>
+        <td>
+          <button
+            pButton
+            icon="pi pi-pencil"
+            class="p-button-text p-button-rounded p-button-info"
+            (click)="openEditDialog(c)">
+          </button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- ✅ Dialog có thể scroll -->
+  <p-dialog
+    [(visible)]="displayDialog"
+    [modal]="true"
+    header="Cập nhật cấp độ khách hàng"
+    [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
+    [style]="{ width: '30vw', maxWidth: '400px' }"
+    [contentStyle]="{ 'max-height': '65vh', 'overflow': 'auto' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="dialog-content">
+      <p><strong>{{ selectedCustomer.fullName }}</strong> - {{ selectedCustomer.email }}</p>
+
+      <p-dropdown
+        [options]="levelOptions"
+        [(ngModel)]="selectedCustomer.level"
+        appendTo="body"
+        [style]="{ width: '100%' }"
+        placeholder="Chọn cấp độ">
+      </p-dropdown>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton label="Lưu" icon="pi pi-check" (click)="updateCustomerLevel()"></button>
+      <button pButton label="Hủy" class="p-button-secondary" icon="pi pi-times" (click)="displayDialog=false"></button>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -19,4 +19,6 @@ export interface User {
   payment: string;
   createdAt?: string;  // ✅ thêm
   updatedAt?: string;
+  totalSpent: number;
+  level: 'member' | 'silver' | 'gold' | 'diamond';
 }

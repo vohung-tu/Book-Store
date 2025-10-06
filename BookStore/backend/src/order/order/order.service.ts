@@ -4,53 +4,72 @@ import { Model, Types } from 'mongoose';
 import { Order, OrderProduct } from './order.schema';
 import { BooksService } from 'src/books/books.service';
 import { UpdateStatusDto } from './update-status.dto';
+import { LoyaltyService } from 'src/loyalty/loyalty.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<Order>,
+    private readonly loyaltyService: LoyaltyService,
     private booksService: BooksService 
   ) {}
 
-  async create(createOrderDto: any): Promise<Order> {
-    try {
-      if (!Array.isArray(createOrderDto.products)) {
-        throw new BadRequestException('Danh sách sản phẩm không hợp lệ!');
-      }
-
-      // Chuẩn hóa products
-      const products = createOrderDto.products.map((item: any) => {
-        const bookId = item.book || item._id; // chấp nhận cả book hoặc _id
-        if (!bookId) {
-          throw new BadRequestException('Sách không có ID hợp lệ!');
+  async backfillProductsBook(): Promise<number> {
+  // Dùng aggregation pipeline để map lại mảng products
+    const res = await this.orderModel.updateMany(
+      { 'products.book': { $exists: false }, 'products._id': { $exists: true } },
+      [
+        {
+          $set: {
+            products: {
+              $map: {
+                input: '$products',
+                as: 'p',
+                in: {
+                  $mergeObjects: [
+                    '$$p',
+                    { book: { $ifNull: ['$$p.book', '$$p._id'] } } // nếu chưa có book thì lấy _id cũ
+                  ]
+                }
+              }
+            }
+          }
         }
+      ]
+    );
+    return (res as any).modifiedCount ?? 0;
+  }
 
-        return {
-          book: new Types.ObjectId(bookId), // ✅ đảm bảo có field book
-          title: item.title,
-          price: item.price,
-          quantity: item.quantity,
-          coverImage: item.coverImage,
-        };
-      });
+  async create(createOrderDto: any) {
+    if (!Array.isArray(createOrderDto.products)) {
+      throw new BadRequestException('Danh sách sản phẩm không hợp lệ!');
+    }
 
-      // Cập nhật tồn kho
-      for (const p of products) {
-        await this.booksService.updateStock(p.book.toString(), p.quantity);
+    const preparedProducts = createOrderDto.products.map((p: any) => {
+      const bookId = p.book || p._id || p.id || p.bookId;
+      if (!bookId) {
+        console.warn('⚠️ Thiếu book id:', p);
+        throw new BadRequestException('Thiếu ID sách trong sản phẩm!');
       }
 
-      // Tạo order
-      const newOrder = new this.orderModel({
-        ...createOrderDto,
-        products, // ✅ thay products đã chuẩn hóa
-        orderDate: new Date(),
-      });
-
-      return await newOrder.save();
-    } catch (error) {
-      console.error('Create Order Error:', error);
-      throw new InternalServerErrorException('Failed to create order');
+      return {
+        book: new Types.ObjectId(bookId),
+        title: p.title,
+        price: p.price,
+        quantity: p.quantity,
+        coverImage: p.coverImage,
+      };
+    });
+    for (const item of preparedProducts) {
+      await this.booksService.updateStock(item.book.toString(), item.quantity);
     }
+
+    const newOrder = new this.orderModel({
+      ...createOrderDto,
+      products: preparedProducts,
+    });
+
+    return await newOrder.save();
   }
 
 
@@ -89,27 +108,28 @@ export class OrderService {
     const order = await this.orderModel.findById(orderId);
     if (!order) throw new NotFoundException('Order not found');
 
-    // Nếu trạng thái mới là "completed" → cập nhật tồn kho
+    // 🧩 Đảm bảo mỗi product đều có field book
+    (order.products as any[]).forEach((p: any) => {
+      if (!p.book && p._id) {
+        // Nếu thiếu, tự gán bằng _id cũ (để tránh validation error)
+        p.book = new Types.ObjectId(p._id);
+      }
+    });
+
+    // ✅ Cập nhật tồn kho nếu completed
     if (updateStatusDto.status === 'completed') {
       for (const item of order.products as any[]) {
         const bookId =
-          typeof item.book === 'object'
-            ? (item.book as any)?._id?.toString?.()
-            : (item.book as unknown as Types.ObjectId)?.toString?.();
-
-        if (!bookId) {
-          console.warn('⚠️ Không tìm thấy bookId cho item:', item);
-          continue;
-        }
-
+          (item.book?._id || item.book || item._id)?.toString?.();
+        if (bookId) {
         await this.booksService.updateStock(bookId, item.quantity);
       }
     }
-
-    order.status = updateStatusDto.status;
-    return order.save();
   }
 
+  order.status = updateStatusDto.status;
+  return order.save();
+}
   async cancelOrder(orderId: string, userId: string): Promise<Order> {
     const order = await this.orderModel.findById(orderId);
     
@@ -138,5 +158,18 @@ export class OrderService {
     if (!order) throw new NotFoundException(`Không tìm thấy order với txnRef ${txnRef}`);
     order.status = status;
     return order.save();
+  }
+
+  async markOrderCompleted(orderId: string) {
+    const order = await this.orderModel.findById(orderId);
+    if (!order) throw new Error('Order not found');
+
+    order.status = 'completed';
+    await order.save();
+
+    // Gọi cập nhật khách hàng thân thiết
+    await this.loyaltyService.updateLoyaltyAfterOrder(order.userId, order.total);
+
+    return order;
   }
 }

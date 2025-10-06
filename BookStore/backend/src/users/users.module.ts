@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
@@ -10,12 +10,15 @@ import { RolesGuard } from './auth/roles.guard';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth/auth.service';
 import { MailService } from 'src/order/order/email.service';
+import { LoyaltyModule } from 'src/loyalty/loyalty.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.register({ secret: 'secretKey', signOptions: { expiresIn: '1d' } }),
-    PassportModule
+    PassportModule,
+    forwardRef(() => LoyaltyModule),
+
   ],
   controllers: [UsersController],
   providers: [UsersService, JwtStrategy, JwtAuthGuard,
