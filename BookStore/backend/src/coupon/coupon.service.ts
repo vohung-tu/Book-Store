@@ -37,4 +37,19 @@ export class CouponsService {
   async findByCode(code: string): Promise<Coupon | null> {
     return this.couponModel.findOne({ code }).exec();
   }
+
+  // 🟣 Thêm tiện ích: lọc coupon theo level
+  async findEligibleForLevel(level: string): Promise<Coupon[]> {
+    const all = await this.findAll();
+
+    // ✅ lọc coupon mà requiredLevel chứa level hiện tại
+    return all.filter(c => {
+      if (Array.isArray(c.requiredLevel)) {
+        return c.requiredLevel.includes(level);
+      }
+      // phòng trường hợp dữ liệu cũ vẫn là string
+      return c.requiredLevel === level;
+    });
+  }
+
 }

@@ -43,6 +43,13 @@ export class Coupon {
 
   @Prop()
   categories: string[];
+
+  @Prop({
+    type: [String],
+    enum: ['member', 'silver', 'gold', 'diamond'],
+    default: ['member']
+  })
+  requiredLevel: string[];
 }
 
 export const CouponSchema = SchemaFactory.createForClass(Coupon);

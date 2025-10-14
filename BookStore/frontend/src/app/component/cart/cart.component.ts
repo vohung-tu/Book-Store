@@ -164,22 +164,22 @@ export class CartComponent implements OnInit {
 
   /** 🚫 Check disable */
   isCouponDisabled(coupon: Coupon): boolean {
-  // Nếu coupon có categories -> chỉ tính tổng của những sản phẩm thuộc categories đó
-  const applicableItems = this.cartData.filter(item => {
-    if (!coupon.categories || coupon.categories.length === 0) return true; // áp dụng cho mọi sản phẩm
+    // Nếu coupon có categories -> chỉ tính tổng của những sản phẩm thuộc categories đó
+    const applicableItems = this.cartData.filter(item => {
+      if (!coupon.categories || coupon.categories.length === 0) return true; // áp dụng cho mọi sản phẩm
 
-    // So sánh dựa vào tên category (hoặc slug, tùy bạn)
-    const itemCategoryName = item.categoryName?.name?.toLowerCase() ?? '';
-    return coupon.categories.some(c => c.toLowerCase() === itemCategoryName);
-  });
+      // So sánh dựa vào tên category (hoặc slug, tùy bạn)
+      const itemCategoryName = item.categoryName?.name?.toLowerCase() ?? '';
+      return coupon.categories.some(c => c.toLowerCase() === itemCategoryName);
+    });
 
-  const applicableTotal = applicableItems.reduce(
-    (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
-    0
-  );
+    const applicableTotal = applicableItems.reduce(
+      (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+      0
+    );
 
-  return coupon.minOrder ? applicableTotal < coupon.minOrder : false;
-}
+    return coupon.minOrder ? applicableTotal < coupon.minOrder : false;
+  }
 
 
   /** 🔄 Update tổng tiền khi áp dụng mã */

@@ -6,11 +6,14 @@ export interface Coupon {
   condition: string;
   type: 'percent' | 'amount';
   value: number;
-  minOrder?: number;                 // đổi từ minOrderAmount
+  minOrder?: number;
   applicableProductIds?: string[];
   categories?: string[];
   startDate?: string;
   endDate?: string;
+
+  requiredLevel?: string[];
+
   usageCount?: number;
   usageLimit?: number;
   status?: 'active' | 'disabled' | 'expired';

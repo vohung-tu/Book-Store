@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { Coupon } from './coupon.schema';
 import { CouponsService } from './coupon.service';
+import { JwtAuthGuard } from 'src/users/auth/jwt.auth.guard';
 
 @Controller('coupons')
 export class CouponsController {
@@ -50,6 +51,27 @@ export class CouponsController {
     }
 
     return { valid: true, coupon };
-    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('available/me')
+  async findAvailableForUser(@Req() req: any) {
+    const user = req.user;
+    const coupons = await this.couponsService.findAll();
+
+    // coupon hợp lệ nếu danh sách requiredLevel có chứa user.level
+    const filtered = coupons.filter(c =>
+      Array.isArray(c.requiredLevel)
+        ? c.requiredLevel.includes(user.level)
+        : c.requiredLevel === user.level
+    );
+
+    return filtered;
+  }
+    //  Helper so sánh cấp độ
+  private isEligible(required: string, userLevel: string): boolean {
+    const order = ['member', 'silver', 'gold', 'diamond'];
+    return order.indexOf(userLevel) >= order.indexOf(required);
+  }
 
 }

@@ -21,7 +21,7 @@ export class AuthService {
   ) {}
 
   signToken(user: UserDocument) {
-    return this.jwtService.sign({ sub: user._id, role: user.role, email: user.email });
+    return this.jwtService.sign({ sub: user._id, level: user.level, role: user.role, email: user.email });
   }
 
   async signin(dto: SigninDto): Promise<any> {

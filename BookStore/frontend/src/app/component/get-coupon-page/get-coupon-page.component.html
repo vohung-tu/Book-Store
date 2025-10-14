@@ -83,11 +83,13 @@
 
           <div class="bottom-row">
             <span class="expiry">HSD: {{ c.endDate | date:'dd/MM/yyyy' }}</span>
-            <button 
+            <button
               class="save-btn"
-              [disabled]="isSaved(c)" 
-              (click)="saveCoupon(c)">
-              {{ isSaved(c) ? 'Đã lưu' : 'Lưu mã' }}
+              [disabled]="isSaved(c) || !canSaveCoupon(c)"
+              (click)="saveCoupon(c)"
+              [pTooltip]="getTooltipText(c)"
+              tooltipPosition="top">
+              {{ isSaved(c) ? 'Đã lưu' : (canSaveCoupon(c) ? 'Lưu mã' : 'Không đủ cấp độ') }}
             </button>
           </div>
         </div>

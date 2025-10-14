@@ -6,6 +6,7 @@
   <div class="body-bar">
     <button pButton label="Thêm Coupon" icon="pi pi-plus" (click)="openDialog()"></button>
   </div>
+
   <p-table [value]="coupons" [paginator]="true" [rows]="10">
     <ng-template pTemplate="header">
       <tr>
@@ -18,10 +19,12 @@
         <th>Giá trị</th>
         <th>Đơn tối thiểu</th>
         <th>Ngày hiệu lực</th>
+        <th>Cấp độ yêu cầu</th> 
         <th>Trạng thái</th>
         <th>Thao tác</th>
       </tr>
     </ng-template>
+
     <ng-template pTemplate="body" let-c>
       <tr>
         <td>{{ c.code }}</td>
@@ -40,6 +43,19 @@
         <td>{{ c.value }}{{ c.type === 'percent' ? '%' : '₫' }}</td>
         <td>{{ c.minOrder | number }}₫</td>
         <td>{{ c.startDate | date }} - {{ c.endDate | date }}</td>
+        <td>
+          <ng-container *ngIf="c.requiredLevel?.length; else allLevels">
+            <p-tag 
+              *ngFor="let lvl of c.requiredLevel" 
+              [value]="getLevelName(lvl)" 
+              [severity]="getLevelSeverity(lvl)"
+            >
+            </p-tag>
+          </ng-container>
+          <ng-template #allLevels>
+            <em>Tất cả thành viên</em>
+          </ng-template>
+        </td>
         <td><p-tag [value]="c.status" [severity]="c.status==='active'?'success':'danger'"></p-tag></td>
         <td class="actions">
           <button pButton text icon="pi pi-pencil" (click)="editCoupon(c)"></button>
@@ -52,6 +68,7 @@
   <p-dialog [(visible)]="displayDialog" header="{{ isEdit ? 'Sửa Coupon' : 'Thêm Coupon' }}">
     <form (ngSubmit)="saveCoupon()">
       <div class="p-fluid">
+        <!-- Các field cũ giữ nguyên -->
         <div class="p-field">
           <label>Mã CODE</label>
           <input pInputText type="text" [(ngModel)]="selectedCoupon.code" name="code" required />
@@ -109,10 +126,24 @@
           <label>Điều kiện sử dụng</label>
           <textarea pInputTextarea rows="3" [(ngModel)]="selectedCoupon.condition" name="condition"></textarea>
         </div>
+
+        <!-- ✅ Thêm dropdown chọn cấp độ yêu cầu -->
+        <div class="p-field">
+          <label>Cấp độ yêu cầu</label>
+          <p-multiSelect 
+            [options]="levelOptions" 
+            [(ngModel)]="selectedCoupon.requiredLevel" 
+            name="requiredLevel"
+            defaultLabel="Chọn cấp độ"
+            optionLabel="label" 
+            optionValue="value"
+            display="chip">
+          </p-multiSelect>
+        </div>
       </div>
 
       <div class="dialog-actions">
-        <button pButton (click)="show = false" label="Hủy"></button>
+        <button pButton (click)="displayDialog = false" label="Hủy"></button>
         <button pButton type="submit" label="Lưu"></button>
       </div>
     </form>
