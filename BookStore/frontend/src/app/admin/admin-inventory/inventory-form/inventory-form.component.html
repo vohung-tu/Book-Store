@@ -1,0 +1,109 @@
+<div class="inv-form-card">
+  <h2 class="inv-form-title">
+    Tạo phiếu {{ typeCtrl.value === 'import' ? 'nhập' : 'xuất' }} kho
+  </h2>
+
+  <div class="inv-form-row">
+    <label class="inv-label">Loại phiếu</label>
+    <select class="inv-select" [formControl]="typeCtrl">
+      <option value="import">Nhập kho</option>
+      <option value="export">Xuất kho</option>
+    </select>
+  </div>
+
+  <form [formGroup]="form" class="inv-form">
+    <div class="inv-grid">
+      <div class="inv-field">
+        <label class="inv-label">Ngày</label>
+        <p-calendar formControlName="date" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
+      </div>
+
+      <div class="inv-field" *ngIf="typeCtrl.value === 'import'">
+        <label class="inv-label">Nhà cung cấp</label>
+        <input class="inv-input" formControlName="supplierName" placeholder="VD: NXB Trẻ" />
+      </div>
+
+      <div class="inv-field" *ngIf="typeCtrl.value === 'export'">
+        <label class="inv-label">Người nhận</label>
+        <input class="inv-input" formControlName="receiverName" placeholder="VD: Nguyễn Văn A / Mã đơn" />
+      </div>
+
+      <div class="inv-field inv-field--full">
+        <label class="inv-label">Ghi chú</label>
+        <input class="inv-input" formControlName="reason" placeholder="Lý do nhập/xuất" />
+      </div>
+    </div>
+
+    <div class="inv-details">
+      <h3 class="inv-subtitle">Dòng chi tiết</h3>
+
+      <div class="inv-table-wrap">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th style="width: 40%">Sách</th>
+              <th style="width: 15%">Số lượng</th>
+              <th style="width: 20%">Đơn giá</th>
+              <th style="width: 15%">Thành tiền</th>
+              <th style="width: 10%"></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let g of lines.controls; let i = index" [formGroup]="$any(g)">
+              <td>
+                <p-dropdown
+                  formControlName="bookId"
+                  [options]="books"
+                  optionLabel="title"
+                  optionValue="_id"
+                  [filter]="true" filterBy="title"
+                  [showClear]="true"
+                  placeholder="Chọn sách"
+
+                  [appendTo]="'body'"            
+                  [style]="{ width: '100%' }"   
+                  [panelStyle]="{ minWidth: '100%', maxHeight: '320px' }"
+                  [autoZIndex]="true" [baseZIndex]="1000"
+                  [virtualScroll]="true" [virtualScrollItemSize]="36"
+                >
+                  <ng-template let-opt pTemplate="item">
+                    {{ opt.title }} <small class="inv-muted">(tồn: {{ opt.stockQuantity }})</small>
+                  </ng-template>
+                </p-dropdown>
+              </td>
+
+              <td><p-inputNumber formControlName="quantity" [min]="1" [useGrouping]="false"></p-inputNumber></td>
+              <td><p-inputNumber formControlName="unitPrice" [min]="0" [useGrouping]="true"></p-inputNumber></td>
+              <td>{{ (g.get('quantity')?.value || 0) * (g.get('unitPrice')?.value || 0) | number }}</td>
+              <td>
+                <button pButton type="button"
+                        icon="pi pi-trash"
+                        class="p-button-text p-button-danger"
+                        (click)="removeLine(i)"
+                        *ngIf="lines.length > 1"></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button pButton type="button" label="Thêm dòng" icon="pi pi-plus" (click)="addLine()"></button>
+    </div>
+
+    <div class="inv-total">
+      <div><b>Tổng SL:</b> {{ totalQty() }}</div>
+      <div><b>Tổng tiền:</b> {{ totalAmt() | number }}</div>
+    </div>
+
+    <div class="inv-actions">
+      <button pButton type="button"
+              class="p-button-success"
+              [label]="loading() ? 'Đang lưu...' : (typeCtrl.value === 'import' ? 'Lưu phiếu nhập' : 'Lưu phiếu xuất')"
+              [disabled]="loading()"
+              (click)="submit()"></button>
+    </div>
+  </form>
+</div>
+
+<p-toast></p-toast>

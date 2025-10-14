@@ -1,0 +1,112 @@
+<div class="inv-list-card">
+  <h2 class="inv-list-title">Quản lý phiếu xuất/nhập kho</h2>
+
+  <div class="inv-filters">
+    <div class="inv-field">
+      <label class="inv-label">Loại phiếu</label>
+      <select class="inv-select" [(ngModel)]="type" (change)="page=1;load()">
+        <option value="">Tất cả</option>
+        <option value="import">Nhập kho</option>
+        <option value="export">Xuất kho</option>
+      </select>
+    </div>
+
+    <div class="inv-field">
+      <label class="inv-label">Từ ngày</label>
+      <p-calendar
+        [(ngModel)]="from"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        appendTo="body"
+        (onSelect)="page=1;load()">
+      </p-calendar>
+    </div>
+
+    <div class="inv-field">
+      <label class="inv-label">Đến ngày</label>
+      <p-calendar
+        [(ngModel)]="to"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        appendTo="body"
+        (onSelect)="page=1;load()">
+      </p-calendar>
+    </div>
+
+    <div class="inv-field inv-field--wide">
+      <label class="inv-label">Tìm kiếm</label>
+      <input class="inv-input" [(ngModel)]="q" placeholder="Mã phiếu / NCC / Người nhận / Ghi chú" (keyup.enter)="page=1;load()"/>
+    </div>
+  </div>
+
+  <p-table [value]="items" [loading]="loading()" [paginator]="false" [rows]="limit" responsiveLayout="scroll" class="inv-p-table">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Mã phiếu</th>
+        <th>Loại</th>
+        <th>Ngày</th>
+        <th>Ghi chú</th>
+        <th>Tổng SL</th>
+        <th>Tổng tiền</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.code }}</td>
+        <td>
+          <span class="inv-badge" [class.inv-badge--import]="row.type === 'import'" [class.inv-badge--export]="row.type === 'export'">
+            {{ row.type === 'import' ? 'Nhập' : 'Xuất' }}
+          </span>
+        </td>
+        <td>{{ row.date | date:'short' }}</td>
+        <td>{{ row.reason }}</td>
+        <td>{{ row.totalQuantity }}</td>
+        <td>{{ row.totalAmount | number }}</td>
+        <td>
+          <button pButton type="button" label="Chi tiết" (click)="openDetail(row)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-paginator
+    [rows]="limit"
+    [totalRecords]="total"
+    (onPageChange)="onPageChange($event)"
+    [rowsPerPageOptions]="[10,20,50]">
+  </p-paginator>
+</div>
+
+<p-dialog [(visible)]="showDetail" [modal]="true" header="Chi tiết phiếu" [style]="{width:'820px'}">
+  <div *ngIf="selected as s">
+    <div class="inv-detail-head">
+      <b>{{ s.code }}</b> — {{ s.type === 'import' ? 'Phiếu nhập' : 'Phiếu xuất' }} — {{ s.date | date:'short' }}
+    </div>
+    <div class="inv-detail-line" *ngIf="s.supplierName">Nhà cung cấp: <b>{{ s.supplierName }}</b></div>
+    <div class="inv-detail-line" *ngIf="s.receiverName">Người nhận: <b>{{ s.receiverName }}</b></div>
+    <div class="inv-detail-line">Ghi chú: {{ s.reason }}</div>
+
+    <p-table [value]="s.details" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Sách</th>
+          <th>SL</th>
+          <th>Đơn giá</th>
+          <th>Thành tiền</th>
+          <th>Tồn sau</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-d>
+        <tr>
+          <td>{{ d.bookId?.title }}</td>
+          <td>{{ d.quantity }}</td>
+          <td>{{ d.unitPrice | number }}</td>
+          <td>{{ d.subtotal | number }}</td>
+          <td>{{ d.bookId?.stockQuantity }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</p-dialog>

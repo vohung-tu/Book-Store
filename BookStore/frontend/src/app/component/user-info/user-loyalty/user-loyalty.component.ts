@@ -97,8 +97,8 @@ export class UserLoyaltyComponent implements OnInit {
 
   getRemaining(totalSpent: number): number {
     if (totalSpent >= 4_000_000) return 0;
-    if (totalSpent >= 2_000_000) return 10_000_000 - totalSpent;
-    if (totalSpent >= 1_000_000) return 5_000_000 - totalSpent;
+    if (totalSpent >= 2_000_000) return 4_000_000 - totalSpent;
+    if (totalSpent >= 1_000_000) return 2_000_000 - totalSpent;
     return 1_000_000 - totalSpent;
   }
 
@@ -133,17 +133,17 @@ export class UserLoyaltyComponent implements OnInit {
     // Nếu là Gold hoặc Diamond, thêm đặc quyền riêng
     if (level === 'gold' || level === 'diamond') {
       base.push({
-        icon: 'assets/images/priority.svg',
-        title: 'Hỗ trợ ưu tiên 24/7',
-        desc: 'Thành viên vàng & kim cương được hỗ trợ nhanh qua hotline riêng.',
+        icon: 'assets/images/gift.svg',
+        title: 'Quà tri ân sinh nhật',
+        desc: 'Nhận quà đặc biệt mỗi năm từ hệ thống BookStore.',
       });
     }
 
     if (level === 'diamond') {
       base.push({
-        icon: 'assets/images/gift.svg',
-        title: 'Quà tri ân sinh nhật 🎂',
-        desc: 'Nhận quà đặc biệt mỗi năm từ hệ thống BookStore.',
+        icon: 'assets/images/priority.png',
+        title: 'Hỗ trợ ưu tiên 24/7',
+        desc: 'Thành viên vàng & kim cương được hỗ trợ nhanh qua hotline riêng.',
       });
     }
 

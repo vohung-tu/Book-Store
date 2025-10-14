@@ -1,0 +1,53 @@
+.inv-list-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+  margin-top: 64px;
+}
+
+.inv-list-title { margin: 0 0 14px; font-size: 20px; font-weight: 700; }
+
+/* Filters */
+.inv-filters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 1200px) { .inv-filters { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 680px)  { .inv-filters { grid-template-columns: 1fr; } }
+
+.inv-field { display: flex; flex-direction: column; gap: 6px; }
+.inv-field--wide { grid-column: span 2; }
+.inv-label { font-weight: 600; font-size: 13px; color: #303437; }
+
+.inv-input, .inv-select {
+  height: 36px; border: 1px solid #dfe3e6; border-radius: 8px; padding: 6px 10px; outline: none;
+}
+.inv-input:focus, .inv-select:focus { border-color: #2f80ed; }
+
+/* Prime table tweak */
+:host ::ng-deep .inv-p-table .p-datatable-thead > tr > th {
+  background: #fafbfc; font-weight: 700;
+}
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  vertical-align: middle;
+}
+
+/* Badges */
+.inv-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 12px;
+  color: #0b3d2c;
+  background: #e6f6ef; /* default import-ish */
+}
+.inv-badge--import { background: #e6f6ef; color: #0b3d2c; }
+.inv-badge--export { background: #fde9e9; color: #8a1f1f; }
+
+/* Dialog detail */
+.inv-detail-head { margin: 0 0 6px; }
+.inv-detail-line { margin: 4px 0; }

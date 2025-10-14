@@ -1,37 +1,39 @@
-import { Controller, Post, Body, Get, Query, UseInterceptors, BadRequestException, UploadedFiles } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  UploadedFiles,
+  UseInterceptors,
+  BadRequestException,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './review.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { Review } from './review.schema';
-
 
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
+  /** 📦 Lấy danh sách review cho nhiều sách cùng lúc (dashboard dùng) */
   @Get('bulk')
   async getReviewsBulk(@Query('ids') ids: string) {
     const bookIds = ids.split(','); // "id1,id2,id3"
     return this.reviewService.getReviewsForManyBooks(bookIds);
   }
 
-  @Post()
-  async create(@Body() createReviewDto: CreateReviewDto) {
-    return await this.reviewService.create(createReviewDto);
-  }
-
+  /** 🧾 Lấy toàn bộ review hoặc theo productId */
   @Get()
-  async findByProductId(@Query('productId') productId: string) {
-    return await this.reviewService.findByProductId(productId);
-  }
-
-  @Get()
-  async findReviews(@Query('productId') productId?: string) {
+  async find(@Query('productId') productId?: string) {
     if (productId) {
-      return await this.reviewService.findByProductId(productId);
+      return this.reviewService.findByProductId(productId);
     }
-    return await this.reviewService.findAll(); // ✅ Trả về tất cả bình luận
+    return this.reviewService.findAll(); // ✅ trả toàn bộ bình luận
   }
+
+  /** ✍️ Tạo review mới (có thể kèm hình ảnh/video) */
   @Post()
   @UseInterceptors(
     FilesInterceptor('media', 5, {
@@ -46,13 +48,15 @@ export class ReviewController {
           cb(new BadRequestException('Invalid file type or size'), false);
         }
       },
-    })
+    }),
   )
   async createReview(
     @UploadedFiles() files: Express.Multer.File[],
-    @Body() body: any,
+    @Body() body: CreateReviewDto,
   ): Promise<Review> {
-    const images = files.filter(f => f.mimetype.startsWith('image/')).map(f => f.path);
+    const images =
+      files?.filter((f) => f.mimetype.startsWith('image/')).map((f) => f.path) ??
+      [];
     return this.reviewService.create({ ...body, images });
   }
 }

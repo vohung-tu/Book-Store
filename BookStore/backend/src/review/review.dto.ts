@@ -5,4 +5,5 @@ export class CreateReviewDto {
   rating: number;
   anonymous: boolean;
   createdAt?: Date;
+  images?: string[];
 }

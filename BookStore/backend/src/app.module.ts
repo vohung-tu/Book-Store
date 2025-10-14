@@ -16,6 +16,7 @@ import { AiModule } from './ai-helpers/ai.module';
 import { CouponsModule } from './coupon/coupon.module';
 import { ChatModule } from './chat/chat.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -35,7 +36,8 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
     AiModule,
     CouponsModule,
     ChatModule,
-    LoyaltyModule
+    LoyaltyModule,
+    InventoryModule
   ],
   controllers: [AppController],
   providers: [AppService],

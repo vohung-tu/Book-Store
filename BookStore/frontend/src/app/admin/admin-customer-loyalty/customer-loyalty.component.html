@@ -28,7 +28,7 @@
       <tr>
         <td>{{ c.fullName }}</td>
         <td>{{ c.email }}</td>
-        <td>{{ c.totalSpent | currency:'VND' }}</td>
+        <td>{{ c.totalSpent | number: '1.0-0' }} VND</td>
         <td>
           <p-tag [value]="getLevelName(c.level)" [severity]="getSeverity(c.level)"></p-tag>
         </td>

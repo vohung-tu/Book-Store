@@ -29,6 +29,8 @@ import { CouponsComponent } from './admin/admin-coupon/admin-coupon.component';
 import { GetCouponPageComponent } from './component/get-coupon-page/get-coupon-page.component';
 import { CustomerLoyaltyComponent } from './admin/admin-customer-loyalty/customer-loyalty.component';
 import { UserLoyaltyComponent } from './component/user-info/user-loyalty/user-loyalty.component';
+import { InventoryListComponent } from './admin/admin-inventory/inventory-list/inventory-list.component';
+import { InventoryFormComponent } from './admin/admin-inventory/inventory-form/inventory-form.component';
 
 const routes: Routes = [
   {
@@ -150,6 +152,15 @@ const routes: Routes = [
         path: 'loyal-custom',
         component: CustomerLoyaltyComponent,
         title: 'Admin Loyal'
+      },
+      {
+        path: 'inventory',
+        component: InventoryListComponent,
+        title: 'Admin Inventory'
+      },
+      {
+        path: 'inventory/new',
+        component: InventoryFormComponent
       }
     ],
   },

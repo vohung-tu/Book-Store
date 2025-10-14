@@ -1,4 +1,5 @@
 <p-toast></p-toast>
+
 <app-breadcrumb
   [items]="[
     { label: 'Trang chủ', url: '/' },
@@ -9,120 +10,124 @@
 <h1 style="text-align: center; color: #105191;">GIỎ HÀNG</h1>
 
 <div class="cart-container" *ngIf="(cart$ | async) as cartData">
-  <ng-container *ngIf="cartData.length > 0">
+  <div class="cart-flex">
+    <!-- ✅ TABLE GIỎ HÀNG (chỉ hiện nếu có sản phẩm) -->
+    <div class="cart-table" *ngIf="cartData.length > 0; else emptyCart">
+      <div class="delete-container" *ngIf="selectedBooks.length > 0">
+        <p-button variant="outlined" severity="danger" label="XÓA TẤT CẢ" (click)="removeAllSelected()"></p-button>
+        <p-button variant="outlined" severity="success" label="BỎ CHỌN TẤT CẢ" (click)="deselectAll()"></p-button>
+      </div>
 
-    <div class="delete-all-container" *ngIf="selectedBooks.length > 0">
-      <p-button variant="outlined" severity="danger" label="XÓA TẤT CẢ" (click)="removeAllSelected()"></p-button>
-      <p-button variant="outlined" severity="success" label="BỎ CHỌN TẤT CẢ" (click)="deselectAll()"></p-button>
-    </div>
+      <p-table
+        [value]="cartData"
+        [paginator]="true"
+        [rows]="5"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        [(selection)]="selectedBooks"
+        dataKey="_id"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 3rem">
+              <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+            </th>
+            <th>Sản phẩm</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+            <th>Xóa</th>
+          </tr>
+        </ng-template>
 
-    <div class="cart-flex">
-      <!-- TABLE GIỎ HÀNG -->
-      <div class="cart-table">
-        <p-table
-          [value]="cartData"
-          [paginator]="true"
-          [rows]="5"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          [(selection)]="selectedBooks"
-          dataKey="_id"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th style="width: 3rem">
-                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-              </th>
-              <th>Sản phẩm</th>
-              <th>Giá</th>
-              <th>Số lượng</th>
-              <th>Thành tiền</th>
-              <th>Xóa</th>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="body" let-book>
-            <tr>
-              <td><p-tableCheckbox [value]="book"></p-tableCheckbox></td>
-              <td><img [src]="book.coverImage" class="product-img" /> {{ book.title }}</td>
-              <td>{{ (book.flashsale_price || book.price) | dotSeparator }} đ</td>
-              <td>
+        <ng-template pTemplate="body" let-book>
+          <tr>
+            <td><p-tableCheckbox [value]="book"></p-tableCheckbox></td>
+            <td><img [src]="book.coverImage" class="product-img" /> {{ book.title }}</td>
+            <td>{{ (book.flashsale_price || book.price) | dotSeparator }}đ</td>
+            <td>
+              <div class="quantity-wrapper">
                 <button mat-button (click)="decreaseQuantity(book)">-</button>
                 <span>{{ book.quantity || 1 }}</span>
                 <button mat-button (click)="increaseQuantity(book)">+</button>
-              </td>
-              <td class="total-price">
-                {{ (book.flashsale_price || book.price) * (book.quantity || 1) | dotSeparator }} đ
-              </td>
-              <td>
-                <button class="delete-btn" (click)="removeItem(book.cartItemId)">
-                  <i class="pi pi-trash"></i>
-                </button>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+              </div>
+            </td>
+            <td class="total-price">
+              {{ (book.flashsale_price || book.price) * (book.quantity || 1) | dotSeparator }}đ
+            </td>
+            <td>
+              <button class="delete-btn" (click)="removeItem(book.cartItemId)">
+                <i class="pi pi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- ✅ BÊN PHẢI: COUPON & TỔNG TIỀN -->
+    <div class="cart-right">
+      <!-- ✅ Luôn hiển thị coupon -->
+      <div class="cart-coupons" *ngIf="savedCoupons.length > 0">
+        <div class="coupon-header">
+          <span class="title"><i class="pi pi-ticket"></i> KHUYẾN MÃI</span>
+          <a class="view-more" (click)="toggleCouponView()">Xem thêm</a>
+        </div>
+
+        <div class="coupon-main" *ngFor="let c of displayedCoupons">
+          <div class="coupon-info">
+            <div class="coupon-title">{{ c.title }}</div>
+            <div class="coupon-desc">{{ c.description }}</div>
+            <div class="coupon-expiry">HSD: {{ c.endDate | date:'dd/MM/yyyy' }}</div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getProgress(c)"></div>
+            </div>
+          </div>
+
+          <button class="btn-apply" [disabled]="isCouponDisabled(c)" (click)="applyCoupon(c)">
+            {{ isCouponDisabled(c) ? 'Mua thêm' : 'Áp mã' }}
+          </button>
+        </div>
+
+        <div class="applied-coupons" *ngIf="appliedCoupons.length > 0">
+          <div class="coupon-tag" *ngFor="let ac of appliedCoupons">
+            Mã {{ ac.code }}
+            <span class="remove" (click)="removeAppliedCoupon(ac)">×</span>
+          </div>
+        </div>
       </div>
 
-      <!-- CART COUPONS + SUMMARY -->
-      <div class="cart-right">
-        <div class="cart-coupons" *ngIf="savedCoupons.length > 0">
-          <div class="coupon-header">
-            <span class="title"><i class="pi pi-ticket"></i> KHUYẾN MÃI</span>
-            <a class="view-more" (click)="toggleCouponView()">Xem thêm</a>
-          </div>
-
-          <div class="coupon-main" *ngFor="let c of displayedCoupons">
-            <div class="coupon-info">
-              <div class="coupon-title">{{ c.title }}</div>
-              <div class="coupon-desc">{{ c.description }}</div>
-              <div class="coupon-expiry">HSD: {{ c.endDate | date:'dd/MM/yyyy' }}</div>
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="getProgress(c)"></div>
-              </div>
-            </div>
-
-            <button class="btn-apply" [disabled]="isCouponDisabled(c)" (click)="applyCoupon(c)">
-              {{ isCouponDisabled(c) ? 'Mua thêm' : 'Áp mã' }}
-            </button>
-          </div>
-
-          <div class="applied-coupons" *ngIf="appliedCoupons.length > 0">
-            <div class="coupon-tag" *ngFor="let ac of appliedCoupons">
-              Mã {{ ac.code }}
-              <span class="remove" (click)="removeAppliedCoupon(ac)">×</span>
-            </div>
-          </div>
+      <!-- ✅ Nếu có sản phẩm thì hiển thị tổng tiền -->
+      <div class="cart-summary" *ngIf="cartData.length > 0">
+        <div class="price-now">
+          <h3>Tạm tính:</h3>
+          <span>{{ originalTotal | dotSeparator }} đ</span>
         </div>
 
-        <div class="cart-summary">
-          <div class="price-now">
-            <h3>Tạm tính:</h3>
-            <span>{{ originalTotal | dotSeparator }} đ</span>
-          </div>
-
-          <div class="discount" *ngIf="totalDiscount > 0">
-            <h3>Giảm giá:</h3>
-            <span>- {{ totalDiscount | dotSeparator }} đ</span>
-          </div>
-
-          <p-divider></p-divider>
-
-          <div class="price-final">
-            <h3>Tổng tiền:</h3>
-            <span>{{ totalPrice | dotSeparator }} đ</span>
-          </div>
-
-          <p-button class="pay-btn" severity="success" label="THANH TOÁN" (click)="goToCheckout()"></p-button>
+        <div class="discount" *ngIf="totalDiscount > 0">
+          <h3>Giảm giá:</h3>
+          <span>- {{ totalDiscount | dotSeparator }} đ</span>
         </div>
+
+        <p-divider></p-divider>
+
+        <div class="price-final">
+          <h3>Tổng tiền:</h3>
+          <span>{{ totalPrice | dotSeparator }} đ</span>
+        </div>
+
+        <p-button class="pay-btn" severity="success" label="THANH TOÁN" (click)="goToCheckout()"></p-button>
       </div>
     </div>
-  </ng-container>
+  </div>
 </div>
 
-<!-- Khi giỏ hàng rỗng -->
-<div *ngIf="(cart$ | async)?.length === 0" class="no-selected">
-  <p>Không có sản phẩm nào được thêm vào giỏ hàng. Quay lại <a href="/">cửa hàng</a> để tiếp tục mua sắm</p>
-</div>
+<!-- ❌ KHI GIỎ HÀNG RỖNG -->
+<ng-template #emptyCart>
+  <div class="no-selected">
+    <p>Không có sản phẩm nào được thêm vào giỏ hàng.  
+    Quay lại <a href="/">cửa hàng</a> để tiếp tục mua sắm</p>
+  </div>
+</ng-template>
 
 <!-- DIALOG HIỂN THỊ DANH SÁCH COUPON -->
 <p-dialog
@@ -147,15 +152,11 @@
         <div class="coupon-desc">{{ c.description }}</div>
         <div class="coupon-expiry">HSD: {{ c.endDate | date:'dd/MM/yyyy' }}</div>
 
-        <!-- Thanh tiến độ -->
         <div class="progress-bar">
           <div class="progress-fill" [style.width.%]="getProgress(c)"></div>
         </div>
 
-        <button
-          class="btn-apply"
-          [disabled]="isCouponDisabled(c)"
-          (click)="applyCoupon(c)">
+        <button class="btn-apply" [disabled]="isCouponDisabled(c)" (click)="applyCoupon(c)">
           {{ isCouponDisabled(c) ? 'Mua thêm' : 'Áp dụng' }}
         </button>
       </div>

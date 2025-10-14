@@ -44,6 +44,9 @@ export class Book {
 
   @Prop({ type: String, default: '' })
   summary_ai: string;
+
+  @Prop({ default: 0, min: 0, index: true })
+  stockQuantity: number; // ✅ số lượng tồn hiện tại
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);

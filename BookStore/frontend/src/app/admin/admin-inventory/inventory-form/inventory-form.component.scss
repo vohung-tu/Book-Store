@@ -1,0 +1,71 @@
+/* Card */
+.inv-form-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  margin-top: 64px;
+}
+
+/* Titles */
+.inv-form-title { margin: 0 0 12px; font-size: 20px; font-weight: 700; }
+.inv-subtitle { margin: 18px 0 10px; font-size: 16px; font-weight: 600; }
+
+/* Rows & fields */
+.inv-form-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.inv-form { display: block; }
+
+.inv-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 992px) {
+  .inv-grid { grid-template-columns: 1fr; }
+}
+.inv-field { display: flex; flex-direction: column; gap: 6px; }
+.inv-field--full { grid-column: 1 / -1; }
+
+/* Inputs */
+.inv-label { font-weight: 600; font-size: 13px; color: #303437; }
+.inv-input,
+.inv-select {
+  height: 36px;
+  border: 1px solid #dfe3e6;
+  border-radius: 8px;
+  padding: 6px 10px;
+  outline: none;
+}
+.inv-input:focus,
+.inv-select:focus { border-color: #2f80ed; }
+
+/* Table */
+.inv-table-wrap { overflow: auto; border: 1px solid #eef1f3; border-radius: 8px; }
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+.inv-table th, .inv-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f3f5;
+  text-align: left;
+  vertical-align: middle;
+}
+.inv-table thead th {
+  background: #fafbfc;
+  font-weight: 700;
+}
+
+/* Helpers */
+.inv-muted { opacity: .65; }
+
+/* Totals & actions */
+.inv-total {
+  display: flex;
+  justify-content: flex-end;
+  gap: 24px;
+  margin: 14px 0;
+  font-size: 14px;
+}
+.inv-actions { display: flex; justify-content: flex-end; }
