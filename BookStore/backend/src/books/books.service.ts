@@ -5,6 +5,7 @@ import { ClientSession, Model, Types } from 'mongoose';
 import { Order } from 'src/order/order/order.schema';
 import { Author } from 'src/authors/authors.schema';
 import { Category, CategoryDocument } from 'src/categories/categories.schema';
+import { PipelineStage } from 'mongoose';
 import { AiService } from 'src/ai-helpers/ai.service';
 
 @Injectable()
@@ -46,9 +47,12 @@ export class BooksService {
   }
 
   async findAllBooks(page = 1, limit = 20) {
+    page = Math.max(1, Number(page) || 1);
+    limit = Math.max(1, Number(limit) || 20);
     const skip = (page - 1) * limit;
 
     const projection = {
+      _id: 1,
       title: 1,
       author: 1,
       price: 1,
@@ -61,32 +65,68 @@ export class BooksService {
       categoryName: 1,
       quantity: 1,
       sold: 1,
-    };
+      createdAt: 1,
+    } as const;
+
+    // ❗️KHÔNG dùng "as const" ở đây
+    const soldStatsPipeline: PipelineStage[] = [
+      { $unwind: '$products' },
+      {
+        $addFields: {
+          bookRef: {
+            $ifNull: [
+              '$products.book', // ObjectId hoặc string
+              { $ifNull: ['$products.bookId', '$products._id'] },
+            ],
+          },
+        },
+      },
+      { $match: { bookRef: { $ne: null } } },
+      {
+        $group: {
+          _id: '$bookRef',
+          totalSold: { $sum: { $ifNull: ['$products.quantity', 0] } },
+        },
+      },
+    ];
 
     const [books, total, soldStats] = await Promise.all([
-      this.bookModel.find({}, projection).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      this.bookModel
+        .find({}, projection)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
       this.bookModel.countDocuments(),
-      this.orderModel.aggregate([
-        { $unwind: "$products" },
-        { $group: { _id: "$products._id", totalSold: { $sum: "$products.quantity" } } }
-      ])
+      this.orderModel.aggregate<{ _id: Types.ObjectId | string; totalSold: number }>(soldStatsPipeline),
     ]);
 
-    const soldMap = new Map(soldStats.map(s => [s._id.toString(), s.totalSold]));
+    const soldMap = new Map<string, number>();
+    for (const s of soldStats ?? []) {
+      if (s?._id != null) soldMap.set(String(s._id), Number(s.totalSold) || 0);
+    }
 
-    let items = books.map(b => ({
-      ...b,
-      sold: soldMap.get(b._id.toString()) ?? 0
-    }));
+    let items = (books ?? []).map((b) => {
+      const key = b?._id ? String(b._id) : undefined;
+      const computedSold = key ? soldMap.get(key) ?? 0 : 0;
+      return {
+        ...b,
+        sold: (b as any)?.sold != null ? Number((b as any).sold) : computedSold,
+      };
+    });
 
-    // ✅ Gắn thêm authorName
-    items = await this.attachAuthorName(items);
+    try {
+      items = await this.attachAuthorName(items);
+    } catch {}
 
     return { items, total, page, pages: Math.ceil(total / limit) };
   }
 
+  
+
   async getFeaturedBooks(limit = 10) {
     const projection = {
+      _id: 1,
       title: 1,
       author: 1,
       price: 1,
@@ -94,8 +134,9 @@ export class BooksService {
       discount_percent: 1,
       coverImage: 1,
       publishedDate: 1,
-      categoryName: 1
-    };
+      categoryName: 1,
+      createdAt: 1,
+    } as const;
 
     const books = await this.bookModel
       .find({}, projection)
@@ -103,22 +144,35 @@ export class BooksService {
       .limit(limit * 2)
       .lean();
 
-    // sold
-    const soldStats = await this.orderModel.aggregate([
-      { $unwind: "$products" },
-      { $group: { _id: "$products._id", totalSold: { $sum: "$products.quantity" } } }
-    ]);
-    const soldMap = new Map(soldStats.map(s => [s._id.toString(), s.totalSold]));
+    // soldStats giống cách trên, lọc null trước khi group
+    const soldPipe: PipelineStage[] = [
+      { $unwind: '$products' },
+      { $match: { 'products._id': { $ne: null } } },
+      {
+        $group: {
+          _id: '$products._id',
+          totalSold: { $sum: { $ifNull: ['$products.quantity', 0] } },
+        },
+      },
+    ];
+    const soldStats = await this.orderModel.aggregate<{ _id: any; totalSold: number }>(soldPipe);
 
-    let booksWithSold = books.map(book => ({
-      ...book,
-      sold: soldMap.get(book._id.toString()) ?? 0
-    }));
+    const soldMap = new Map<string, number>();
+    for (const r of soldStats ?? []) {
+      const key = idStr(r?._id);
+      if (key) soldMap.set(key, Number(r.totalSold) || 0);
+    }
 
-    // ✅ map authorName
-    booksWithSold = await this.attachAuthorName(booksWithSold);
+    let booksWithSold = (books ?? []).map((b: any) => {
+      const key = idStr(b?._id);
+      return { ...b, sold: key ? soldMap.get(key) ?? 0 : 0 };
+    });
 
-    return booksWithSold.sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0)).slice(0, limit);
+    try { booksWithSold = await this.attachAuthorName(booksWithSold); } catch {}
+
+    return booksWithSold
+      .sort((a: any, b: any) => (b.sold ?? 0) - (a.sold ?? 0))
+      .slice(0, limit);
   }
 
   async updateSummary(id: string, summary: string): Promise<Book> {
@@ -186,29 +240,48 @@ export class BooksService {
   }
 
   async getBestSellers(limit = 10) {
-    const bestSellers = await this.orderModel.aggregate([
-      { $unwind: "$products" },
-      { $group: { _id: "$products._id", totalSold: { $sum: "$products.quantity" } } },
+    const soldPipe: PipelineStage[] = [
+      { $unwind: '$products' },
+      // lọc record không có products._id (tránh null ngay từ đầu)
+      { $match: { 'products._id': { $ne: null } } },
+      {
+        $group: {
+          _id: '$products._id',
+          totalSold: { $sum: { $ifNull: ['$products.quantity', 0] } },
+        },
+      },
       { $sort: { totalSold: -1 } },
-      { $limit: limit }
-    ]);
+      { $limit: limit },
+    ];
 
-    const soldMap = new Map(bestSellers.map(b => [b._id.toString(), b.totalSold]));
+    const bestSellers = await this.orderModel.aggregate<{ _id: any; totalSold: number }>(soldPipe);
+
+    // Map an toàn (chỉ set khi có _id)
+    const soldMap = new Map<string, number>();
+    for (const r of bestSellers ?? []) {
+      const key = idStr(r?._id);
+      if (key) soldMap.set(key, Number(r.totalSold) || 0);
+    }
+
+    // Chuẩn bị danh sách id để find
+    const idKeys = Array.from(soldMap.keys());
+    const inIds = toObjectIds(idKeys).length ? toObjectIds(idKeys) : idKeys;
 
     let books = await this.bookModel.find(
-      { _id: { $in: Array.from(soldMap.keys()) } },
+      { _id: { $in: inIds } },
       { title: 1, author: 1, coverImage: 1, price: 1, flashsale_price: 1, discount_percent: 1, sold: 1 }
     ).lean();
 
-    books = books.map(b => ({
-      ...b,
-      sold: soldMap.get(b._id.toString()) || b.sold || 0
-    }));
+    // gắn sold (không .toString() trực tiếp)
+    let items = (books ?? []).map((b: any) => {
+      const key = idStr(b?._id);
+      const computedSold = key ? soldMap.get(key) ?? 0 : 0;
+      return { ...b, sold: b?.sold != null ? Number(b.sold) : computedSold };
+    });
 
-    // ✅ map authorName
-    books = await this.attachAuthorName(books);
+    try { items = await this.attachAuthorName(items); } catch {}
 
-    return books;
+    return items;
   }
 
 // sách mới ra
@@ -350,3 +423,9 @@ export class BooksService {
   }
 
 }
+const idStr = (v: any) => (v == null ? undefined : String(v));
+const toObjectIds = (ids: (string | undefined)[]) =>
+  ids.filter(Boolean)
+     .map(s => Types.ObjectId.isValid(s!) ? new Types.ObjectId(s!) : null)
+     .filter((x): x is Types.ObjectId => !!x);
+
