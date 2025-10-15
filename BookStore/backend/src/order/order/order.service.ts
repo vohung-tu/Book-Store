@@ -104,32 +104,34 @@ export class OrderService {
     return order;
   }
 
-  async updateStatus(orderId: string, updateStatusDto: UpdateStatusDto): Promise<Order> {
+  async updateStatus(orderId: string, dto: UpdateStatusDto) {
     const order = await this.orderModel.findById(orderId);
     if (!order) throw new NotFoundException('Order not found');
 
-    // 🧩 Đảm bảo mỗi product đều có field book
-    (order.products as any[]).forEach((p: any) => {
-      if (!p.book && p._id) {
-        // Nếu thiếu, tự gán bằng _id cũ (để tránh validation error)
-        p.book = new Types.ObjectId(p._id);
-      }
-    });
+    const prev = order.status;
+    order.status = dto.status;
 
-    // ✅ Cập nhật tồn kho nếu completed
-    if (updateStatusDto.status === 'completed') {
+    if (dto.status === 'completed') {
       for (const item of order.products as any[]) {
-        const bookId =
-          (item.book?._id || item.book || item._id)?.toString?.();
-        if (bookId) {
-        await this.booksService.updateStock(bookId, item.quantity);
+        const ref = item.book; // ObjectId hoặc doc
+        const bookId = (ref && typeof ref === 'object' && ref._id) ? String(ref._id) : String(ref);
+        if (bookId) await this.booksService.updateStock(bookId, item.quantity);
       }
     }
+
+    if (prev !== 'completed' && dto.status === 'completed' && !order.loyaltyApplied) {
+      try {
+        await this.loyaltyService.updateLoyaltyAfterOrder(order.userId, order.total as any as number);
+        order.loyaltyApplied = true;
+      } catch (e) {
+        console.error('[LOYALTY] updateStatus failed', e);
+      }
+    }
+
+    return order.save();
   }
 
-  order.status = updateStatusDto.status;
-  return order.save();
-}
+  
   async cancelOrder(orderId: string, userId: string): Promise<Order> {
     const order = await this.orderModel.findById(orderId);
     
@@ -150,13 +152,24 @@ export class OrderService {
   }
 
   async findOrdersByUserId(userId: string) {
-    return this.orderModel.find({ user: userId }).sort({ createdAt: -1 }).lean();
+    return this.orderModel.find({ userId }).sort({ createdAt: -1 }).lean();
   }
 
   async updateStatusByTxnRef(txnRef: string, status: string) {
     const order = await this.orderModel.findOne({ txnRef });
     if (!order) throw new NotFoundException(`Không tìm thấy order với txnRef ${txnRef}`);
+
+    const prev = order.status;
     order.status = status;
+
+    if (prev !== 'completed' && status === 'completed' && !order.loyaltyApplied) {
+      try {
+        await this.loyaltyService.updateLoyaltyAfterOrder(order.userId, order.total as any as number);
+        order.loyaltyApplied = true;
+      } catch (e) {
+        console.error('[LOYALTY] updateStatusByTxnRef failed', e);
+      }
+    }
     return order.save();
   }
 
@@ -164,12 +177,22 @@ export class OrderService {
     const order = await this.orderModel.findById(orderId);
     if (!order) throw new Error('Order not found');
 
+    const prevStatus = order.status;
     order.status = 'completed';
+
+    if (prevStatus !== 'completed' && !order.loyaltyApplied) {
+      try {
+        await this.loyaltyService.updateLoyaltyAfterOrder(
+          (order as any).userId ?? (order as any).user,
+          (order as any).total as number
+        );
+        order.loyaltyApplied = true;
+      } catch (e) {
+        console.error('[LOYALTY] apply failed in markOrderCompleted', e);
+      }
+    }
+
     await order.save();
-
-    // Gọi cập nhật khách hàng thân thiết
-    await this.loyaltyService.updateLoyaltyAfterOrder(order.userId, order.total);
-
     return order;
   }
 }

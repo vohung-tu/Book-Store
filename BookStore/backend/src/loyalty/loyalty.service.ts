@@ -9,34 +9,26 @@ export class LoyaltyService {
   constructor(@InjectModel(User.name) private userModel: Model<User>,
   @InjectModel(Order.name) private orderModel: Model<Order>) {}
 
-  /**
-   * Tự động cập nhật khi hoàn tất đơn hàng
-   */
-  async updateLoyaltyAfterOrder(userId: string | Types.ObjectId, orderTotal: number) {
-    // Đảm bảo userId luôn là string để truy vấn
-    const id = typeof userId === 'string' ? userId : userId.toString();
-    const user = await this.userModel.findById(id);
-
-    if (!user) return null;
-
-    // Nếu user chưa có totalSpent thì gán mặc định là 0
-    if (!user.totalSpent) user.totalSpent = 0;
-
-    // Cộng thêm tổng tiền của đơn hàng
-    user.totalSpent += orderTotal;
-
-    // Tính cấp độ mới dựa theo tổng chi tiêu
-    const newLevel = this.calculateLevel(user.totalSpent);
-
-    // Nếu có thay đổi cấp độ thì cập nhật
-    if (user.level !== newLevel) {
-      user.level = newLevel;
+  async updateLoyaltyAfterOrder(userId: string | Types.ObjectId, total: number) {
+    const id = typeof userId === 'string' ? userId : String(userId);
+    if (typeof total !== 'number' || Number.isNaN(total)) {
+      throw new Error(`[LOYALTY] order total must be number`);
     }
 
-    await user.save();
+    // tăng atomic; nếu chưa có field sẽ được tạo = total
+    await this.userModel.updateOne({ _id: id }, { $inc: { totalSpent: total } });
+
+    // đọc lại & cập nhật level nếu cần
+    const user = await this.userModel.findById(id);
+    if (!user) return null;
+
+    const newLevel = this.calculateLevel(user.totalSpent || 0);
+    if (user.level !== newLevel) {
+      user.level = newLevel;
+      await user.save();
+    }
     return user;
   }
-
 
   /**
    * Hàm xác định cấp độ dựa trên tổng chi tiêu
@@ -110,38 +102,25 @@ export class LoyaltyService {
   }
 
   // Lấy loyalty info của 1 user
-  async getUserLoyalty(userId: string) {
-    const user = await this.userModel.findById(userId).lean();
-    if (!user) throw new NotFoundException('User not found');
+  async getUserLoyalty(userId: string | Types.ObjectId) {
+    const uid = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
 
-    const orderStats = await this.orderModel.aggregate([
-      {
-        $match: {
-          userId: userId.toString(), // ép về string để khớp DB
-          status: 'completed'        // hoặc bỏ nếu muốn test tất cả
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          totalSpent: { $sum: '$total' },
-          orderCount: { $sum: 1 }
-        }
-      }
+    const [user, orderCount] = await Promise.all([
+      this.userModel.findById(uid).lean(),
+      this.orderModel.countDocuments({ userId: uid, status: 'completed' }),
     ]);
 
-    console.log('📊 Aggregate result:', orderStats);
+    if (!user) throw new NotFoundException('User not found');
 
-    const totalSpent = orderStats[0]?.totalSpent || 0;
-    const orderCount = orderStats[0]?.orderCount || 0;
-    const level = this.getLevel(totalSpent);
+    const totalSpent = user.totalSpent ?? 0;       // lấy từ Users (đã $inc khi completed)
+    const level = user.level ?? this.getLevel(totalSpent);
 
     return {
       fullName: user.full_name,
       email: user.email,
       totalSpent,
       orderCount,
-      level
+      level,
     };
   }
 

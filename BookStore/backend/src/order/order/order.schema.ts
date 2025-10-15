@@ -20,7 +20,6 @@ export class OrderProduct {
   @Prop()
   coverImage: string;
 }
-
 const OrderProductSchema = SchemaFactory.createForClass(OrderProduct);
 
 @Schema({ timestamps: true })
@@ -51,12 +50,14 @@ export class Order extends Document {
 
   @Prop({
     enum: ['pending', 'processing', 'shipping', 'completed', 'cancelled', 'returned'],
-    default: 'pending'
+    default: 'pending',
   })
   status: string;
+
+  @Prop({ default: false })          // ✅ đặt ở cấp Order
+  loyaltyApplied: boolean;
 
   @Prop()
   orderDate: Date;
 }
-
 export const OrderSchema = SchemaFactory.createForClass(Order);

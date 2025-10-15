@@ -57,7 +57,7 @@ export class User {
   @Prop()
   payment: string;
 
-  @Prop({ default: 0 })
+  @Prop({ type: Number, default: 0 })
   totalSpent: number;
 
   @Prop({
