@@ -73,6 +73,13 @@
               {{ product?.author?.name || 'Không rõ' }}
             </span>
           </td>
+          <p *ngIf="books.supplierId">
+            <strong>Nhà cung cấp:</strong>
+            <span style="margin-left: 4px;">
+              {{ books.supplierId.name || 'Không rõ' }}
+
+            </span>
+          </p>
           <span *ngIf="!book.author?.name">Không rõ</span>
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
 

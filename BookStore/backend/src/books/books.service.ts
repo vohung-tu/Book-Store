@@ -66,16 +66,16 @@ export class BooksService {
       quantity: 1,
       sold: 1,
       createdAt: 1,
+      supplierId: 1,
     } as const;
 
-    // ❗️KHÔNG dùng "as const" ở đây
     const soldStatsPipeline: PipelineStage[] = [
       { $unwind: '$products' },
       {
         $addFields: {
           bookRef: {
             $ifNull: [
-              '$products.book', // ObjectId hoặc string
+              '$products.book',
               { $ifNull: ['$products.bookId', '$products._id'] },
             ],
           },
@@ -96,6 +96,7 @@ export class BooksService {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
+        .populate('supplierId', 'name code email phone address')
         .lean(),
       this.bookModel.countDocuments(),
       this.orderModel.aggregate<{ _id: Types.ObjectId | string; totalSold: number }>(soldStatsPipeline),
@@ -122,7 +123,6 @@ export class BooksService {
     return { items, total, page, pages: Math.ceil(total / limit) };
   }
 
-  
 
   async getFeaturedBooks(limit = 10) {
     const projection = {
@@ -195,7 +195,11 @@ export class BooksService {
   }
 
   async findOne(id: string): Promise<Book | null> {
-    return this.bookModel.findById(id).populate('author').exec(); // ✅ Tự động lấy dữ liệu tác giả từ DB
+    return this.bookModel
+      .findById(id)
+      .populate('author')
+      .populate('supplierId', 'name code email phone address')
+      .exec(); // ✅ Tự động lấy dữ liệu tác giả từ DB
   }
 
   

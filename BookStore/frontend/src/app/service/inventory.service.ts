@@ -37,4 +37,16 @@ export class InventoryService {
   getReceiptById(id: string) {
     return this.http.get<any>(`https://book-store-3-svnz.onrender.com/inventory/receipts/${id}`);
   }
+
+  getBranchStock(bookId: string) {
+    return this.http.get<{ branchName: string; quantity: number }[]>(
+      `${this.base}/book/${bookId}/branches`
+    );
+  }
+
+  getBranchStockByBook(bookId: string): Observable<{ branchName: string; quantity: number }[]> {
+    return this.http.get<{ branchName: string; quantity: number }[]>(
+      `https://book-store-3-svnz.onrender.com/inventory/book/${bookId}/branches`
+    );
+  }
 }

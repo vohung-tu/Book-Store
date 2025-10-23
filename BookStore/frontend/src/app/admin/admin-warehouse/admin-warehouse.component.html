@@ -1,0 +1,122 @@
+<div class="wh-card">
+  <div class="wh-head">
+    <h2>Quản lý khu vực kho</h2>
+    <div class="wh-actions">
+      <input class="wh-search" [(ngModel)]="q" placeholder="Tìm mã / tên / khu vực / email / sđt..." />
+      <button pButton type="button" label="Thêm kho mới" icon="pi pi-plus" class="btn-green" (click)="openCreate()"></button>
+    </div>
+  </div>
+
+  <p-table [value]="filtered" [loading]="loading()" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width:110px">Mã kho</th>
+        <th>Tên kho</th>
+        <th style="width:130px">Khu vực</th>
+        <th>Địa chỉ</th>
+        <th>Tên quản lý</th>
+        <th>Email quản lý</th>
+        <th style="width:130px">SĐT quản lý</th>
+        <th style="width:120px"></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td><code>{{ row.code || '-' }}</code></td>
+        <td>{{ row.name }}</td>
+        <td>
+          <span class="tag" [class.tag-north]="row.region==='Miền Bắc'"
+                            [class.tag-central]="row.region==='Miền Trung'"
+                            [class.tag-south]="row.region==='Miền Nam'">
+            {{ row.region }}
+          </span>
+        </td>
+        <td>{{ row.address || '-' }}</td>
+        <td>{{ row.managerName }}</td>
+        <td>{{ row.managerEmail }}</td>
+        <td>{{ row.managerPhone || '-' }}</td>
+        <td class="wh-row-actions">
+          <button 
+            pButton 
+            icon="pi pi-eye" 
+            class="p-button-rounded p-button-info"
+            (click)="viewStock(row)">
+          </button>
+          <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-warning" (click)="openEdit(row)"></button>
+          <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="remove(row)"></button>
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="showDialog" [modal]="true" [style]="{width:'560px'}"
+          [draggable]="false" [resizable]="false"
+          [dismissableMask]="true"
+          header="{{ editing ? 'Sửa thông tin kho' : 'Thêm kho mới' }}">
+  <form #f="ngForm" (ngSubmit)="save(f)" class="wh-form">
+    <div class="wh-grid">
+      <div class="wh-field">
+        <label>Tên kho <b class="req">*</b></label>
+        <input pInputText name="name" [(ngModel)]="formModel.name" required />
+      </div>
+
+      <div class="wh-field">
+        <label>Khu vực <b class="req">*</b></label>
+        <select class="wh-select" name="region" [(ngModel)]="formModel.region" required>
+          <option *ngFor="let r of regions" [value]="r">{{ r }}</option>
+        </select>
+      </div>
+
+      <div class="wh-field wh-field--full">
+        <label>Địa chỉ</label>
+        <input pInputText name="address" [(ngModel)]="formModel.address" />
+      </div>
+
+      <div class="wh-field">
+        <label>Tên quản lý <b class="req">*</b></label>
+        <input pInputText name="managerName" [(ngModel)]="formModel.managerName" required />
+      </div>
+
+      <div class="wh-field">
+        <label>Email quản lý <b class="req">*</b></label>
+        <input pInputText name="managerEmail" [(ngModel)]="formModel.managerEmail" required />
+      </div>
+
+      <div class="wh-field">
+        <label>SĐT quản lý</label>
+        <input pInputText name="managerPhone" [(ngModel)]="formModel.managerPhone" />
+      </div>
+    </div>
+
+    <div class="dlg-actions">
+      <button pButton type="button" label="Huỷ" class="p-button-text" (click)="showDialog=false"></button>
+      <button pButton type="submit" label="Lưu" class="btn-green"></button>
+    </div>
+  </form>
+</p-dialog>
+<p-dialog header="Tồn kho - {{ selectedBranch?.name }}" 
+           [(visible)]="showStockDialog" 
+           [modal]="true" 
+           [style]="{ width: '700px' }"
+           [closable]="true">
+
+  <p-table [value]="branchStocks" [loading]="loadingStock" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Tên sách</th>
+        <th style="width:120px; text-align:right;">Số lượng</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>{{ item.title || '(Không có)' }}</td>
+        <td style="text-align:right;">{{ item.quantity ?? 0 }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-dialog>
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

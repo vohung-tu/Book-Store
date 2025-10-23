@@ -10,6 +10,7 @@ export interface BookLite {
   _id: string;
   title: string;
   stockQuantity: number;
+  code: string;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -9,6 +9,14 @@ export interface Category {
   parentId?: string | { _id: string; name: string; slug: string } | null;
   children?: Category[];
 }
+interface SupplierInfo {
+  _id: string;
+  name: string;
+  code?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
 
 export interface BookDetails {
   id?: string;
@@ -29,4 +37,5 @@ export interface BookDetails {
   cartItemId: string;
   sold?: number;
   summary_ai?: string;
+  supplierId: SupplierInfo;
 }

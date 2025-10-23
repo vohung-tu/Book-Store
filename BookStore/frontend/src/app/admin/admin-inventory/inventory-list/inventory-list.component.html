@@ -1,6 +1,7 @@
 <div class="inv-list-card">
   <h2 class="inv-list-title">Quản lý phiếu xuất/nhập kho</h2>
 
+  <!-- 🔍 Bộ lọc -->
   <div class="inv-filters">
     <div class="inv-field">
       <label class="inv-label">Loại phiếu</label>
@@ -35,16 +36,29 @@
 
     <div class="inv-field inv-field--wide">
       <label class="inv-label">Tìm kiếm</label>
-      <input class="inv-input" [(ngModel)]="q" placeholder="Mã phiếu / NCC / Người nhận / Ghi chú" (keyup.enter)="page=1;load()"/>
+      <input
+        class="inv-input"
+        [(ngModel)]="q"
+        placeholder="Mã phiếu / NCC / Người nhận / Ghi chú"
+        (keyup.enter)="page=1;load()"/>
     </div>
   </div>
 
-  <p-table [value]="items" [loading]="loading()" [paginator]="false" [rows]="limit" responsiveLayout="scroll" class="inv-p-table">
+  <!-- 📋 Bảng danh sách phiếu -->
+  <p-table
+    [value]="items"
+    [loading]="loading()"
+    [paginator]="false"
+    [rows]="limit"
+    responsiveLayout="scroll"
+    class="inv-p-table">
+
     <ng-template pTemplate="header">
       <tr>
         <th>Mã phiếu</th>
         <th>Loại</th>
         <th>Ngày</th>
+        <th>Chi nhánh</th>
         <th>Ghi chú</th>
         <th>Tổng SL</th>
         <th>Tổng tiền</th>
@@ -56,21 +70,31 @@
       <tr>
         <td>{{ row.code }}</td>
         <td>
-          <span class="inv-badge" [class.inv-badge--import]="row.type === 'import'" [class.inv-badge--export]="row.type === 'export'">
+          <span
+            class="inv-badge"
+            [class.inv-badge--import]="row.type === 'import'"
+            [class.inv-badge--export]="row.type === 'export'">
             {{ row.type === 'import' ? 'Nhập' : 'Xuất' }}
           </span>
         </td>
         <td>{{ row.date | date:'short' }}</td>
+        <td>{{ row.branchId?.name || '—' }}</td>  
         <td>{{ row.reason }}</td>
         <td>{{ row.totalQuantity }}</td>
         <td>{{ row.totalAmount | number }}</td>
         <td>
-          <button pButton type="button" label="Chi tiết" (click)="openDetail(row)"></button>
+          <button
+            pButton
+            type="button"
+            label="Chi tiết"
+            (click)="openDetail(row)"
+            class="btn-green"></button>
         </td>
       </tr>
     </ng-template>
   </p-table>
 
+  <!-- Phân trang -->
   <p-paginator
     [rows]="limit"
     [totalRecords]="total"
@@ -79,7 +103,13 @@
   </p-paginator>
 </div>
 
-<p-dialog [(visible)]="showDetail" [modal]="true" header="Chi tiết phiếu" [style]="{width:'820px'}">
+<!-- 📘 Dialog chi tiết -->
+<p-dialog
+  [(visible)]="showDetail"
+  [modal]="true"
+  header="Chi tiết phiếu"
+  [style]="{width:'880px'}">
+
   <div *ngIf="selected as s">
     <div class="inv-detail-head">
       <b>{{ s.code }}</b> — {{ s.type === 'import' ? 'Phiếu nhập' : 'Phiếu xuất' }} — {{ s.date | date:'short' }}
@@ -96,8 +126,10 @@
           <th>Đơn giá</th>
           <th>Thành tiền</th>
           <th>Tồn sau</th>
+          <th>Chi nhánh còn</th>
         </tr>
       </ng-template>
+
       <ng-template pTemplate="body" let-d>
         <tr>
           <td>{{ d.bookId?.title }}</td>
@@ -105,6 +137,17 @@
           <td>{{ d.unitPrice | number }}</td>
           <td>{{ d.subtotal | number }}</td>
           <td>{{ d.bookId?.stockQuantity }}</td>
+          <td class="inv-branch-stock">
+            <div *ngIf="branchStocks[d.bookId?._id || d.bookId] as stocks; else loadingStock">
+              <div *ngIf="stocks.length; else noStock">
+                <small *ngFor="let st of stocks">
+                  {{ st.branchName }}: <b>{{ st.quantity }}</b>
+                </small>
+              </div>
+              <ng-template #noStock><small>Không có dữ liệu</small></ng-template>
+            </div>
+            <ng-template #loadingStock><i>Đang tải...</i></ng-template>
+          </td>
         </tr>
       </ng-template>
     </p-table>

@@ -21,13 +21,15 @@ export class InventoryReceipt {
   @Prop() receiverName?: string;
   @Prop({ default: '' }) reason: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'WarehouseAdmin' })
+  branchId?: Types.ObjectId;
+
   @Prop({ default: 0, min: 0 }) totalQuantity: number;
   @Prop({ default: 0, min: 0 }) totalAmount: number;
 
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy: Types.ObjectId;
 
-  // ✅ CHỈNH ref CHUẨN ở đây
   @Prop({ type: [{ type: Types.ObjectId, ref: 'InventoryReceiptDetail' }], default: [] })
   details: Types.ObjectId[];
 }

@@ -17,6 +17,8 @@ import { CouponsModule } from './coupon/coupon.module';
 import { ChatModule } from './chat/chat.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { WarehouseAdminModule } from './inventory/warehouse/warehouse-admin.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
 
 @Module({
   imports: [
@@ -37,7 +39,9 @@ import { InventoryModule } from './inventory/inventory.module';
     CouponsModule,
     ChatModule,
     LoyaltyModule,
-    InventoryModule
+    InventoryModule,
+    WarehouseAdminModule,
+    SuppliersModule
   ],
   controllers: [AppController],
   providers: [AppService],

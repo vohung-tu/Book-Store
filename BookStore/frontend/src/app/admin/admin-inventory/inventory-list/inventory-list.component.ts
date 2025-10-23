@@ -10,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InventoryReceipt, Paginated } from '../../../model/inventory.model';
 import { InventoryService } from '../../../service/inventory.service';
+import { forkJoin, map } from 'rxjs';
 
 @Component({
   selector: 'app-inventory-list',
@@ -42,23 +43,19 @@ export class InventoryListComponent implements OnInit {
   showDetail = false;
   selected?: InventoryReceipt;
 
+  // tồn chi nhánh từng sách
+  branchStocks: Record<string, { branchName: string; quantity: number }[]> = {};
+
   loading = signal(false);
 
   constructor(private api: InventoryService) {}
 
   ngOnInit() {
-    // ✅ Ngày hiện tại
     const today = new Date();
-
-    // ✅ Lùi lại 3 tháng từ ngày hiện tại
     const threeMonthsAgo = new Date(today);
     threeMonthsAgo.setMonth(today.getMonth() - 3);
-
-    // Gán vào bộ lọc
     this.from = threeMonthsAgo;
     this.to = today;
-
-    // ✅ Gọi API load dữ liệu
     this.load();
   }
 
@@ -96,8 +93,39 @@ export class InventoryListComponent implements OnInit {
       next: (res) => {
         this.selected = res;
         this.showDetail = true;
+
+        // 🧠 Chuẩn bị load tồn kho cho từng sách trong chi tiết phiếu
+        const requests: Record<string, any> = {};
+        for (const d of res.details) {
+          const bookId = d.bookId?._id || d.bookId;
+          if (bookId) {
+            // Lưu observable lại, không gọi subscribe trong vòng for
+            requests[bookId] = this.api.getBranchStock(bookId);
+          }
+        }
+
+        // ✅ Gọi tất cả request song song bằng forkJoin
+        forkJoin(requests)
+          .pipe(
+            map((result) =>
+              Object.fromEntries(
+                Object.entries(result).map(([id, stocks]) => [id, (stocks as any[]) ?? []])
+              ) as Record<string, { branchName: string; quantity: number }[]>
+            )
+          )
+          .subscribe({
+            next: (data) => {
+              this.branchStocks = data;
+
+              // 👇 Thêm log này để xem dữ liệu tồn kho thực tế
+              console.log('📦 Dữ liệu tồn kho chi tiết:', this.branchStocks);
+            },
+            error: (err) => console.error('❌ Lỗi tải tồn kho:', err),
+          });
       },
-      error: (err) => console.error('❌ Lỗi load chi tiết phiếu:', err)
+      error: (err) => {
+        console.error('❌ Lỗi load chi tiết phiếu:', err);
+      },
     });
   }
 }

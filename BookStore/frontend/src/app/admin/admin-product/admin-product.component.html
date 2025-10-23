@@ -28,7 +28,7 @@
     <button pButton type="button" label="Thêm sản phẩm" icon="pi pi-plus" (click)="openAddProductDialog()"></button>
     </div>
   </div>
-  
+  <p-progressSpinner *ngIf="loading"></p-progressSpinner>
   <p-table
     #table 
     [value]="filteredProducts"
@@ -59,7 +59,9 @@
         <th>Giảm (%)</th>
         <th>Ngày phát hành</th>
         <th>Danh mục</th>
+        <th>Nhà cung cấp</th>
         <th>Số lượng</th>
+        <th>Tồn kho theo chi nhánh</th>
         <th>Đã bán</th>
         <th>Ảnh phụ</th>
         <th>Thao tác</th>
@@ -87,7 +89,18 @@
         <td>{{ product.discount_percent }}%</td>
         <td>{{ product.publishedDate | date: 'dd/MM/yyyy' }}</td>
         <td>{{ getCategoryLabel(product.categoryName) }}</td>
+        <td>{{ product.supplierId?.name || 'Không có' }}</td>
         <td>{{ product.quantity }}</td>
+        <td>
+          <ng-container *ngIf="product.branchStocks?.length > 0; else noStock">
+            <div *ngFor="let stock of product.branchStocks">
+              <strong>{{ stock.branchName }}</strong>: {{ stock.quantity }}
+            </div>
+          </ng-container>
+          <ng-template #noStock>
+            <span style="color: gray;">Không có dữ liệu</span>
+          </ng-template>
+        </td>
         <td>{{ product.sold }}</td>
         <td>
           <ng-container *ngIf="product.images?.length > 0; else noImages">
@@ -169,6 +182,16 @@
       </p-dropdown>
     </div>
     <div class="p-field">
+      <label>Nhà cung cấp</label>
+      <p-dropdown
+        [options]="suppliers"
+        optionLabel="name"
+        optionValue="_id"
+        [(ngModel)]="productForm.supplierId"
+        placeholder="Chọn nhà cung cấp">
+      </p-dropdown>
+    </div>
+    <div class="p-field">
       <label>Số lượng</label>
       <input pInputText type="text" [(ngModel)]="productForm.quantity" />
     </div>
@@ -193,4 +216,3 @@
   </div>
   <button pButton label="Lưu" (click)="saveProduct()" icon="pi pi-check"></button>
 </p-dialog>
-

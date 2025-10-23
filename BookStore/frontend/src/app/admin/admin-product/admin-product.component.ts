@@ -18,6 +18,9 @@ import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { CategoryService } from '../../service/category.service';
 import { Category } from '../../model/books-details.model';
+import { InventoryService } from '../../service/inventory.service';
+import { forkJoin } from 'rxjs';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-admin-product',
@@ -34,7 +37,8 @@ import { Category } from '../../model/books-details.model';
     TooltipModule,
     DropdownModule,
     DotSeparatorPipe,
-    Editor
+    Editor,
+    ProgressSpinnerModule
   ],
   providers: [MessageService],
   templateUrl: './admin-product.component.html',
@@ -53,6 +57,8 @@ export class AdminProductComponent {
   text: string | undefined;
   imagesInput: string = ''; 
   authors: Author[] = [];
+  loading = false;
+  suppliers: any[] = [];
 
   categories: { label: string; value: string }[] = [];
 
@@ -60,6 +66,7 @@ export class AdminProductComponent {
     title: '',
     author: {},
     authorId: '',
+    supplierId: '', 
     description: '',
     price: 0,
     flashsale_price: 0,
@@ -68,7 +75,7 @@ export class AdminProductComponent {
     categoryName: '',
     quantity: 0,
     images: [] as string[],
-    coverImage: ''
+    coverImage: '',
   };
   selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
 
@@ -76,27 +83,53 @@ export class AdminProductComponent {
     private http: HttpClient, 
     private authorService: AuthorService, 
     private messageService: MessageService,
-    private categoryService: CategoryService) {}
+    private categoryService: CategoryService,
+    private inventoryService: InventoryService
+  ) {}
 
   ngOnInit(): void {
-    
+    this.loading = true;
     this.filteredProducts = this.products;
-    this.authorService.getAuthors().subscribe(data => {
-      this.authors = data;
-      this.fetchProducts();
-    });
-     // load categories từ API
-    this.categoryService.getCategories().subscribe((cats: Category[]) => {
-      this.categories = cats.map(c => ({
-        label: c.name,  // tên hiển thị
-        value: c.slug   // hoặc c._id nếu muốn lưu theo id
-      }));
+
+    // 🔁 Chạy song song 3 API: authors, categories, suppliers
+    forkJoin({
+      authors: this.authorService.getAuthors(),
+      categories: this.categoryService.getCategories(),
+      suppliers: this.http.get<any[]>('https://book-store-3-svnz.onrender.com/suppliers')
+    }).subscribe({
+      next: ({ authors, categories, suppliers }) => {
+        // ✅ Gán dữ liệu trả về
+        this.authors = authors;
+        this.suppliers = suppliers;
+        this.categories = categories.map((c: Category) => ({
+          label: c.name,
+          value: c.slug
+        }));
+
+        // Sau khi đã có dữ liệu nền → mới fetch sách
+        this.fetchProducts();
+      },
+      error: (err) => {
+        console.error('❌ Lỗi khi tải dữ liệu nền:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Lỗi tải dữ liệu',
+          detail: 'Không thể tải danh mục / tác giả / nhà cung cấp.',
+        });
+      }
     });
   }
 
   getCategoryLabel(value: string): string {
     const hit = this.categories.find(c => c.value === value);
     return hit ? hit.label : value;
+  }
+
+  fetchSuppliers() {
+    this.http.get<any[]>('https://book-store-3-svnz.onrender.com/suppliers').subscribe({
+      next: data => this.suppliers = data,
+      error: err => console.error('❌ Lỗi tải NCC:', err)
+    });
   }
 
   stripHtmlTags(html: string): string {
@@ -128,6 +161,7 @@ export class AdminProductComponent {
   fetchProducts() {
     this.http.get<any>('https://book-store-3-svnz.onrender.com/books?limit=1000').subscribe({
       next: data => {
+        // ✅ Map danh sách sản phẩm từ API
         this.products = (data.items || []).map((book: any) => {
           let authorObj = { name: 'Không rõ', _id: '' };
 
@@ -138,17 +172,43 @@ export class AdminProductComponent {
             };
           } else if (typeof book.author === 'string') {
             const found = this.authors.find(a => a._id === book.author);
-            authorObj = found ? { _id: found._id, name: found.name } : { _id: book.author, name: 'Không rõ' };
+            authorObj = found
+              ? { _id: found._id, name: found.name }
+              : { _id: book.author, name: 'Không rõ' };
           }
 
-          return { ...book, id: book._id, author: authorObj };
+          // ✅ Trả về object sản phẩm chuẩn hóa
+          return {
+            ...book,
+            id: book._id,
+            author: authorObj,
+            branchStocks: [] // thêm mảng tồn kho trống ban đầu
+          };
         });
 
+        // ✅ Gọi API tồn kho cho từng sản phẩm
+        this.products.forEach((p) => {
+          this.inventoryService.getBranchStockByBook(p._id).subscribe({
+            next: (stocks) => {
+              p.branchStocks = stocks;
+            },
+            error: (err) => {
+              console.error(`Lỗi lấy tồn kho cho sách ${p.title}:`, err);
+            }
+          });
+        });
+
+        // ✅ Gán lại danh sách hiển thị
         this.filteredProducts = [...this.products];
+        this.loading = false;
       },
-      error: err => console.error('❌ Lỗi khi lấy danh sách sản phẩm:', err)
-    });
+      error: (err) => {
+        console.error('❌ Lỗi khi lấy danh sách sản phẩm:', err)
+        this.loading = false;
+      }    
+      });
   }
+
 
   openAddProductDialog() {
     this.displayAddDialog = true;
@@ -229,6 +289,7 @@ export class AdminProductComponent {
       this.editingProduct.coverImage = this.productForm.coverImage;
       this.editingProduct.images = additionalImages;
       this.editingProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
+      this.editingProduct.supplierId = this.productForm.supplierId;
 
       this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
         next: () => {
@@ -249,6 +310,7 @@ export class AdminProductComponent {
       this.newProduct.coverImage = this.productForm.coverImage;
       this.newProduct.images = additionalImages;
       this.newProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
+      this.newProduct.supplierId = this.productForm.supplierId;
 
       this.http.post(`https://book-store-3-svnz.onrender.com/books`, this.newProduct).subscribe({
         next: () => {
@@ -275,6 +337,7 @@ export class AdminProductComponent {
       title: '',
       author: {},
       authorId: '',
+      supplierId: '', 
       description: '',
       price: 0,
       flashsale_price: 0,

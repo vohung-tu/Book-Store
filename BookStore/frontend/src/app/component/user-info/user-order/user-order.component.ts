@@ -219,8 +219,7 @@ export class UserOrderComponent implements OnInit, OnDestroy {
 
   getFinalTotal(order: Order): number {
     const discount = this.calculateDiscount(order);
-    const shippingFee = 25000; // hoặc order.shippingFee nếu backend trả về
-    return Math.max((order.total - discount) + shippingFee, 0);
+    return Math.max((order.total - discount) , 0);
   }
   
   // Tính số đơn theo trạng thái (sử dụng lowercase để so sánh)

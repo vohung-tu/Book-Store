@@ -6,6 +6,9 @@ import { InventoryReceiptDetail } from './schemas/inventory-receipt-detail.schem
 import { CreateImportDto } from './dto/create-import.dto';
 import { CreateExportDto } from './dto/create-export.dto';
 import { Book } from 'src/books/book.schema';
+import * as XLSX from 'xlsx';
+import { Branch, Inventory } from './schemas/inventory-branch.schema';
+import { WarehouseAdmin } from './schemas/warehouse-admin.schema';
 
 @Injectable()
 export class InventoryService {
@@ -19,8 +22,18 @@ export class InventoryService {
     @InjectModel(Book.name)
     private readonly bookModel: Model<Book & Document>,
 
+    @InjectModel(Inventory.name)
+    private readonly inventoryModel: Model<Inventory & Document>,
+
+    @InjectModel(WarehouseAdmin.name)
+    private readonly branchModel: Model<WarehouseAdmin & Document>,
+    
+    // @InjectModel(Branch.name)
+    // private readonly branchModel: Model<Branch & Document>,
+
     @InjectConnection()
     private readonly connection: Connection,
+    
   ) {}
 
   private async generateCode(prefix: 'NK' | 'XK', date: Date, session: any): Promise<string> {
@@ -36,8 +49,8 @@ export class InventoryService {
   // =====================================
   // 📥 TẠO PHIẾU NHẬP KHO
   // =====================================
-  async createImport(dto: CreateImportDto, userId: string): Promise<any> {
-    if (!dto.lines?.length) throw new BadRequestException('lines is empty');
+   async createImport(dto: CreateImportDto & { branchId?: string }, userId: string): Promise<any> {
+    if (!dto.lines?.length) throw new BadRequestException('Danh sách sản phẩm rỗng!');
 
     const session = await this.connection.startSession();
     session.startTransaction();
@@ -46,10 +59,18 @@ export class InventoryService {
       const date = new Date(dto.date);
       const code = await this.generateCode('NK', date, session);
 
+      // 🔍 Tìm chi nhánh (nếu có)
+      const branch = dto.branchId
+        ? await this.branchModel.findById(dto.branchId).session(session)
+        : await this.branchModel.findOne({ name: 'Kho Hồ Chí Minh' }).session(session);
+
+      if (!branch) throw new NotFoundException('Không tìm thấy chi nhánh nhập kho');
+
       const receipt = new this.receiptModel({
         code,
         type: 'import',
         date,
+        branchId: branch._id, 
         supplierName: dto.supplierName ?? '',
         reason: dto.reason ?? '',
         createdBy: new Types.ObjectId(userId),
@@ -64,13 +85,20 @@ export class InventoryService {
 
       for (const line of dto.lines) {
         const book = await this.bookModel.findById(line.bookId).session(session);
-        if (!book) throw new NotFoundException(`Book not found: ${line.bookId}`);
+        if (!book) throw new NotFoundException(`Không tìm thấy sách: ${line.bookId}`);
 
-        // ✅ Cập nhật tồn kho
+        // ✅ Cập nhật tồn kho tổng (trên bảng Book)
         const newStock = (book.stockQuantity ?? 0) + line.quantity;
         book.stockQuantity = newStock;
         book.quantity = newStock;
         await book.save({ session });
+
+        // ✅ Cập nhật tồn kho chi nhánh được chọn
+        await this.inventoryModel.updateOne(
+          { bookId: book._id, branchId: branch._id },
+          { $inc: { quantity: line.quantity } },
+          { upsert: true, session },
+        );
 
         const subtotal = (line.unitPrice ?? 0) * line.quantity;
         const detail = new this.detailModel({
@@ -87,7 +115,6 @@ export class InventoryService {
         totalAmount += subtotal;
       }
 
-      // ✅ Lưu receipt và chi tiết
       receipt.totalQuantity = totalQty;
       receipt.totalAmount = totalAmount;
       receipt.details = detailIds;
@@ -95,7 +122,6 @@ export class InventoryService {
 
       await session.commitTransaction();
 
-      // ✅ Populate ngay sau khi commit
       return await this.receiptModel
         .findById(receipt._id)
         .populate({
@@ -111,11 +137,12 @@ export class InventoryService {
     }
   }
 
+
   // =====================================
   // 📤 TẠO PHIẾU XUẤT KHO
   // =====================================
-  async createExport(dto: CreateExportDto, userId: string): Promise<any> {
-    if (!dto.lines?.length) throw new BadRequestException('lines is empty');
+  async createExport(dto: CreateExportDto & { branchId?: string }, userId: string): Promise<any> {
+    if (!dto.lines?.length) throw new BadRequestException('Danh sách sản phẩm rỗng!');
 
     const session = await this.connection.startSession();
     session.startTransaction();
@@ -123,6 +150,12 @@ export class InventoryService {
     try {
       const date = new Date(dto.date);
       const code = await this.generateCode('XK', date, session);
+
+      const branch = dto.branchId
+        ? await this.branchModel.findById(dto.branchId).session(session)
+        : await this.branchModel.findOne({ name: 'Kho Hồ Chí Minh' }).session(session);
+
+      if (!branch) throw new NotFoundException('Không tìm thấy chi nhánh xuất kho');
 
       const receipt = new this.receiptModel({
         code,
@@ -140,24 +173,30 @@ export class InventoryService {
       let totalAmount = 0;
       const detailIds: Types.ObjectId[] = [];
 
-      // ✅ Kiểm tra tồn kho trước
+      // ✅ Kiểm tra tồn kho chi nhánh
       for (const line of dto.lines) {
-        const book = await this.bookModel.findById(line.bookId).session(session);
-        if (!book) throw new NotFoundException(`Book not found: ${line.bookId}`);
-        if ((book.stockQuantity ?? 0) < line.quantity) {
-          throw new BadRequestException(`Not enough stock for book ${book.title}`);
+        const inv = await this.inventoryModel.findOne({ bookId: line.bookId, branchId: branch._id }).session(session);
+        if (!inv || inv.quantity < line.quantity) {
+          throw new BadRequestException(`Chi nhánh "${branch.name}" không đủ hàng cho sách ${line.bookId}`);
         }
       }
 
-      // ✅ Giảm tồn và tạo chi tiết
       for (const line of dto.lines) {
         const book = await this.bookModel.findById(line.bookId).session(session);
-        if (!book) throw new NotFoundException(`Book not found: ${line.bookId}`);
+        if (!book) throw new NotFoundException(`Không tìm thấy sách: ${line.bookId}`);
 
+        // ✅ Giảm tồn kho tổng
         const newStock = (book.stockQuantity ?? 0) - line.quantity;
         book.stockQuantity = newStock;
         book.quantity = newStock;
         await book.save({ session });
+
+        // ✅ Giảm tồn kho chi nhánh
+        await this.inventoryModel.updateOne(
+          { bookId: book._id, branchId: branch._id },
+          { $inc: { quantity: -line.quantity } },
+          { session },
+        );
 
         const subtotal = (line.unitPrice ?? 0) * line.quantity;
         const detail = new this.detailModel({
@@ -174,7 +213,6 @@ export class InventoryService {
         totalAmount += subtotal;
       }
 
-      // ✅ Lưu receipt và chi tiết
       receipt.totalQuantity = totalQty;
       receipt.totalAmount = totalAmount;
       receipt.details = detailIds;
@@ -285,5 +323,108 @@ export class InventoryService {
         },
       })
       .lean();
+  }
+
+  // =====================================
+  // 📥 IMPORT DỮ LIỆU KHO TỪ FILE EXCEL
+  // =====================================
+  async importFromExcel(rows: any[], userId: string) {
+    if (!Array.isArray(rows) || !rows.length)
+      throw new BadRequestException('File Excel trống hoặc không hợp lệ');
+
+    // Giả định Excel có các cột: Mã sách, Số lượng, Giá nhập
+    const lines: { bookId: string; quantity: number; unitPrice: number }[] = [];
+    for (const row of rows) {
+      const code = row['Mã sách'] || row['BookCode'] || row['Code'];
+      const quantity = Number(row['Số lượng'] || row['Quantity'] || 0);
+      const unitPrice = Number(row['Giá nhập'] || row['ImportPrice'] || 0);
+
+      if (!code || !quantity) continue;
+
+      const book = await this.bookModel.findOne({ code });
+      if (!book) {
+        console.warn(`⚠️ Không tìm thấy sách có mã: ${code}`);
+        continue;
+      }
+
+      lines.push({
+        bookId: (book._id as Types.ObjectId).toString(),
+        quantity,
+        unitPrice,
+      });
+    }
+
+    if (!lines.length)
+      throw new BadRequestException('Không có dòng hợp lệ trong file Excel');
+
+    // Dùng lại createImport() hiện có
+    const dto = {
+      date: new Date(),
+      supplierName: 'Import Excel',
+      reason: 'Nhập kho hàng loạt từ Excel',
+      lines,
+    };
+
+    const receipt = await this.createImport(dto as any, userId);
+    return [receipt];
+  }
+
+  // =====================================
+  // 📦 XEM TỒN KHO THEO CHI NHÁNH
+  // =====================================
+  async getBranchStockByBook(bookId: string) {
+    if (!bookId) throw new BadRequestException('Thiếu bookId');
+
+    return this.inventoryModel.aggregate([
+      { $match: { bookId: new Types.ObjectId(bookId) } },
+      {
+        $lookup: {
+          from: 'branches',
+          localField: 'branchId',
+          foreignField: '_id',
+          as: 'branch',
+        },
+      },
+      { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 0,
+          branchName: '$branch.branchName',
+          quantity: 1,
+        },
+      },
+    ]);
+  }
+
+  async getAllBranches() {
+    return this.branchModel
+      .find()
+      .select('_id code name region address managerName managerEmail managerPhone')
+      .sort({ name: 1 })
+      .lean();
+  }
+
+  async getStockByBranch(branchId: string) {
+    return this.inventoryModel.aggregate([
+      { $match: { branchId: new Types.ObjectId(branchId) } },
+      {
+        $lookup: {
+          from: 'books',
+          localField: 'bookId',
+          foreignField: '_id',
+          as: 'book'
+        }
+      },
+      { $unwind: '$book' },
+      {
+        $project: {
+          _id: 0,
+          bookId: '$book._id',
+          title: '$book.title',
+          quantity: 1
+        }
+      },
+      { $sort: { title: 1 } }
+    ]);
   }
 }

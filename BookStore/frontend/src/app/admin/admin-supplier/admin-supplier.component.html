@@ -1,0 +1,84 @@
+<div class="sup-card">
+  <div class="sup-head">
+    <h2>Quản lý nhà xuất bản</h2>
+    <div class="sup-actions">
+      <p-fileUpload
+        name="file"
+        mode="basic"
+        chooseLabel="Nhập Excel"
+        chooseButtonStyleClass="btn-green"
+        (onSelect)="importExcel($event)"
+        [auto]="true">
+      </p-fileUpload>
+      <button pButton label="Xuất Excel" icon="pi pi-download" (click)="exportExcel()" class="btn-green"></button>
+      <button pButton label="Thêm NCC" icon="pi pi-plus" (click)="openCreate()" class="btn-green"></button>
+    </div>
+  </div>
+
+  <p-table [value]="suppliers" [loading]="loading()" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Mã NCC</th>
+        <th>Tên NCC</th>
+        <th>Địa chỉ</th>
+        <th>Email</th>
+        <th>SĐT</th>
+        <th>Ghi chú</th>
+        <th></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.code }}</td>
+        <td>{{ row.name }}</td>
+        <td>{{ row.address }}</td>
+        <td>{{ row.email }}</td>
+        <td>{{ row.phone }}</td>
+        <td>{{ row.note }}</td>
+        <td>
+          <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-warning" (click)="openEdit(row)"></button>
+          <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="remove(row)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="showDialog" header="{{ editing ? 'Sửa NCC' : 'Thêm NCC' }}" [style]="{width:'600px'}">
+  <form #f="ngForm" (ngSubmit)="save(f)">
+    <div class="sup-grid">
+      <div class="sup-field">
+        <label>Tên NCC *</label>
+        <input pInputText name="name" [(ngModel)]="formModel.name" required />
+      </div>
+      <div class="sup-field">
+        <label>Mã NCC</label>
+        <input pInputText name="code" [(ngModel)]="formModel.code" />
+      </div>
+      <div class="sup-field">
+        <label>Địa chỉ</label>
+        <input pInputText name="address" [(ngModel)]="formModel.address" />
+      </div>
+      <div class="sup-field">
+        <label>Email</label>
+        <input pInputText name="email" [(ngModel)]="formModel.email" />
+      </div>
+      <div class="sup-field">
+        <label>SĐT</label>
+        <input pInputText name="phone" [(ngModel)]="formModel.phone" />
+      </div>
+      <div class="sup-field sup-field--full">
+        <label>Ghi chú</label>
+        <textarea rows="2" pInputTextarea name="note" [(ngModel)]="formModel.note"></textarea>
+      </div>
+    </div>
+
+    <div class="dlg-actions">
+      <button pButton label="Huỷ" class="p-button-text" type="button" (click)="showDialog=false"></button>
+      <button pButton label="Lưu" class="btn-green" type="submit"></button>
+    </div>
+  </form>
+</p-dialog>
+
+<p-toast></p-toast>

@@ -31,6 +31,8 @@ import { CustomerLoyaltyComponent } from './admin/admin-customer-loyalty/custome
 import { UserLoyaltyComponent } from './component/user-info/user-loyalty/user-loyalty.component';
 import { InventoryListComponent } from './admin/admin-inventory/inventory-list/inventory-list.component';
 import { InventoryFormComponent } from './admin/admin-inventory/inventory-form/inventory-form.component';
+import { AdminWarehouseComponent } from './admin/admin-warehouse/admin-warehouse.component';
+import { AdminSupplierComponent } from './admin/admin-supplier/admin-supplier.component';
 
 const routes: Routes = [
   {
@@ -161,6 +163,16 @@ const routes: Routes = [
       {
         path: 'inventory/new',
         component: InventoryFormComponent
+      },
+      {
+        path: 'warehouse',
+        component: AdminWarehouseComponent,
+        title: 'Admin Warehouse'
+      },
+      {
+        path: 'supplier',
+        component: AdminSupplierComponent,
+        title: 'Admin Supplier'
       }
     ],
   },

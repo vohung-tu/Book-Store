@@ -1,0 +1,50 @@
+.sup-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.06);
+  padding-top: 5rem;
+}
+
+.sup-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sup-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-green,
+.p-fileupload-choose.btn-green {
+  background-color: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-green:hover {
+  background-color: #16a34a !important;
+  transform: translateY(-1px);
+}
+
+.sup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.sup-field { display: flex; flex-direction: column; gap: 6px; }
+.sup-field--full { grid-column: 1 / -1; }
+.dlg-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  gap: 8px;
+}

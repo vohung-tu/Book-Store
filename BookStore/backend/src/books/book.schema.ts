@@ -47,6 +47,9 @@ export class Book {
 
   @Prop({ default: 0, min: 0, index: true })
   stockQuantity: number; // ✅ số lượng tồn hiện tại
+
+  @Prop({ type: Types.ObjectId, ref: 'Supplier', required: false })
+  supplierId?: Types.ObjectId;
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);

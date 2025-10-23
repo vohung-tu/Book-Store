@@ -20,7 +20,24 @@
 
       <div class="inv-field" *ngIf="typeCtrl.value === 'import'">
         <label class="inv-label">Nhà cung cấp</label>
-        <input class="inv-input" formControlName="supplierName" placeholder="VD: NXB Trẻ" />
+        <p-dropdown
+          [options]="suppliers"
+          optionLabel="name"
+          optionValue="_id"
+          placeholder="Chọn nhà cung cấp"
+          formControlName="supplierId">
+        </p-dropdown>
+      </div>
+
+      <div class="inv-field">
+        <label class="inv-label">Chi nhánh</label>
+        <p-dropdown
+          [options]="branches"
+          optionLabel="name"
+          optionValue="_id"
+          formControlName="branchId"
+          placeholder="Chọn chi nhánh"
+        ></p-dropdown>
       </div>
 
       <div class="inv-field" *ngIf="typeCtrl.value === 'export'">
@@ -35,7 +52,18 @@
     </div>
 
     <div class="inv-details">
-      <h3 class="inv-subtitle">Dòng chi tiết</h3>
+      <div class="inv-import-btn">
+        <h3 class="inv-subtitle">Dòng chi tiết</h3>
+        <input type="file" accept=".xlsx,.xls" (change)="onExcelSelected($event)" hidden #excelInput />
+        <button
+          pButton
+          type="button"
+          icon="pi pi-file-excel"
+          label="Import Excel"
+          class="btn-green"
+          (click)="excelInput.click()"
+        ></button>
+      </div>
 
       <div class="inv-table-wrap">
         <table class="inv-table">
@@ -88,7 +116,7 @@
         </table>
       </div>
 
-      <button pButton type="button" label="Thêm dòng" icon="pi pi-plus" (click)="addLine()"></button>
+      <button pButton type="button" label="Thêm dòng" icon="pi pi-plus" (click)="addLine()" class="btn-green"></button>
     </div>
 
     <div class="inv-total">
@@ -98,7 +126,7 @@
 
     <div class="inv-actions">
       <button pButton type="button"
-              class="p-button-success"
+              class="btn-green"
               [label]="loading() ? 'Đang lưu...' : (typeCtrl.value === 'import' ? 'Lưu phiếu nhập' : 'Lưu phiếu xuất')"
               [disabled]="loading()"
               (click)="submit()"></button>
