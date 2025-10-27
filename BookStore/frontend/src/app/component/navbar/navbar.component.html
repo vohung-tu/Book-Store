@@ -117,6 +117,73 @@
           </ng-template>
         </div>
       </div>
+
+     <!-- 🗺️ Địa chỉ giao hàng -->
+      <div class="shipping-location" (click)="showLocationDialog()">
+        <i class="pi pi-map-marker"></i>
+        <span>Giao đến: <u>{{ locationText || 'Đang xác định vị trí...' }}</u></span>
+      </div>
+      <!-- 🧭 Popup chọn địa chỉ giao hàng -->
+      <p-dialog 
+        header="Chọn địa chỉ giao hàng"
+        [(visible)]="locationDialogVisible"
+        [modal]="true"
+        [dismissableMask]="true"
+        [style]="{ width: '420px' }"
+      >
+        <p>Hãy chọn địa chỉ nhận hàng để được dự báo thời gian giao hàng cùng phí đóng gói, vận chuyển một cách chính xác nhất.</p>
+        <div *ngIf="currentLocationAddr" class="address-item gps">
+          <label>
+            <input
+              type="radio"
+              name="address"
+              [value]="{ value: currentLocationAddr, isDefault: false }"
+              [(ngModel)]="selectedAddress"
+            />
+            <span>
+              <b>Vị trí hiện tại:</b> {{ currentLocationAddr }}
+            </span>
+          </label>
+        </div>
+
+        <hr *ngIf="currentLocationAddr && addressList?.length">
+
+        <!-- 🔹 Danh sách địa chỉ từ database -->
+        <div *ngIf="addressList?.length; else noAddress">
+          <div class="address-list">
+            <div class="address-item" *ngFor="let addr of addressList">
+              <label>
+                <input 
+                  type="radio" 
+                  name="address" 
+                  [value]="addr" 
+                  [(ngModel)]="selectedAddress"
+                />
+                <span>
+                  {{ addr.value }}
+                  <span *ngIf="addr.isDefault" class="default-tag">(Mặc định)</span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔹 Nếu không có địa chỉ nào -->
+        <ng-template #noAddress>
+          <p>Chưa có địa chỉ giao hàng nào.</p>
+        </ng-template>
+
+        <!-- 🔹 Nút xác nhận -->
+        <div class="dialog-footer">
+          <button 
+            pButton 
+            label="GIAO ĐẾN ĐỊA CHỈ NÀY" 
+            class="confirm-btn"
+            (click)="confirmAddress()"
+          ></button>
+        </div>
+      </p-dialog>
     </div>
   </div>
 </header>
+<p-toast position="top-right"></p-toast>

@@ -57,10 +57,14 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoadingNewRelease = false;
   isLoadingIncoming = false;
   isLoadingReference = false;
+  isLoadingRecommended = true;
+  isLoadingHalloween = true;
   bestSellerBooks: BookDetails[] = [];
   responsiveOptions: any[] | undefined;
   trackById = (_: number, c: { _id:string }) => c._id;
   blogPosts = [ { date: '23/03/2025', author: 'Pam Blog', title: 'Yuval Noah Harari: Chúng ta cần giáo dục con trẻ như thế nào để thành công vào năm 2050?', summary: 'Yuval Noah Harari là tác giả người Israel được biết đến nhiều qua các cuốn sách...', }, { date: '21/04/2024', author: 'Pam Blog', title: '6 tựa sách hay về Trung Quốc đương đại khuyến đọc bởi tạp chí SupChina', summary: 'Trung Quốc đã đi một chặng đường dài kể từ những ngày đen tối của cách mạng văn hóa...', }, { date: '15/02/2025', author: 'Pam Blog', title: 'Một số thuật ngữ sách ngoại văn bạn nên biết', summary: '1. Movie tie-in edition là thuật ngữ dùng để chỉ một cuốn sách mà thì...', }, { date: '15/02/2025', author: 'Pam Blog', title: 'Một số thuật ngữ sách ngoại văn bạn nên biết', summary: '1. Movie tie-in edition là thuật ngữ dùng để chỉ một cuốn sách mà thì...', }, ];
+  recommendedBooks: BookDetails[] = [];
+  halloweenBooks: BookDetails[] = [];
 
   private observer?: IntersectionObserver;
   private timerSubscription?: Subscription;
@@ -109,10 +113,11 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.authorService.getAuthors().subscribe((data) => (this.authors = data));
 
     this.responsiveOptions = [
-      { breakpoint: '1400px', numVisible: 2, numScroll: 1 },
-      { breakpoint: '1199px', numVisible: 3, numScroll: 1 },
-      { breakpoint: '767px', numVisible: 2, numScroll: 1 },
-      { breakpoint: '575px', numVisible: 1, numScroll: 1 },
+      { breakpoint: '1600px', numVisible: 5, numScroll: 5 },
+      { breakpoint: '1199px', numVisible: 4, numScroll: 4 },
+      { breakpoint: '991px', numVisible: 3, numScroll: 3 },
+      { breakpoint: '767px', numVisible: 2, numScroll: 2 },
+      { breakpoint: '575px', numVisible: 1, numScroll: 1 }
     ];
 
     // ✅ thêm loading cho best seller
@@ -122,8 +127,10 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
       .sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0));
       this.isLoadingBestSeller = false;
     });
-  }
 
+    this.loadHalloweenSection();
+    this.loadRecommendedBooks();
+  }
 
   ngAfterViewInit(): void {
     this.setupLazyObservers();
@@ -196,6 +203,38 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isLoadingFeatured = false;
         this.cdr.markForCheck();
       });
+    });
+  }
+
+  loadRecommendedBooks() {
+    this.bookService.getRecommendedBooks().subscribe({
+      next: (books) => {
+        this.recommendedBooks = books;
+        console.log('📚 Sách gợi ý:', this.recommendedBooks);
+        this.isLoadingRecommended = false;
+      },
+      error: (err) => {
+        console.error('❌ Lỗi tải sách gợi ý:', err);
+      },
+    });
+  }
+
+  viewBook(book: BookDetails) {
+    this.router.navigate(['/book', book._id]);
+  }
+
+  loadHalloweenSection(): void {
+    this.isLoadingHalloween = true;
+    this.bookService.getHalloweenBooks().subscribe({
+      next: (books) => {
+        this.halloweenBooks = books || [];
+        this.isLoadingHalloween = false;
+        console.log('🎃 Sách Halloween:', this.halloweenBooks);
+      },
+      error: (err) => {
+        console.error('❌ Lỗi tải sách Halloween:', err);
+        this.isLoadingHalloween = false;
+      },
     });
   }
 

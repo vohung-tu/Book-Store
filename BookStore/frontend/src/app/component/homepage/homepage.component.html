@@ -112,8 +112,28 @@
 
     </div>
   </div>
-
   
+  <!-- <p-divider class="custom-divider"></p-divider> -->
+
+  <!-- Lễ hội ma quái -->
+  <div class="holiday-halloween-section" *ngIf="halloweenBooks?.length">
+
+    <div class="section-body">
+      <p-carousel 
+        [value]="halloweenBooks" 
+        [numVisible]="5" 
+        [numScroll]="5" 
+        [circular]="false" 
+        [responsiveOptions]="responsiveOptions"
+        styleClass="halloween-carousel"
+      >
+        <ng-template let-book pTemplate="item">
+          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
+        </ng-template>
+      </p-carousel>
+    </div>
+  </div>
+
   <p-divider class="custom-divider"></p-divider>
 
   <div class="incomming-release-books" #incomingTrigger>
@@ -151,6 +171,41 @@
     </div>
   </div>
   
+  <p-divider class="custom-divider"></p-divider>
+
+  <!--  Có thể bạn sẽ thích -->
+  <div class="ai-recommendation-books" #recommendTrigger>
+    <div class="ai-recommendation-title">
+      <h1><i class="pi pi-sparkles"></i> Có thể bạn sẽ thích</h1>
+    </div>
+
+    <div class="ai-recommendation-body">
+      <div *ngIf="isLoadingRecommended" class="skeleton-container">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+
+      <p-carousel 
+        *ngIf="!isLoadingRecommended && recommendedBooks.length > 0"
+        [value]="recommendedBooks"
+        [numVisible]="5"
+        [numScroll]="5"
+        [circular]="false"
+        [responsiveOptions]="responsiveOptions">
+        <ng-template let-book pTemplate="item">
+          <app-product-item 
+            [book]="book"
+            (showToast)="handleToast($event)">
+          </app-product-item>
+        </ng-template>
+      </p-carousel>
+
+      <p *ngIf="!isLoadingRecommended && recommendedBooks.length === 0">
+        Hiện chưa có gợi ý nào cho bạn.
+      </p>
+    </div>
+  </div>
+
+
   <p-divider class="custom-divider"></p-divider>
 
   <div class="newest-col" #referenceTrigger>

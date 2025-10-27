@@ -349,6 +349,100 @@ p-tab:hover {
     padding-right: 100px;
   }
 }
+.ai-recommendation-books {
+  .ai-recommendation-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    h1 {
+      padding-left: 100px;
+      color: #105191;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      i {
+        font-size: 1.5rem;
+        color: #105191;
+      }
+    }
+  }
+
+  .ai-recommendation-body {
+    padding-left: 100px;
+    padding-right: 100px;
+  }
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ai-recommendation-books {
+    .ai-recommendation-title h1 {
+      padding-left: 20px;
+      font-size: 1.4rem;
+    }
+
+    .ai-recommendation-body {
+      padding: 0 20px;
+    }
+  }
+}
+
+.recommend-carousel {
+  width: 100%;
+  max-width: 1450px;
+  margin: auto;
+
+  ::ng-deep .p-carousel-content {
+    justify-content: space-between !important;
+    padding: 0 !important;
+  }
+
+  ::ng-deep .p-carousel-item {
+    flex: 1 1 18% !important; /* mỗi item chiếm ~20% để vừa 5 sản phẩm */
+    max-width: 18%;
+    display: flex;
+    justify-content: center;
+  }
+
+  ::ng-deep .p-carousel-items-container {
+    gap: 15px !important; /* thêm khoảng cách giữa các sách */
+  }
+}
+
+.holiday-halloween-section {
+  padding: 150px 100px;
+  background-image: url("/assets/images/halloween-bg.png");
+
+
+  .section-body {
+    padding: 0 10px;
+
+    ::ng-deep .halloween-carousel .p-carousel-content {
+      padding: 1rem 0;
+    }
+
+    ::ng-deep .halloween-carousel .p-carousel-item {
+      display: flex;
+      justify-content: center;
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+      }
+    }
+  }
+}
+
+/* 🌀 Nhẹ nhàng cho biểu tượng 🎃 nhấp nhô */
+@keyframes spookyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+
 
 .container-category {
   .category {

@@ -426,3 +426,95 @@
     }
   }
 }
+/* === Có thể bạn sẽ thích (AI Recommendation dưới giỏ hàng) === */
+.ai-recommendation-books {
+  margin-top: 60px;
+  padding: 0 100px 50px 100px;
+
+  .ai-recommendation-title {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 20px;
+
+    h1 {
+      color: #105191;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: bold;
+
+      i {
+        color: #105191;
+        font-size: 1.5rem;
+      }
+    }
+
+    .subtitle {
+      color: #666;
+      font-style: italic;
+      font-size: 0.95rem;
+      margin-left: 35px;
+    }
+  }
+
+  .ai-recommendation-body {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+.recommend-carousel {
+  width: 100%;
+  max-width: 1450px;
+  margin: auto;
+
+  ::ng-deep .p-carousel-content {
+    justify-content: space-between !important;
+    padding: 0 !important;
+  }
+
+  ::ng-deep .p-carousel-item {
+    flex: 1 1 18% !important;
+    max-width: 18%;
+    display: flex;
+    justify-content: center;
+  }
+
+  ::ng-deep .p-carousel-items-container {
+    gap: 15px !important; 
+  }
+}
+
+.skeleton-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.skeleton-card {
+  flex: 1 0 150px;
+  height: 250px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-recommendation-books {
+    padding: 0 20px;
+
+    .ai-recommendation-title h1 {
+      font-size: 1.4rem;
+      padding-left: 0;
+    }
+  }
+}

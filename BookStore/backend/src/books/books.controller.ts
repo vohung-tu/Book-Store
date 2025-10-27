@@ -59,6 +59,16 @@ export class BooksController {
   async getReferenceBooks() {
     return this.booksService.getReferenceBooks();
   }
+
+  @Get('recommend')
+  async getRecommendedBooks() {
+    return this.booksService.getRecommendedBooks();
+  }
+
+  @Get('halloween')
+  async getHalloweenBooks() {
+    return this.booksService.getHalloweenBooks();
+  }
   
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Book | null> {
@@ -99,4 +109,6 @@ export class BooksController {
     if (!book) throw new NotFoundException('Book not found');
     return { summary_ai: book.summary_ai || 'Chưa có tóm tắt' };
   }
+
+  
 }

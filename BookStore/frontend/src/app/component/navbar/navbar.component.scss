@@ -301,3 +301,96 @@ p-badge {
 .suggestions-dropdown li:hover {
   background-color: #f0f0f0;
 }
+
+.shipping-location {
+  display: block;
+  width: 100%;
+  text-align: right;
+  color: #f1f1f1;
+  font-size: 15px;
+  padding-right: 80px;
+
+  i {
+    margin-right: 4px;
+  }
+
+  u {
+    color: #fff;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      color: #ffd700;
+    }
+  }
+}
+/* === ADDRESS LIST IN POPUP === */
+.address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.address-item {
+  display: flex;
+  align-items: flex-start;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #105191;
+    background: #f5f9ff;
+  }
+
+  input[type='radio'] {
+    margin-right: 10px;
+    margin-top: 3px;
+  }
+
+  span {
+    font-size: 14px;
+    color: #333;
+  }
+
+  .default-tag {
+    color: #105191;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  &.gps {
+    background: #eef6ff;
+    border: 1px solid #a5d8ff;
+
+    span {
+      color: #105191;
+      font-weight: 500;
+    }
+  }
+}
+
+.dialog-footer {
+  text-align: center;
+  margin-top: 16px;
+
+  .confirm-btn {
+    background-color: #105191;
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #1368c2;
+    }
+  }
+}

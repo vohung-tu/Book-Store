@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
@@ -14,4 +14,15 @@ import { RouterModule } from '@angular/router';
 })
 export class SidebarComponent {
   @Input() visible: boolean = false;
+
+  constructor(private router: Router) {}
+
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('role');
+
+    // ✅ Chuyển hướng về trang login
+    this.router.navigate(['/signin']);
+  }
 }

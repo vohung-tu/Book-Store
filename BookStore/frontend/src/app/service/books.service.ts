@@ -90,4 +90,12 @@ export class BooksService {
       .pipe(map(res => res.summary_ai));
   }
 
+  getRecommendedBooks(): Observable<BookDetails[]> {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/recommend`);
+  }
+
+  getHalloweenBooks(): Observable<BookDetails[]> {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/halloween`);
+  }
+
 }   

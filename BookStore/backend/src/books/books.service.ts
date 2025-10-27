@@ -123,6 +123,51 @@ export class BooksService {
     return { items, total, page, pages: Math.ceil(total / limit) };
   }
 
+  async getRecommendedBooks() {
+    // Lấy danh sách tiêu đề sách thật trong DB
+    const allBooks = await this.bookModel.find({}, { title: 1 }).limit(50).lean();
+    const bookTitles = allBooks.map(b => b.title).join(', ');
+
+    // Gửi prompt cho AI
+    const prompt = `
+    Dưới đây là danh sách 50 cuốn sách hiện có trong cửa hàng:
+    ${bookTitles}
+
+    Hãy chọn 5 cuốn sách phù hợp để gợi ý cho người đọc Việt Nam.
+    Trả về JSON hợp lệ dạng:
+    [{"title":"Tên sách","author":"Tên tác giả"}]
+    Chỉ trả JSON, không mô tả gì thêm.
+    `;
+
+    const aiRecommendations = await this.aiService.getJsonResponse(prompt);
+
+    // Đối chiếu lại với DB để chỉ lấy sách có thật
+    const titles = aiRecommendations.map(r => new RegExp(r.title, 'i'));
+    const matchedBooks = await this.bookModel.find({ title: { $in: titles } }).limit(5).lean();
+
+    return matchedBooks.length ? matchedBooks : await this.bookModel.aggregate([{ $sample: { size: 5 } }]);
+  }
+
+  async getHalloweenBooks(): Promise<Book[]> {
+  // Tìm tất cả sách có từ "halloween" (hoặc "Halloween", "HALLOWEEN") trong database
+    const regex = /halloween/i;
+
+    // Lọc theo các trường phổ biến: title, description, category, tags
+    const books = await this.bookModel
+      .find({
+        $or: [
+          { title: { $regex: regex } },
+          { description: { $regex: regex } },
+          { category: { $regex: regex } },
+          { tags: { $regex: regex } },
+        ],
+      })
+      .sort({ createdAt: -1 }) // ưu tiên sách mới
+      .limit(10) // tùy chỉnh số lượng muốn hiển thị
+      .lean();
+
+    return books;
+  }
 
   async getFeaturedBooks(limit = 10) {
     const projection = {

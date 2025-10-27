@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, NgZone } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -16,9 +16,12 @@ import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { BooksService } from '../../service/books.service';
-import { MegaMenuItem } from 'primeng/api';
+import { MegaMenuItem, MessageService } from 'primeng/api';
 import { CategoryService } from '../../service/category.service';
 import { MegaMenu, MegaMenuModule } from 'primeng/megamenu';
+import { HttpClient } from '@angular/common/http';
+import { DialogModule } from 'primeng/dialog';
+import { ToastModule } from 'primeng/toast';
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
@@ -37,9 +40,12 @@ import { MegaMenu, MegaMenuModule } from 'primeng/megamenu';
     OverlayBadgeModule,
     ButtonModule,
     FormsModule,
-    MegaMenuModule
+    MegaMenuModule,
+    DialogModule,
+    ToastModule
   ],
-  styleUrls: ['./navbar.component.scss']
+  styleUrls: ['./navbar.component.scss'],
+  providers: [MessageService]
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   @ViewChild('megaMenu') megaMenu!: MegaMenu;
@@ -59,12 +65,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   activeCategory: Category | null = null;
   categories: Category[] = [];
+  currentLocationAddr: string | null = null;
+  locationText: string | null = null;
+  locationDialogVisible = false;
+  addressList: any[] = [];
+  selectedAddress: any;
 
   constructor(private authService: AuthService,
     private cartService: CartService,
     private bookService: BooksService,
     private router: Router,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private http: HttpClient,
+    private messageService: MessageService,
+  private zone: NgZone
   ) {
     this.cart$ = this.cartService.getCart();
     this.searchSubject.pipe(debounceTime(300)).subscribe((term) => {
@@ -75,6 +89,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
 
+    // 🛒 Đếm số lượng sản phẩm trong giỏ
     if (this.authService.isLoggedIn()) {
       this.cartService.getCart().subscribe({
         next: (cart) => {
@@ -88,13 +103,39 @@ export class NavbarComponent implements OnInit, OnDestroy {
     } else {
       this.cartItemCount = 0;
     }
+
+    // 👤 Lấy thông tin user hiện tại
     this.currentUser = this.authService.getCurrentUser();
     this.userRole = this.currentUser?.role || null;
     this.getCurrentUser();
+
+    // 📚 Lấy cây danh mục
     this.categoryService.getTree().subscribe(cats => {
-      this.categories = cats; // ở đây categories có cả children
+      this.categories = cats;
     });
+
+    // 🗺️ Nếu user đã login → lấy địa chỉ từ DB
+    if (this.currentUser?._id) {
+      this.authService.getAddresses(this.currentUser._id).subscribe({
+        next: (res: any) => {
+          this.addressList = res.address || [];
+          const defaultAddr = this.addressList.find(a => a.isDefault) || this.addressList[0];
+          this.selectedAddress = defaultAddr;
+          this.locationText = defaultAddr?.value || 'Chưa có địa chỉ giao hàng';
+        },
+        error: (err) => {
+          console.error('Lỗi tải địa chỉ:', err);
+          this.locationText = 'Không thể tải địa chỉ';
+        }
+      });
+    } 
+    // ❌ Nếu chưa đăng nhập → hiển thị vị trí hiện tại
+    else {
+      console.log('🧭 Gọi getUserLocation() khi chưa login');
+      this.getUserLocation();
+    }
   }
+
 
   signout(): void {
     this.authService.signout();
@@ -104,6 +145,59 @@ export class NavbarComponent implements OnInit, OnDestroy {
     console.log('Selected language:', lang);
   }
 
+  getUserLocation() {
+    if (!navigator.geolocation) {
+      this.locationText = 'Không xác định được vị trí';
+      return;
+    }
+
+    console.log('🧭 Gọi getUserLocation() khi chưa login');
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+
+        this.http
+          .get(`https://nominatim.openstreetmap.org/reverse`, {
+            params: {
+              format: 'json',
+              lat: latitude,
+              lon: longitude,
+              addressdetails: '1'
+            },
+            headers: { 'Accept-Language': 'vi' }
+          })
+          .subscribe({
+            next: (res: any) => {
+              const address = res.address;
+              const district = address.suburb || address.city_district || '';
+              const ward = address.quarter || address.village || '';
+              const city = address.city || address.state || address.county || '';
+
+              const text = `${district ? 'Q. ' + district + ', ' : ''}${ward ? 'P. ' + ward + ', ' : ''}${city}`;
+
+              // 🔥 Cập nhật trong Angular zone để UI nhận thay đổi
+              this.zone.run(() => {
+                this.locationText = text;
+                console.log('📍 Địa chỉ GPS hiển thị:', this.locationText);
+              });
+            },
+            error: (err) => {
+              console.error('Lỗi lấy vị trí:', err);
+              this.zone.run(() => {
+                this.locationText = 'Không xác định được vị trí';
+              });
+            }
+          });
+      },
+      (err) => {
+        console.warn('Người dùng từ chối chia sẻ vị trí:', err);
+        this.zone.run(() => {
+          this.locationText = 'Chưa chọn địa chỉ giao hàng';
+        });
+      }
+    );
+  }
   getCurrentUser(): void {
     if (typeof window === 'undefined') return; 
     const token = localStorage.getItem('token');
@@ -121,6 +215,80 @@ export class NavbarComponent implements OnInit, OnDestroy {
         console.error('Lỗi khi lấy thông tin người dùng', err);
       }
     });
+  }
+
+  confirmAddress() {
+    if (!this.currentUser?._id || !this.selectedAddress) {
+      this.messageService.add({ severity: 'warn', summary: 'Cảnh báo', detail: 'Vui lòng chọn địa chỉ!' });
+      return;
+    }
+
+    const exists = this.addressList.some(a => a.value === this.selectedAddress.value);
+    if (!exists) {
+      this.addressList.push(this.selectedAddress);
+    }
+
+    this.addressList = this.addressList.map(addr => ({
+      ...addr,
+      isDefault: addr.value === this.selectedAddress.value
+    }));
+
+    this.locationText = this.selectedAddress.value;
+
+    this.authService.updateAddress(this.currentUser._id, this.addressList).subscribe({
+      next: (updatedUser) => {
+        this.locationDialogVisible = false;
+        this.authService.setCurrentUser(updatedUser);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: 'Đã chọn địa chỉ giao hàng mới!',
+        });
+      },
+      error: (err) => {
+        console.error('❌ Lỗi khi cập nhật địa chỉ:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Lỗi',
+          detail: 'Không thể cập nhật địa chỉ. Vui lòng thử lại.',
+        });
+      }
+    });
+  }
+
+
+  showLocationDialog() {
+    if (!this.currentUser?._id) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Đăng nhập',
+        detail: 'Vui lòng đăng nhập để chọn địa chỉ giao hàng!',
+      });
+      return;
+    }
+
+    this.locationDialogVisible = true;
+    this.authService.getAddresses(this.currentUser._id).subscribe({
+      next: (res: any) => {
+        this.addressList = res.address || [];
+        if (this.addressList.length > 0) {
+          const defaultAddr = this.addressList.find(a => a.isDefault) || this.addressList[0];
+          this.selectedAddress = defaultAddr;
+        }
+      },
+      error: (err) => {
+        console.error('❌ Lỗi khi tải danh sách địa chỉ:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Lỗi tải dữ liệu',
+          detail: 'Không thể tải danh sách địa chỉ!',
+        });
+        this.addressList = [];
+      }
+    });
+
+    this.getUserLocation();
   }
 
   onInputChange() {

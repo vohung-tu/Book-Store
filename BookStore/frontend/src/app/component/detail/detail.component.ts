@@ -11,7 +11,7 @@ import { CartService } from '../../service/cart.service';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
-import { MessageService } from 'primeng/api';
+import { MessageService, SelectItem } from 'primeng/api';
 import { FavoritePageService } from '../../service/favorite-page.service';
 import { RatingModule } from 'primeng/rating';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
@@ -31,6 +31,8 @@ import { AuthorService } from '../../service/author.service';
 import { Author } from '../../model/author.model';
 import { HttpClient } from '@angular/common/http';
 import { catName, catSlug } from '../category/category.helpers';
+import { InventoryService } from '../../service/inventory.service';
+import {  DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-detail',
@@ -53,7 +55,8 @@ import { catName, catSlug } from '../category/category.helpers';
     InputTextModule,
     TextareaModule,
     ToggleButtonModule,
-    DotSeparatorPipe
+    DotSeparatorPipe,
+    DropdownModule
   ],
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.scss'],
@@ -98,6 +101,10 @@ export class DetailComponent implements OnInit {
   showSummary: boolean = false;
   loadingSummary: boolean = false;
 
+  branchStocks: { branchName: string; quantity: number }[] = [];
+  selectedBranch: string | null = null;
+  selectedBranchStock: { branchName: string; quantity: number } | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private bookService: BooksService,
@@ -107,6 +114,7 @@ export class DetailComponent implements OnInit {
     private reviewService: ReviewService,
     public authService: AuthService,
     private authorService: AuthorService,
+    private inventoryService: InventoryService,
     private http: HttpClient
   ) {}
   //ham ngOnInit chạy xong thì mới load dữ liệu lên component
@@ -131,6 +139,17 @@ export class DetailComponent implements OnInit {
   // 📖 Tải thông tin sách
   private loadBookDetails(bookId: string): void {
     this.fetchBookDetails(bookId);
+    this.inventoryService.getBranchStockByBook(bookId).subscribe({
+      next: (stocks) => {
+        this.branchStocks = stocks;
+
+        // Tính tổng tất cả chi nhánh
+        const totalQty = stocks.reduce((sum, b) => sum + (b.quantity || 0), 0);
+        this.selectedBranchStock = { branchName: 'Tất cả', quantity: totalQty };
+        this.books!.quantity = totalQty;
+      },
+      error: (err) => console.error('❌ Lỗi tải tồn kho:', err)
+    });
 
     this.bookService.getBookById(bookId).subscribe(book => {
       this.book = { ...book };
@@ -159,6 +178,21 @@ export class DetailComponent implements OnInit {
         { label: this.book.title }
       ];
     });
+  }
+
+  selectBranch(branchName: string) {
+    this.selectedBranch = branchName;
+
+    if (branchName === 'ALL') {
+      const total = this.branchStocks.reduce((sum, b) => sum + (b.quantity || 0), 0);
+      this.selectedBranchStock = { branchName: 'Tất cả', quantity: total };
+    } else {
+      const found = this.branchStocks.find(b => b.branchName === branchName);
+      this.selectedBranchStock = found || { branchName, quantity: 0 };
+    }
+
+    // Cập nhật trạng thái nút mua
+    this.books!.quantity = this.selectedBranchStock.quantity;
   }
 
   toggleSummary() {

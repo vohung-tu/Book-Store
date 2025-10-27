@@ -83,9 +83,40 @@
           <span *ngIf="!book.author?.name">Không rõ</span>
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
 
-          <div class="book-stock">
-            <p *ngIf="book && book.quantity !== undefined">Số lượng trong kho: 
-              <strong>{{ book.quantity > 0 ? book.quantity : 'Hết hàng' }}</strong>
+          <!-- <div class="book-stock">
+            <p *ngIf="book && book.quantity !== undefined"><strong>
+              Số lượng trong kho:
+            </strong> 
+              {{ book.quantity > 0 ? book.quantity : 'Hết hàng' }}
+            </p>
+          </div> -->
+
+          <div class="branch-chip-container" *ngIf="branchStocks.length > 0">
+            <strong>Khu vực kho:</strong>
+
+            <!-- Chip “Tất cả” -->
+            <div
+              class="branch-chip"
+              [class.active]="selectedBranch === 'ALL'"
+              (click)="selectBranch('ALL')">
+              Tất cả
+            </div>
+
+            <!-- Chip các chi nhánh -->
+            <div
+              *ngFor="let branch of branchStocks"
+              class="branch-chip"
+              [class.active]="selectedBranch === branch.branchName"
+              (click)="selectBranch(branch.branchName)">
+              {{ branch.branchName }}
+            </div>
+          </div>
+
+          <!-- Hiển thị tồn kho -->
+          <div class="branch-stock-info" *ngIf="selectedBranchStock">
+            <p>
+              <strong>Tồn kho tại {{ selectedBranch === 'ALL' ? 'tất cả kho' : selectedBranchStock.branchName }}:</strong>
+              {{ selectedBranchStock.quantity > 0 ? selectedBranchStock.quantity + ' cuốn' : 'Hết hàng' }}
             </p>
           </div>
         </div>
@@ -93,12 +124,16 @@
         <!-- Nút mua sách -->
         <div class="purchase-buttons">
           <p-toast position="top-right" key="tr"></p-toast>
-          <p-button 
+          <button 
+            pButton 
+            class="green-btn" 
             pRipple 
             [rounded]="true" 
             (click)="addToCart()"
             [disabled]="!books.quantity || books.quantity === 0" 
-            [label]="books.quantity && books.quantity > 0 ? 'Thêm vào giỏ hàng' : 'Hết hàng'"></p-button>
+            [label]="books.quantity && books.quantity > 0 ? 'Thêm vào giỏ hàng' : 'Hết hàng'"
+          ></button>
+          
           <p-button 
             [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'" 
             (click)="toggleFavorite()" 

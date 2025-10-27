@@ -100,4 +100,60 @@ Trả về JSON theo định dạng:
     }
   }
 
+  async recommendBooks() {
+    const prompt = `
+    Bạn là hệ thống gợi ý sách cho website bán sách online.
+
+    ⚠️ Hãy chỉ trả về JSON hợp lệ, KHÔNG viết thêm văn bản mô tả.
+    Hãy gợi ý 5 cuốn sách nổi tiếng mà người dùng Việt Nam có thể quan tâm.
+    Mỗi phần tử là 1 object có dạng:
+    [
+      { "title": "Tên sách", "author": "Tên tác giả" },
+      ...
+    ]
+    Trả về CHỈ JSON, KHÔNG viết chú thích, không giải thích.
+    `;
+
+    const res = await this.client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    // ⚙️ Xử lý kết quả an toàn
+    try {
+      const content = res.choices?.[0]?.message?.content ?? '[]';
+
+      // Nếu AI vẫn nói nhiều, tìm phần JSON trong chuỗi
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      const cleanJson = jsonMatch ? jsonMatch[0] : '[]';
+
+      const data = JSON.parse(cleanJson);
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('❌ Lỗi parse JSON AI response:', error);
+      return [];
+    }
+  }
+
+  async getJsonResponse(prompt: string, model = 'gpt-4o-mini'): Promise<any[]> {
+    try {
+      const res = await this.client.chat.completions.create({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+      });
+
+      const content = res.choices?.[0]?.message?.content ?? '';
+
+      // ✅ Tìm phần JSON trong chuỗi nếu AI trả thêm mô tả như “Dưới đây là...”
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      const cleanJson = jsonMatch ? jsonMatch[0] : '[]';
+
+      const data = JSON.parse(cleanJson);
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('❌ Lỗi parse JSON AI response:', error);
+      return [];
+    }
+  }
+
 }

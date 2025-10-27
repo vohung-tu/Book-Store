@@ -274,6 +274,7 @@ export class InventoryService {
         .sort({ date: -1, createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
+        .populate('branchId', 'name') 
         .populate({
           path: 'details',
           populate: { path: 'bookId', select: 'title' },
@@ -376,25 +377,47 @@ export class InventoryService {
     if (!bookId) throw new BadRequestException('Thiếu bookId');
 
     return this.inventoryModel.aggregate([
+      // 1️⃣ Lọc đúng sách
       { $match: { bookId: new Types.ObjectId(bookId) } },
+
+      // 2️⃣ Ép branchId về ObjectId (nếu đang lưu là string)
+      {
+        $addFields: {
+          branchIdObj: {
+            $cond: {
+              if: { $eq: [{ $type: "$branchId" }, "string"] },
+              then: { $toObjectId: "$branchId" },
+              else: "$branchId"
+            }
+          }
+        }
+      },
+
+      // 3️⃣ Join với collection "branches"
       {
         $lookup: {
-          from: 'branches',
-          localField: 'branchId',
-          foreignField: '_id',
-          as: 'branch',
-        },
+          from: "branches",              // ✅ chính xác tên collection trong MongoDB
+          localField: "branchIdObj",     // dùng field đã ép kiểu
+          foreignField: "_id",
+          as: "branch"
+        }
       },
-      { $unwind: { path: '$branch', preserveNullAndEmptyArrays: true } },
+
+      // 4️⃣ Lấy phần tử đầu trong mảng branch
+      { $unwind: { path: "$branch", preserveNullAndEmptyArrays: true } },
+
+      // 5️⃣ Chỉ trả về tên chi nhánh & tồn kho
       {
         $project: {
           _id: 0,
-          branchName: '$branch.branchName',
-          quantity: 1,
-        },
-      },
+          branchName: "$branch.name",  // ✅ lấy tên chi nhánh
+          quantity: 1
+        }
+      }
     ]);
   }
+
+
 
   async getAllBranches() {
     return this.branchModel

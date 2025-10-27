@@ -163,3 +163,37 @@
     </div>
   </div>
 </p-dialog>
+<!-- Gợi ý mua kèm -->
+<div class="ai-recommendation-books">
+  <div class="ai-recommendation-title">
+    <h1><i class="pi pi-shopping-cart"></i> Gợi ý mua kèm</h1>
+  </div>
+
+  <div class="ai-recommendation-body">
+    <!-- Skeleton khi đang load -->
+    <div *ngIf="isLoadingRecommended" class="skeleton-container">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+    </div>
+
+    <!-- Carousel khi có data -->
+    <p-carousel 
+      *ngIf="!isLoadingRecommended && recommendedBooks.length > 0"
+      [value]="recommendedBooks"
+      [numVisible]="5"
+      [numScroll]="5"
+      [circular]="false"
+      [responsiveOptions]="responsiveOptions"
+      styleClass="recommend-carousel">
+      <ng-template let-book pTemplate="item">
+        <app-product-item 
+          [book]="book"
+          (showToast)="handleToast($event)">
+        </app-product-item>
+      </ng-template>
+    </p-carousel>
+
+    <p *ngIf="!isLoadingRecommended && recommendedBooks.length === 0" style="text-align: center;">
+      Hiện chưa có gợi ý nào phù hợp để mua kèm.
+    </p>
+  </div>
+</div>

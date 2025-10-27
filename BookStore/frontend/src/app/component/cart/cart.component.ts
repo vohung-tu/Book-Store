@@ -19,6 +19,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Toast } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
+import { BooksService } from '../../service/books.service';
+import { CarouselModule } from 'primeng/carousel';
+import { ProductItemComponent } from '../product-item/product-item.component';
 
 @Component({
   selector: 'app-cart',
@@ -38,7 +41,9 @@ import { DialogModule } from 'primeng/dialog';
     DotSeparatorPipe,
     DividerModule,
     Toast,
-    DialogModule
+    DialogModule,
+    CarouselModule,
+    ProductItemComponent,
     
   ],
   templateUrl: './cart.component.html',
@@ -54,6 +59,7 @@ export class CartComponent implements OnInit {
   showCouponDialog = false;
   couponDialogVisible = false;
   selectedBooks: BookDetails[] = [];
+  responsiveOptions: any[] | undefined;
 
   // Coupon
   savedCoupons: Coupon[] = [];
@@ -61,10 +67,14 @@ export class CartComponent implements OnInit {
   appliedCoupons: Coupon[] = [];
   showAllCoupons = false;
 
+  isLoadingRecommended = true;
+  recommendedBooks: any[] = [];
+
   constructor(
     private cartService: CartService,
     private router: Router,
     private authService: AuthService,
+    private bookService:BooksService,
     private messageService: MessageService
   ) {
     this.cart$ = this.cartService.getCart();
@@ -76,7 +86,15 @@ export class CartComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.responsiveOptions = [
+      { breakpoint: '1600px', numVisible: 5, numScroll: 5 },
+      { breakpoint: '1199px', numVisible: 4, numScroll: 4 },
+      { breakpoint: '991px', numVisible: 3, numScroll: 3 },
+      { breakpoint: '767px', numVisible: 2, numScroll: 2 },
+      { breakpoint: '575px', numVisible: 1, numScroll: 1 }
+    ];
     this.loadSavedCoupons();
+    this.loadRecommendedBooks();
   }
 
   /** 🔄 Load coupons đã lưu */
@@ -84,6 +102,29 @@ export class CartComponent implements OnInit {
     const saved = localStorage.getItem('savedCoupons');
     this.savedCoupons = saved ? JSON.parse(saved) : [];
     this.displayedCoupons = this.savedCoupons.slice(0, 2);
+  }
+
+  loadRecommendedBooks() {
+    this.isLoadingRecommended = true;
+    this.bookService.getRecommendedBooks().subscribe({
+      next: (books) => {
+        this.recommendedBooks = books || [];
+        this.isLoadingRecommended = false;
+      },
+      error: (err) => {
+        console.error('❌ Lỗi tải sách gợi ý:', err);
+        this.isLoadingRecommended = false;
+      }
+    });
+  }
+
+  handleToast(event: { severity: string; summary: string; detail: string }) {
+    this.messageService.add({
+      severity: event.severity || 'success',
+      summary: event.summary || 'Thành công',
+      detail: event.detail || 'Thao tác đã hoàn tất',
+      key: 'tr',
+    });
   }
 
   toggleCouponView() {
