@@ -11,7 +11,7 @@ export class InventoryService {
   constructor(private http: HttpClient) {}
 
 
-  listReceipts(params: { type?: 'import'|'export'; from?: string; to?: string; q?: string; page?: number; limit?: number }): Observable<Paginated<InventoryReceipt>> {
+  listReceipts(params: { type?: 'import'|'export'; branchId?: string; from?: string; to?: string; q?: string; page?: number; limit?: number }): Observable<Paginated<InventoryReceipt>> {
     let p = new HttpParams();
     Object.entries(params || {}).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') p = p.set(k, String(v));

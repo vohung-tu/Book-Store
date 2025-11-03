@@ -17,7 +17,16 @@
       />
     </div>
     <button
+      *ngIf="selectedUsers?.length"
       pButton
+      type="button"
+      label="Xóa đã chọn"
+      icon="pi pi-trash"
+      class="p-button-danger"
+    ></button>
+    <button
+      pButton
+      class="btn-green"
       type="button"
       label="Thêm người dùng"
       icon="pi pi-plus"
@@ -26,9 +35,19 @@
   </div>
 
 
-  <p-table [value]="filteredUsers" [paginator]="true" [rows]="10" [responsiveLayout]="'scroll'">
+  <p-table
+    [value]="filteredUsers"
+    [(selection)]="selectedUsers"
+    dataKey="_id"
+    [paginator]="true"
+    [rows]="10"
+    [responsiveLayout]="'scroll'">
+
     <ng-template pTemplate="header">
       <tr>
+        <th style="width: 3rem;">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
         <th>Họ tên</th>
         <th>Email</th>
         <th>Tên đăng nhập</th>
@@ -39,8 +58,12 @@
         <th>Thao tác</th>
       </tr>
     </ng-template>
+
     <ng-template pTemplate="body" let-user>
-      <tr>
+      <tr [pSelectableRow]="user">
+        <td>
+          <p-tableCheckbox [value]="user"></p-tableCheckbox>
+        </td>
         <td>{{ user.full_name }}</td>
         <td>{{ user.email }}</td>
         <td>{{ user.username }}</td>
@@ -60,6 +83,7 @@
       </tr>
     </ng-template>
   </p-table>
+
 </div>
 
 <p-dialog header="{{ isEditMode ? 'Cập nhật người dùng' : 'Thêm người dùng' }}" [(visible)]="displayDialog" [modal]="true" [style]="{ width: '100%' }">

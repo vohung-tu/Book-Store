@@ -98,4 +98,8 @@ export class BooksService {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/halloween`);
   }
 
+  getAllDetailed(): Observable<any[]> {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/detailed`);
+  }
+
 }   

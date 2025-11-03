@@ -13,6 +13,10 @@ export class CouponsService {
     return this.http.get<Coupon[]>(this.apiUrl);
   }
 
+  getValidCoupons(): Observable<Coupon[]> {
+    return this.http.get<Coupon[]>(`${this.apiUrl}/valid`);
+  }
+
   createCoupon(coupon: Coupon): Observable<Coupon> {
     return this.http.post<Coupon>(this.apiUrl, coupon);
   }

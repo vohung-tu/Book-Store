@@ -124,14 +124,21 @@ export class AdminDashboardComponent implements OnInit {
           bookSales[product._id].revenue += product.price * product.quantity;
 
           // Tên danh mục (ưu tiên lấy từ category.name)
-          const catId = (product as any)?.categoryId || (product as any)?.category?._id;
-          const catName =
+          const catRaw = (product as any)?.categoryId || (product as any)?.category;
+          const catId = typeof catRaw === 'object' ? catRaw?._id?.toString() : catRaw?.toString?.();
+
+          let catName =
             this.categoryMap.get(catId) ||
             (product as any)?.category?.name ||
             (product as any)?.categoryName ||
+            (product as any)?.category?.slug ||
             'Khác';
 
-          categoryRevenue[catName] = (categoryRevenue[catName] || 0) + product.price * product.quantity;
+          console.log('📦', product.title, '| catId:', catId, '| catName:', catName);
+
+
+          categoryRevenue[catName] =
+            (categoryRevenue[catName] || 0) + product.price * product.quantity;
         });
       });
 

@@ -70,6 +70,11 @@ export class BooksController {
     return this.booksService.getHalloweenBooks();
   }
   
+  @Get('detailed')
+  async findAllDetailed() {
+    return this.booksService.findAllDetailed();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Book | null> {
     // giữ đặc biệt nếu bạn có thêm slug khác thì xử lý trước ở đây
@@ -110,5 +115,5 @@ export class BooksController {
     return { summary_ai: book.summary_ai || 'Chưa có tóm tắt' };
   }
 
-  
+
 }

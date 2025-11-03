@@ -9,6 +9,8 @@ import { AuthorsModule } from 'src/authors/authors.module';
 import { CategoryModule } from 'src/categories/categories.module';
 import { Category, CategorySchema } from 'src/categories/categories.schema';
 import { AiService } from 'src/ai-helpers/ai.service';
+import { Inventory, InventorySchema } from 'src/inventory/schemas/inventory-branch.schema';
+import { StoreBranchInventory, StoreBranchInventorySchema } from 'src/store-branch/schemas/store-branch-inventory.schema';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { AiService } from 'src/ai-helpers/ai.service';
       { name: Book.name, schema: BookSchema },
       { name: Order.name, schema: OrderSchema },
       { name: Category.name, schema: CategorySchema },
+      { name: Inventory.name, schema: InventorySchema },
+      { name: StoreBranchInventory.name, schema: StoreBranchInventorySchema },
     ]),
     AuthorsModule,
     CategoryModule,
@@ -23,6 +27,6 @@ import { AiService } from 'src/ai-helpers/ai.service';
   ],
   providers: [BooksService, AiService],
   controllers: [BooksController],
-  exports: [BooksService]
+  exports: [BooksService, MongooseModule]
 })
 export class BooksModule {}

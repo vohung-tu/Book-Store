@@ -1,9 +1,8 @@
 <div class="admin-authors">
   <div class="toolbar">
     <h2>Quản lý Tác giả</h2>
-    <button pButton label="Thêm tác giả" icon="pi pi-plus" (click)="openAddDialog()"></button>
   </div>
-
+  
   <!-- Thanh search -->
   <div class="body-bar">
     <div class="search-bar">
@@ -16,6 +15,7 @@
         (input)="filterAuthors()"
       />
     </div>
+    <button pButton class="btn-green" label="Thêm tác giả" icon="pi pi-plus" (click)="openAddDialog()"></button>
   </div>
 
     <!-- Dialog thêm tác giả -->

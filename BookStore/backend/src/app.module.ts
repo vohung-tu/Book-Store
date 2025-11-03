@@ -19,6 +19,8 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { WarehouseAdminModule } from './inventory/warehouse/warehouse-admin.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
+import { StoreBranchModule } from './store-branch/store-branch.module';
+import { StoreTransferModule } from './inventory/store-transfer/store-transfer.module';
 
 @Module({
   imports: [
@@ -41,7 +43,9 @@ import { SuppliersModule } from './suppliers/suppliers.module';
     LoyaltyModule,
     InventoryModule,
     WarehouseAdminModule,
-    SuppliersModule
+    SuppliersModule,
+    StoreBranchModule,
+    StoreTransferModule
   ],
   controllers: [AppController],
   providers: [AppService],

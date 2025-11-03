@@ -14,12 +14,34 @@ export class CouponsService {
   }
 
   async findAll(): Promise<Coupon[]> {
-    return this.couponModel.find().sort({ createdAt: -1 }).exec();
+    const coupons = await this.couponModel.find().sort({ createdAt: -1 }).exec();
+    const now = new Date();
+
+    for (const c of coupons) {
+      const isExpired = c.endDate && new Date(c.endDate) < now;
+      const newStatus = isExpired ? 'expired' : 'active';
+
+      // Nếu DB chưa đúng trạng thái thì cập nhật lại
+      if (c.status !== newStatus) {
+        await this.couponModel.updateOne({ _id: c._id }, { status: newStatus });
+        c.status = newStatus;
+      }
+    }
+
+    return coupons;
   }
 
   async findOne(id: string): Promise<Coupon> {
     const coupon = await this.couponModel.findById(id).exec();
     if (!coupon) throw new NotFoundException('Coupon không tồn tại');
+
+    // Cập nhật trạng thái nếu đã hết hạn
+    const now = new Date();
+    if (coupon.endDate && new Date(coupon.endDate) < now && coupon.status !== 'expired') {
+      coupon.status = 'expired';
+      await coupon.save();
+    }
+
     return coupon;
   }
 
@@ -34,15 +56,23 @@ export class CouponsService {
     if (!result) throw new NotFoundException('Không tìm thấy coupon để xóa');
   }
 
-  async findByCode(code: string): Promise<Coupon | null> {
-    return this.couponModel.findOne({ code }).exec();
-  }
+    async findByCode(code: string): Promise<Coupon | null> {
+      const coupon = await this.couponModel.findOne({ code }).exec();
+
+      // Khi gọi API validate code, nếu hết hạn thì không hợp lệ
+      if (coupon && coupon.endDate && new Date(coupon.endDate) < new Date()) {
+        await this.couponModel.updateOne({ _id: coupon._id }, { status: 'expired' });
+        return null;
+      }
+
+      return coupon;
+    }
 
   // 🟣 Thêm tiện ích: lọc coupon theo level
   async findEligibleForLevel(level: string): Promise<Coupon[]> {
     const all = await this.findAll();
 
-    // ✅ lọc coupon mà requiredLevel chứa level hiện tại
+    // lọc coupon mà requiredLevel chứa level hiện tại
     return all.filter(c => {
       if (Array.isArray(c.requiredLevel)) {
         return c.requiredLevel.includes(level);
@@ -50,6 +80,15 @@ export class CouponsService {
       // phòng trường hợp dữ liệu cũ vẫn là string
       return c.requiredLevel === level;
     });
+  }
+
+  async findValid(): Promise<Coupon[]> {
+    const now = new Date();
+    return this.couponModel.find({
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+      status: 'active'
+    }).exec();
   }
 
 }

@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { Coupon } from './coupon.schema';
 import { CouponsService } from './coupon.service';
 import { JwtAuthGuard } from 'src/users/auth/jwt.auth.guard';
@@ -7,71 +17,76 @@ import { JwtAuthGuard } from 'src/users/auth/jwt.auth.guard';
 export class CouponsController {
   constructor(private readonly couponsService: CouponsService) {}
 
+  // Tạo coupon
   @Post()
   create(@Body() body: Partial<Coupon>) {
     return this.couponsService.create(body);
   }
 
-  @Get()
-  findAll() {
-    return this.couponsService.findAll();
+  // LẤY COUPON CÒN HIỆU LỰC (đặt TRƯỚC findOne)
+  @Get('valid')
+  async findValid() {
+    return this.couponsService.findValid();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.couponsService.findOne(id);
+  //  LẤY COUPON THEO LEVEL (đặt TRƯỚC findOne)
+  @Get('level/:level')
+  async findByLevel(@Param('level') level: string) {
+    return this.couponsService.findEligibleForLevel(level);
   }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() body: Partial<Coupon>) {
-    return this.couponsService.update(id, body);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.couponsService.delete(id);
-  }
-
+  // Kiểm tra mã coupon
   @Get('validate/:code')
-    async validate(@Param('code') code: string) {
+  async validate(@Param('code') code: string) {
     const coupon = await this.couponsService.findByCode(code);
     if (!coupon) {
-        return { valid: false, message: 'Mã giảm giá không tồn tại' };
+      return { valid: false, message: 'Mã giảm giá không tồn tại hoặc đã hết hạn' };
     }
 
     const now = new Date();
     if (coupon.startDate && now < coupon.startDate) {
-        return { valid: false, message: 'Mã chưa đến thời gian áp dụng' };
+      return { valid: false, message: 'Mã chưa đến thời gian áp dụng' };
     }
     if (coupon.endDate && now > coupon.endDate) {
-        return { valid: false, message: 'Mã đã hết hạn' };
+      return { valid: false, message: 'Mã đã hết hạn' };
     }
     if (coupon.status !== 'active') {
-        return { valid: false, message: 'Mã đã bị vô hiệu hóa' };
+      return { valid: false, message: 'Mã đã bị vô hiệu hóa' };
     }
 
     return { valid: true, coupon };
   }
 
+  // Lấy tất cả coupon (admin)
+  @Get()
+  findAll() {
+    return this.couponsService.findAll();
+  }
+
+  // Lấy coupon theo ID (đặt sau cùng để tránh conflict)
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.couponsService.findOne(id);
+  }
+
+  // Cập nhật coupon
+  @Put(':id')
+  update(@Param('id') id: string, @Body() body: Partial<Coupon>) {
+    return this.couponsService.update(id, body);
+  }
+
+  //  Xoá coupon
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.couponsService.delete(id);
+  }
+
+  //  Dành cho user đã login (JWT)
   @UseGuards(JwtAuthGuard)
   @Get('available/me')
   async findAvailableForUser(@Req() req: any) {
     const user = req.user;
-    const coupons = await this.couponsService.findAll();
-
-    // coupon hợp lệ nếu danh sách requiredLevel có chứa user.level
-    const filtered = coupons.filter(c =>
-      Array.isArray(c.requiredLevel)
-        ? c.requiredLevel.includes(user.level)
-        : c.requiredLevel === user.level
-    );
-
-    return filtered;
+    const coupons = await this.couponsService.findEligibleForLevel(user.level);
+    return coupons;
   }
-    //  Helper so sánh cấp độ
-  private isEligible(required: string, userLevel: string): boolean {
-    const order = ['member', 'silver', 'gold', 'diamond'];
-    return order.indexOf(userLevel) >= order.indexOf(required);
-  }
-
 }

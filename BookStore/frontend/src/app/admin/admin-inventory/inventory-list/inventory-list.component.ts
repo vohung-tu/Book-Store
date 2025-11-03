@@ -11,6 +11,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InventoryReceipt, Paginated } from '../../../model/inventory.model';
 import { InventoryService } from '../../../service/inventory.service';
 import { forkJoin, map } from 'rxjs';
+import { StoreBranchService } from '../../../service/store-branch.service';
 
 @Component({
   selector: 'app-inventory-list',
@@ -39,6 +40,9 @@ export class InventoryListComponent implements OnInit {
   total = 0;
   items: InventoryReceipt[] = [];
 
+  storeBranches: any[] = [];
+  selectedBranchId?: string;
+
   // popup chi tiết
   showDetail = false;
   selected?: InventoryReceipt;
@@ -48,9 +52,11 @@ export class InventoryListComponent implements OnInit {
 
   loading = signal(false);
 
-  constructor(private api: InventoryService) {}
+  constructor(private api: InventoryService, 
+    private storeBranchService: StoreBranchService) {}
 
   ngOnInit() {
+    this.storeBranchService.list().subscribe((res) => (this.storeBranches = res));
     const today = new Date();
     const threeMonthsAgo = new Date(today);
     threeMonthsAgo.setMonth(today.getMonth() - 3);
@@ -64,6 +70,7 @@ export class InventoryListComponent implements OnInit {
     this.api
       .listReceipts({
         type: this.type || undefined,
+        branchId: this.selectedBranchId || undefined,
         from: this.from ? this.from.toISOString() : undefined,
         to: this.to ? this.to.toISOString() : undefined,
         q: this.q || undefined,

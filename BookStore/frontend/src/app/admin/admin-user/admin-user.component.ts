@@ -43,7 +43,7 @@ export class AdminUserComponent implements OnInit {
     { label: 'Admin', value: 'admin' },
     { label: 'User', value: 'user' }
   ];
-
+  selectedUsers: any[] = [];
   constructor(
     private http: HttpClient, 
     private messageService: MessageService,
@@ -56,6 +56,29 @@ export class AdminUserComponent implements OnInit {
     this.addresses = this.user.address || [];
 
   }
+
+//   deleteSelectedUsers() {
+//   if (!this.selectedUsers.length) return;
+
+//   const confirmDelete = confirm(`Bạn có chắc muốn xóa ${this.selectedUsers.length} người dùng này không?`);
+//   if (!confirmDelete) return;
+
+//   const ids = this.selectedUsers.map(u => u._id);
+//   let deletedCount = 0;
+
+//   ids.forEach(id => {
+//     this.userService.deleteUser(id).subscribe({
+//       next: () => {
+//         deletedCount++;
+//         if (deletedCount === ids.length) {
+//           this.loadUsers();
+//           this.selectedUsers = [];
+//         }
+//       },
+//       error: (err) => console.error('❌ Lỗi khi xóa người dùng:', err)
+//     });
+//   });
+// }
 
   fetchUsers() {
     const token = localStorage.getItem('token');

@@ -34,6 +34,18 @@
       </p-calendar>
     </div>
 
+    <div class="inv-field">
+      <label class="inv-label">Chi nhánh</label>
+      <p-dropdown
+        [options]="storeBranches"
+        [(ngModel)]="selectedBranchId"
+        optionLabel="name"
+        optionValue="_id"
+        placeholder="Tất cả"
+        (onChange)="page=1;load()"
+      ></p-dropdown>
+    </div>
+
     <div class="inv-field inv-field--wide">
       <label class="inv-label">Tìm kiếm</label>
       <input
@@ -59,6 +71,7 @@
         <th>Loại</th>
         <th>Ngày</th>
         <th>Chi nhánh</th>
+        <th>Nơi lưu trữ</th>
         <th>Ghi chú</th>
         <th>Tổng SL</th>
         <th>Tổng tiền</th>
@@ -79,6 +92,9 @@
         </td>
         <td>{{ row.date | date:'short' }}</td>
         <td>{{ row.branchId?.name || '—' }}</td>  
+        <td>
+          {{ row.branchId?.name || 'Kho trung tâm' }}
+        </td>
         <td>{{ row.reason }}</td>
         <td>{{ row.totalQuantity }}</td>
         <td>{{ row.totalAmount | number }}</td>

@@ -4,7 +4,7 @@
   </div>
 
   <div class="body-bar">
-    <button pButton label="Thêm Coupon" icon="pi pi-plus" (click)="openDialog()"></button>
+    <button pButton class="btn-green" label="Thêm Coupon" icon="pi pi-plus" (click)="openDialog()"></button>
   </div>
 
   <p-table [value]="coupons" [paginator]="true" [rows]="10">
@@ -43,14 +43,15 @@
         <td>{{ c.value }}{{ c.type === 'percent' ? '%' : '₫' }}</td>
         <td>{{ c.minOrder | number }}₫</td>
         <td>{{ c.startDate | date }} - {{ c.endDate | date }}</td>
-        <td>
+        <td class="level">
           <ng-container *ngIf="c.requiredLevel?.length; else allLevels">
-            <p-tag 
-              *ngFor="let lvl of c.requiredLevel" 
-              [value]="getLevelName(lvl)" 
-              [severity]="getLevelSeverity(lvl)"
-            >
-            </p-tag>
+            <div class="level-tags">
+              <p-tag
+                *ngFor="let lvl of c.requiredLevel"
+                [value]="getLevelName(lvl)"
+                [severity]="getLevelSeverity(lvl)">
+              </p-tag>
+            </div>
           </ng-container>
           <ng-template #allLevels>
             <em>Tất cả thành viên</em>

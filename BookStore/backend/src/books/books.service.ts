@@ -7,6 +7,8 @@ import { Author } from 'src/authors/authors.schema';
 import { Category, CategoryDocument } from 'src/categories/categories.schema';
 import { PipelineStage } from 'mongoose';
 import { AiService } from 'src/ai-helpers/ai.service';
+import { StoreBranchInventory } from 'src/store-branch/schemas/store-branch-inventory.schema';
+import { Inventory } from 'src/inventory/schemas/inventory-branch.schema';
 
 @Injectable()
 export class BooksService {
@@ -15,6 +17,8 @@ export class BooksService {
     @InjectModel(Author.name) private authorModel: Model<Author>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
     @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
+    @InjectModel(StoreBranchInventory.name) private storeBranchInventoryModel: Model<StoreBranchInventory>,
+    @InjectModel(Inventory.name) private readonly warehouseInventoryModel: Model<Inventory>,
     private aiService: AiService
     ) {}
 
@@ -273,6 +277,59 @@ export class BooksService {
     }).exec();
   }
   
+  async findAllDetailed() {
+    const books = await this.bookModel.find().lean();
+
+    return Promise.all(
+      books.map(async (book) => {
+        // ✅ Ép kiểu _id an toàn
+        const rawId: any = book._id;
+        const bookId = Types.ObjectId.isValid(rawId)
+          ? new Types.ObjectId(String(rawId))
+          : null;
+
+        if (!bookId) {
+          console.warn('⚠️ Bỏ qua sách có ID không hợp lệ:', rawId);
+          return null;
+        }
+
+        // ✅ Lấy tồn kho kho trung tâm
+        const warehouseStocks = await this.warehouseInventoryModel
+          .find({ bookId })
+          .populate('branchId', 'name region')
+          .lean();
+
+        // ✅ Lấy tồn kho cửa hàng
+        const storeStocks = await this.storeBranchInventoryModel
+          .find({ book: bookId })
+          .populate('storeBranch', 'name city region')
+          .lean();
+
+        // ✅ Tính tổng
+        const totalQty =
+          warehouseStocks.reduce((sum, w) => sum + (w.quantity || 0), 0) +
+          storeStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
+
+        return {
+          ...book,
+          quantity: totalQty,
+          warehouseStocks: warehouseStocks.map((w: any) => ({
+            name: (w.branchId as any)?.name || 'Không rõ',
+            region: (w.branchId as any)?.region || '',
+            quantity: w.quantity || 0,
+          })),
+          storeStocks: storeStocks.map((s: any) => ({
+            name: (s.storeBranch as any)?.name || 'Không rõ',
+            city: (s.storeBranch as any)?.city || '',
+            region: (s.storeBranch as any)?.region || '',
+            quantity: s.quantity || 0,
+          })),
+        };
+      }),
+    ).then((result) => result.filter(Boolean)); // bỏ null
+  }
+
+
   async updateStock(bookId: string, quantitySold: number): Promise<void> {
     const res = await this.bookModel.updateOne(
       { _id: bookId, quantity: { $gte: quantitySold } },

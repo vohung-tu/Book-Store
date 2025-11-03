@@ -18,6 +18,13 @@ interface SupplierInfo {
   address?: string;
 }
 
+export interface BranchStock {
+  warehouseName?: string;
+  branchName?: string;
+  city?: string;
+  region?: string;
+  quantity: number;
+}
 export interface BookDetails {
   id?: string;
   _id:string; // mongodb tự tạo ra
@@ -38,4 +45,6 @@ export interface BookDetails {
   sold?: number;
   summary_ai?: string;
   supplierId: SupplierInfo;
+  warehouseStocks?: BranchStock[];
+  storeStocks?: BranchStock[]; 
 }

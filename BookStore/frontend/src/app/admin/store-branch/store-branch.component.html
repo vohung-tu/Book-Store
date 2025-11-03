@@ -1,0 +1,89 @@
+<div class="branch-card">
+  <h2>Quản lý Chi nhánh cửa hàng</h2>
+
+  <div class="branch-actions">
+    <button pButton icon="pi pi-plus" label="Thêm chi nhánh" class="btn-green" (click)="openNew()"></button>
+  </div>
+
+  <p-table [value]="branches" [responsiveLayout]="'scroll'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Mã</th>
+        <th>Tên chi nhánh</th>
+        <th>Địa chỉ</th>
+        <th>Thành phố</th>
+        <th>Điện thoại</th>
+        <th>Miền</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.code }}</td>
+        <td>{{ row.name }}</td>
+        <td>{{ row.address }}, {{ row.district }}</td>
+        <td>{{ row.city }}</td>
+        <td>{{ row.phone || '—' }}</td>
+        <td>{{ row.region || '—' }}</td>
+        <td>
+          <button pButton icon="pi pi-pencil" class="p-button-text" (click)="edit(row)"></button>
+          <button pButton icon="pi pi-trash" class="p-button-text p-button-danger" (click)="delete(row)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog
+  [(visible)]="showDialog"
+  [modal]="true"
+  [header]="editing ? 'Sửa chi nhánh' : 'Thêm chi nhánh'"
+  [style]="{ width: '700px' }"
+>
+  <form [formGroup]="form" class="branch-form">
+    <div class="p-fluid">
+      <div class="p-field">
+        <label>Tên chi nhánh</label>
+        <input pInputText formControlName="name" />
+      </div>
+      <div class="p-field">
+        <label>Địa chỉ</label>
+        <input pInputText formControlName="address" />
+      </div>
+      <div class="p-field">
+        <label>Quận / Huyện</label>
+        <input pInputText formControlName="district" />
+      </div>
+      <div class="p-field">
+        <label>Thành phố</label>
+        <input pInputText formControlName="city" />
+      </div>
+      <div class="p-field">
+        <label>Miền</label>
+        <p-dropdown
+          [options]="[
+            { label: 'Miền Bắc', value: 'Miền Bắc' },
+            { label: 'Miền Trung', value: 'Miền Trung' },
+            { label: 'Miền Nam', value: 'Miền Nam' }
+          ]"
+          formControlName="region"
+          placeholder="Chọn miền"
+        ></p-dropdown>
+      </div>
+      <div class="p-field">
+        <label>Số điện thoại</label>
+        <input pInputText formControlName="phone" />
+      </div>
+      <div class="p-field">
+        <label>Link Google Map</label>
+        <input pInputText formControlName="mapUrl" />
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Lưu" class="btn-green" (click)="save()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

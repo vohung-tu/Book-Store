@@ -25,10 +25,10 @@
       class="p-button-danger"
       (click)="deleteSelectedProducts()"
     ></button>
-    <button pButton type="button" label="Thêm sản phẩm" icon="pi pi-plus" (click)="openAddProductDialog()"></button>
+    <button pButton class="btn-green" type="button" label="Thêm sản phẩm" icon="pi pi-plus" (click)="openAddProductDialog()"></button>
     </div>
   </div>
-  <p-progressSpinner *ngIf="loading"></p-progressSpinner>
+  <!-- <p-progressSpinner *ngIf="loading"></p-progressSpinner> -->
   <p-table
     #table 
     [value]="filteredProducts"
@@ -61,7 +61,8 @@
         <th>Danh mục</th>
         <th>Nhà cung cấp</th>
         <th>Số lượng</th>
-        <th>Tồn kho theo chi nhánh</th>
+        <th>Tồn kho theo chi nhánh kho</th>
+        <th>Tồn kho theo cửa hàng</th>
         <th>Đã bán</th>
         <th>Ảnh phụ</th>
         <th>Thao tác</th>
@@ -92,15 +93,27 @@
         <td>{{ product.supplierId?.name || 'Không có' }}</td>
         <td>{{ product.quantity }}</td>
         <td>
-          <ng-container *ngIf="product.branchStocks?.length > 0; else noStock">
-            <div *ngFor="let stock of product.branchStocks">
-              <strong>{{ stock.branchName }}</strong>: {{ stock.quantity }}
-            </div>
-          </ng-container>
-          <ng-template #noStock>
-            <span style="color: gray;">Không có dữ liệu</span>
-          </ng-template>
-        </td>
+  <ng-container *ngIf="product.warehouseStocks?.length > 0; else noWarehouse">
+    <div *ngFor="let stock of product.warehouseStocks">
+      <strong>{{ stock.name }}</strong> ({{ stock.region }}): {{ stock.quantity }}
+    </div>
+  </ng-container>
+  <ng-template #noWarehouse>
+    <span style="color: gray;">Không có dữ liệu</span>
+  </ng-template>
+</td>
+
+<td>
+  <ng-container *ngIf="product.storeStocks?.length > 0; else noStore">
+    <div *ngFor="let s of product.storeStocks">
+      <strong>{{ s.name }}</strong> ({{ s.city }}): {{ s.quantity }}
+    </div>
+  </ng-container>
+  <ng-template #noStore>
+    <span style="color: gray;">Không có dữ liệu</span>
+  </ng-template>
+</td>
+
         <td>{{ product.sold }}</td>
         <td>
           <ng-container *ngIf="product.images?.length > 0; else noImages">

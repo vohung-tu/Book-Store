@@ -1,0 +1,113 @@
+<p-toast></p-toast>
+
+<div class="st-card">
+  <h2>Phiếu chuyển hàng (Kho → Cửa hàng)</h2>
+
+  <form [formGroup]="form" class="st-form">
+    <div class="st-grid">
+      <div class="st-field">
+        <label>Ngày</label>
+        <p-calendar formControlName="date" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
+      </div>
+
+      <div class="st-field">
+        <label>Kho xuất</label>
+        <p-dropdown
+          formControlName="fromWarehouse"
+          [options]="warehouses"
+          optionLabel="name"
+          optionValue="_id"
+          placeholder="Chọn kho">
+        </p-dropdown>
+      </div>
+
+      <div class="st-field">
+        <label>Cửa hàng nhận</label>
+        <p-dropdown
+          formControlName="toStore"
+          [options]="storeBranches"
+          optionLabel="name"
+          optionValue="_id"
+          placeholder="Chọn cửa hàng">
+        </p-dropdown>
+      </div>
+
+      <div class="st-field st-field--full">
+        <label>Ghi chú</label>
+        <input class="st-input" type="text" formControlName="note" placeholder="Ghi chú (nếu có)"/>
+      </div>
+    </div>
+
+    <h3 class="st-subtitle">Dòng hàng</h3>
+    <div class="st-table-wrap">
+      <table class="st-table">
+        <thead>
+          <tr>
+            <th style="width:60%">Sách</th>
+            <th style="width:20%">Số lượng</th>
+            <th style="width:20%"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let g of items.controls; let i = index" [formGroup]="$any(g)">
+            <td>
+              <p-dropdown
+                formControlName="bookId"
+                [options]="books"
+                optionLabel="title"
+                optionValue="_id"
+                [filter]="true"
+                placeholder="Chọn sách">
+                <ng-template pTemplate="item" let-opt>
+                  {{ opt.title }}
+                </ng-template>
+              </p-dropdown>
+            </td>
+            <td>
+              <p-inputNumber formControlName="quantity" [min]="1" [useGrouping]="false"></p-inputNumber>
+            </td>
+            <td>
+              <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger"
+                      (click)="removeLine(i)" *ngIf="items.length > 1"></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="st-actions">
+      <button pButton type="button" icon="pi pi-plus" label="Thêm dòng" (click)="addLine()"></button>
+      <div class="st-total">Tổng SL: <b>{{ totalQty() }}</b></div>
+      <button pButton type="button" class="btn-green"
+              [label]="loading() ? 'Đang tạo...' : 'Tạo phiếu chuyển'"
+              [disabled]="loading()" (click)="submit()"></button>
+    </div>
+  </form>
+</div>
+
+<div class="st-card">
+  <h2>Danh sách phiếu chuyển gần đây</h2>
+
+  <p-table [value]="transfers" [responsiveLayout]="'scroll'">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Mã phiếu</th>
+        <th>Ngày</th>
+        <th>Kho xuất</th>
+        <th>Cửa hàng nhận</th>
+        <th>Số dòng</th>
+        <th>Ghi chú</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.code }}</td>
+        <td>{{ row.date | date:'short' }}</td>
+        <td>{{ row.fromWarehouse?.name || '—' }} ({{ row.fromWarehouse?.region || '' }})</td>
+        <td>{{ row.toStore?.name || '—' }} ({{ row.toStore?.city || '' }})</td>
+        <td>{{ row.items?.length || 0 }}</td>
+        <td>{{ row.note || '—' }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

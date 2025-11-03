@@ -56,16 +56,14 @@ export class GetCouponPageComponent implements OnInit {
   }
 
   loadCoupons() {
-    this.couponService.getCoupons().subscribe({
+    this.couponService.getValidCoupons().subscribe({
       next: (res) => {
         this.coupons = res;
 
-        //  fixedCoupons: chỉ các coupon giảm tiền KHÔNG có category
         this.fixedCoupons = res.filter(c =>
           c.type === 'amount' && (!c.categories || c.categories.length === 0)
         );
 
-        // percentCoupons: các coupon có category
         this.percentCoupons = res.filter(c =>
           c.categories && c.categories.length > 0
         );
@@ -73,6 +71,7 @@ export class GetCouponPageComponent implements OnInit {
       error: (err) => console.error('❌ Lỗi khi tải coupons:', err)
     });
   }
+
 
   showCode(coupon: any) {
     this.selectedCoupon = coupon;

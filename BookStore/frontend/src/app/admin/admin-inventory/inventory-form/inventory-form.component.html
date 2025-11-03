@@ -40,6 +40,29 @@
         ></p-dropdown>
       </div>
 
+      <div class="inv-field">
+        <label class="inv-label">Loại lưu trữ</label>
+        <p-dropdown
+          [options]="[
+            { label: 'Kho hàng', value: 'warehouse' },
+            { label: 'Chi nhánh cửa hàng', value: 'store' }
+          ]"
+          formControlName="storageType"
+          placeholder="Chọn nơi lưu trữ"
+        ></p-dropdown>
+      </div>
+
+      <div class="inv-field" *ngIf="form.get('storageType')?.value === 'store'">
+        <label class="inv-label">Chi nhánh cửa hàng</label>
+        <p-dropdown
+          [options]="storeBranches"
+          optionLabel="name"
+          optionValue="_id"
+          placeholder="Chọn chi nhánh"
+          formControlName="branchId"
+        ></p-dropdown>
+      </div>
+
       <div class="inv-field" *ngIf="typeCtrl.value === 'export'">
         <label class="inv-label">Người nhận</label>
         <input class="inv-input" formControlName="receiverName" placeholder="VD: Nguyễn Văn A / Mã đơn" />

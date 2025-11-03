@@ -1,0 +1,50 @@
+.st-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 3px 18px rgba(0,0,0,0.05);
+}
+
+.st-form { margin-top: 8px; }
+
+.st-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.st-field { display: flex; flex-direction: column; gap: 6px; }
+.st-field--full { grid-column: 1 / -1; }
+.st-input {
+  border: 1px solid #ddd; border-radius: 10px; padding: 10px 12px;
+}
+
+.st-subtitle { margin: 16px 0 8px; }
+
+.st-table-wrap { overflow: auto; }
+.st-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #eee;
+}
+.st-table th, .st-table td {
+  padding: 10px; border-bottom: 1px solid #f2f2f2;
+}
+
+.st-actions {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.st-total { margin-left: auto; }
+.btn-green { background: #16a34a; border: none; }
+.st-table-wrap {
+  overflow: visible !important;
+  position: relative; /* để dropdown hiển thị đúng vị trí */
+}
+
+/* Khi dropdown hiển thị, đảm bảo nó ở trên cùng */
+.p-dropdown-panel {
+  z-index: 9999 !important;
+}

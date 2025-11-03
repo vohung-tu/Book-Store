@@ -21,6 +21,7 @@ import { Category } from '../../model/books-details.model';
 import { InventoryService } from '../../service/inventory.service';
 import { forkJoin } from 'rxjs';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { BooksService } from '../../service/books.service';
 
 @Component({
   selector: 'app-admin-product',
@@ -84,7 +85,8 @@ export class AdminProductComponent {
     private authorService: AuthorService, 
     private messageService: MessageService,
     private categoryService: CategoryService,
-    private inventoryService: InventoryService
+    private inventoryService: InventoryService,
+    private bookService: BooksService
   ) {}
 
   ngOnInit(): void {
@@ -106,7 +108,7 @@ export class AdminProductComponent {
           value: c.slug
         }));
 
-        // Sau khi đã có dữ liệu nền → mới fetch sách
+        // Sau khi đã có dữ liệu nền → mới fetch sách chi tiết
         this.fetchProducts();
       },
       error: (err) => {
@@ -158,56 +160,36 @@ export class AdminProductComponent {
     }
   }
 
-  fetchProducts() {
-    this.http.get<any>('https://book-store-3-svnz.onrender.com/books?limit=1000').subscribe({
-      next: data => {
-        // ✅ Map danh sách sản phẩm từ API
-        this.products = (data.items || []).map((book: any) => {
-          let authorObj = { name: 'Không rõ', _id: '' };
+  fetchProducts(): void {
+    this.loading = true;
 
-          if (typeof book.author === 'object' && book.author?.name) {
-            authorObj = {
-              _id: book.author._id || '',
-              name: book.author.name
-            };
-          } else if (typeof book.author === 'string') {
-            const found = this.authors.find(a => a._id === book.author);
-            authorObj = found
-              ? { _id: found._id, name: found.name }
+    this.bookService.getAllDetailed().subscribe({
+      next: (books) => {
+        this.products = books.map((book: any) => {
+          const authorObj =
+            typeof book.author === 'object' && book.author?.name
+              ? { _id: book.author._id, name: book.author.name }
               : { _id: book.author, name: 'Không rõ' };
-          }
 
-          // ✅ Trả về object sản phẩm chuẩn hóa
           return {
             ...book,
             id: book._id,
             author: authorObj,
-            branchStocks: [] // thêm mảng tồn kho trống ban đầu
+            warehouseStocks: book.warehouseStocks || [],
+            storeStocks: book.storeStocks || [],
           };
         });
 
-        // ✅ Gọi API tồn kho cho từng sản phẩm
-        this.products.forEach((p) => {
-          this.inventoryService.getBranchStockByBook(p._id).subscribe({
-            next: (stocks) => {
-              p.branchStocks = stocks;
-            },
-            error: (err) => {
-              console.error(`Lỗi lấy tồn kho cho sách ${p.title}:`, err);
-            }
-          });
-        });
-
-        // ✅ Gán lại danh sách hiển thị
         this.filteredProducts = [...this.products];
         this.loading = false;
       },
       error: (err) => {
-        console.error('❌ Lỗi khi lấy danh sách sản phẩm:', err)
+        console.error('❌ Lỗi khi tải sản phẩm:', err);
         this.loading = false;
-      }    
-      });
+      },
+    });
   }
+
 
 
   openAddProductDialog() {

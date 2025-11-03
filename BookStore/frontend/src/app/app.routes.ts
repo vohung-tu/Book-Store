@@ -33,6 +33,8 @@ import { InventoryListComponent } from './admin/admin-inventory/inventory-list/i
 import { InventoryFormComponent } from './admin/admin-inventory/inventory-form/inventory-form.component';
 import { AdminWarehouseComponent } from './admin/admin-warehouse/admin-warehouse.component';
 import { AdminSupplierComponent } from './admin/admin-supplier/admin-supplier.component';
+import { StoreBranchComponent } from './admin/store-branch/store-branch.component';
+import { StoreTransferComponent } from './admin/store-transfer/store-transfer.component';
 
 const routes: Routes = [
   {
@@ -173,6 +175,16 @@ const routes: Routes = [
         path: 'supplier',
         component: AdminSupplierComponent,
         title: 'Admin Supplier'
+      },
+      {
+        path: 'store-branch',
+        component: StoreBranchComponent,
+        title: 'Admin Store Branch'
+      },
+      {
+        path: 'store-transfer',
+        component: StoreTransferComponent,
+        title: 'Admin Store Branch'
       }
     ],
   },

@@ -13,6 +13,7 @@ import { InventoryService } from '../../../service/inventory.service';
 // 📥 IMPORT EXCEL
 import * as XLSX from 'xlsx';
 import { HttpClient } from '@angular/common/http';
+import { StoreBranch, StoreBranchService } from '../../../service/store-branch.service';
 
 @Component({
   selector: 'app-inventory-form',
@@ -35,12 +36,15 @@ export class InventoryFormComponent implements OnInit {
 
   books: BookLite[] = [];
   userId = '64f8b0c2c0e2c9c6b2d8a111';
-  branches: any[] = [];
+  // branches: any[] = [];
   suppliers: any[] = [];
   form!: FormGroup;
   loading = signal(false);
   totalQty!: Signal<number>;
   totalAmt!: Signal<number>;
+  branches: StoreBranch[] = [];
+  storeBranches: StoreBranch[] = [];
+  selectedStorageType: 'warehouse' | 'store' = 'warehouse';
 
   selectedFile: File | null = null;
 
@@ -49,7 +53,8 @@ export class InventoryFormComponent implements OnInit {
     private api: InventoryService,
     private bookApi: BookLiteService,
     private msg: MessageService,
-    private http: HttpClient
+    private http: HttpClient,
+    private storeBranchService: StoreBranchService
   ) {
     this.form = this.fb.group({
       date: [new Date(), Validators.required],
@@ -57,6 +62,7 @@ export class InventoryFormComponent implements OnInit {
       supplierId: [null],
       receiverName: [''],
       reason: [''],
+      storageType: ['warehouse', Validators.required],
       lines: this.fb.array([]),
     });
   }
@@ -86,6 +92,11 @@ export class InventoryFormComponent implements OnInit {
       this.lines.controls.reduce((s, c) =>
         s + (c.get('quantity')?.value || 0) * (c.get('unitPrice')?.value || 0), 0)
     );
+
+    this.storeBranchService.list().subscribe({
+      next: (res) => (this.storeBranches = res),
+      error: (err) => console.error('❌ Lỗi tải chi nhánh cửa hàng:', err),
+    });
   }
 
   addLine() {
@@ -160,11 +171,9 @@ export class InventoryFormComponent implements OnInit {
 
     const v = this.form.value as any;
     const type = this.typeCtrl.value;
-
-    // ✅ Chuẩn bị body gửi kèm branchId
     const body: any = {
       date: (v.date as Date).toISOString(),
-      branchId: v.branchId, // ✅ thêm branchId
+      branchId: v.branchId,
       reason: v.reason,
       userId: this.userId,
       lines: (v.lines || []).map((l: any) => ({
@@ -174,30 +183,44 @@ export class InventoryFormComponent implements OnInit {
       })),
     };
 
-    if (type === 'import') body.supplierName = v.supplierName;
-    else body.receiverName = v.receiverName;
-
     this.loading.set(true);
-    const req = type === 'import'
-      ? this.api.createImport(body)
-      : this.api.createExport(body);
 
-    req.subscribe({
-      next: (res) => {
-        this.loading.set(false);
-        this.msg.add({
-          severity: 'success',
-          summary: 'Thành công',
-          detail: `${type === 'import' ? 'Nhập' : 'Xuất'} kho: ${res.code}`
+    const storageType = this.form.get('storageType')?.value;
+
+    if (storageType === 'warehouse') {
+      //  Nhập kho / xuất kho
+      const req = type === 'import' ? this.api.createImport(body) : this.api.createExport(body);
+      req.subscribe({
+        next: (res) => this.handleSuccess(res, type),
+        error: (err) => this.handleError(err),
+      });
+    } else {
+      // Nhập chi nhánh cửa hàng
+      const first = body.lines[0];
+      this.storeBranchService
+        .updateInventory(body.branchId, first.bookId, first.quantity)
+        .subscribe({
+          next: () => this.handleSuccess({ code: 'SBINV' + Date.now() }, type),
+          error: (err) => this.handleError(err),
         });
-        while (this.lines.length) this.lines.removeAt(0);
-        this.addLine();
-      },
-      error: (err) => {
-        this.loading.set(false);
-        const detail = err?.error?.message || 'Có lỗi xảy ra';
-        this.msg.add({ severity: 'error', summary: 'Thất bại', detail });
-      }
-    });
+    }
   }
+
+  handleSuccess(res: any, type: string) {
+    this.loading.set(false);
+    this.msg.add({
+      severity: 'success',
+      summary: 'Thành công',
+      detail: `${type === 'import' ? 'Nhập' : 'Xuất'} kho: ${res.code}`,
+    });
+    while (this.lines.length) this.lines.removeAt(0);
+    this.addLine();
+  }
+
+  handleError(err: any) {
+    this.loading.set(false);
+    const detail = err?.error?.message || 'Có lỗi xảy ra';
+    this.msg.add({ severity: 'error', summary: 'Thất bại', detail });
+  }
+
 }
