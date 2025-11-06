@@ -13,6 +13,7 @@ import { HttpClient } from '@angular/common/http';
 import { StoreTransferService } from '../../service/store-transfer.service';
 import { BookLite, BookLiteService } from '../../service/book-lite.service';
 import { StoreBranch, StoreBranchService } from '../../service/store-branch.service';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-store-transfer',
@@ -25,7 +26,8 @@ import { StoreBranch, StoreBranchService } from '../../service/store-branch.serv
     CalendarModule,
     ButtonModule,
     TableModule,
-    ToastModule
+    ToastModule,
+    DialogModule
   ],
   providers: [MessageService],
   templateUrl: './store-transfer.component.html',
@@ -34,6 +36,9 @@ import { StoreBranch, StoreBranchService } from '../../service/store-branch.serv
 export class StoreTransferComponent implements OnInit {
   
   form!: FormGroup;
+  displayDetail = false;
+    selectedTransfer: any = null;
+    totalAmount = 0;
   get items(): FormArray {
     return this.form.get('items') as FormArray;
   }
@@ -172,4 +177,42 @@ export class StoreTransferComponent implements OnInit {
   toastError(detail: string) {
     this.msg.add({ severity: 'error', summary: 'Lỗi', detail });
   }
+
+  viewDetail(row: any) {
+  this.selectedTransfer = row;
+  this.displayDetail = true;
+}
+
+getBookTitle(bookId: string): string {
+  const book = this.books.find(b => b._id === bookId);
+  return book ? book.title : 'Không rõ';
+}
+
+updatePrice(index: number) {
+  const group = this.items.at(index);
+  const bookId = group.value.bookId;
+  const selected = this.books.find((b: any) => b._id === bookId);
+
+  if (selected) {
+    const price = selected.flashsale_price || selected.price || 0;
+    group.patchValue({ unitPrice: price });
+    this.updateSubtotal(index);
+  }
+}
+
+updateSubtotal(index: number) {
+  const group = this.items.at(index);
+  const qty = group.value.quantity || 0;
+  const price = group.value.unitPrice || 0;
+  group.patchValue({ subtotal: qty * price }, { emitEvent: false });
+
+  this.calcTotal();
+}
+
+calcTotal() {
+  this.totalAmount = this.items.controls.reduce((sum, g: any) => {
+    const v = g.value;
+    return sum + (v.quantity || 0) * (v.unitPrice || 0);
+  }, 0);
+}
 }

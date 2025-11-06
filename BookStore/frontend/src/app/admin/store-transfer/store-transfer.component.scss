@@ -48,3 +48,17 @@
 .p-dropdown-panel {
   z-index: 9999 !important;
 }
+.inner-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+}
+.inner-table th, .inner-table td {
+  border: 1px solid #eaeaea;
+  padding: 6px 8px;
+  text-align: left;
+}
+.inner-table th {
+  background: #f9fafb;
+  font-weight: 600;
+}

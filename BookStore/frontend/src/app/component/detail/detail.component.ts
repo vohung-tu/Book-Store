@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { BooksService } from '../../service/books.service';
 import { BookDetails } from '../../model/books-details.model';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -104,6 +104,19 @@ export class DetailComponent implements OnInit {
   branchStocks: { branchName: string; quantity: number }[] = [];
   selectedBranch: string | null = null;
   selectedBranchStock: { branchName: string; quantity: number } | null = null;
+  showStoreDialog = false;
+  storeStocks: any[] = [];
+
+  showAddressDialog = false;
+  selectedAddress: any = null;
+  addresses: any[] = [];
+  filteredAddresses: any[] = [];
+  addressSearch = '';
+  addingNew = false;
+  newAddress = { full: '' };
+
+  deliveryTime = '';
+  shippingFee = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -115,7 +128,8 @@ export class DetailComponent implements OnInit {
     public authService: AuthService,
     private authorService: AuthorService,
     private inventoryService: InventoryService,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router 
   ) {}
   //ham ngOnInit chạy xong thì mới load dữ liệu lên component
   ngOnInit(): void {
@@ -134,6 +148,7 @@ export class DetailComponent implements OnInit {
       }
     });
     this.currentUserId = this.authService.getCurrentUser();
+    
   }
 
   // 📖 Tải thông tin sách
@@ -179,6 +194,43 @@ export class DetailComponent implements OnInit {
       ];
     });
   }
+
+  orderFromStore(store: any) {
+  if (!this.book) return;
+
+  // ✅ Thêm sản phẩm hiện tại vào giỏ hàng kèm thông tin chi nhánh
+  this.cartService.addToCart({
+    ...this.book,
+    selectedStore: store.name, // để biết cửa hàng nào
+    quantity: 1
+  }).subscribe({
+    next: () => {
+      this.showStoreDialog = false;
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Đặt hàng thành công',
+        detail: `Sách đã được thêm vào giỏ hàng từ chi nhánh ${store.name}`,
+        key: 'tr',
+        life: 2000
+      });
+
+      // ✅ Chuyển hướng sang trang giỏ hàng
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        this.router.navigate(['/cart']);
+      }, 800);
+    },
+    error: (err) => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Lỗi',
+        detail: err?.error?.message || 'Không thể thêm vào giỏ hàng.',
+        key: 'tr'
+      });
+    }
+  });
+}
+
 
   selectBranch(branchName: string) {
     this.selectedBranch = branchName;
@@ -299,6 +351,7 @@ export class DetailComponent implements OnInit {
     div.innerHTML = html;
     return div.textContent || div.innerText || '';
   }
+
   generateAuthorId(authorName: string): string {
     return authorName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now();
   }
@@ -358,6 +411,20 @@ export class DetailComponent implements OnInit {
   fetchBookDetails(id: string): void {
     this.bookService.getBookById(id).subscribe((data) => {
       this.books = data;
+
+      // ✅ Lấy danh sách tồn kho cửa hàng (nếu có)
+      if (data.storeStocks && data.storeStocks.length > 0) {
+        this.storeStocks = data.storeStocks;
+      } else {
+        // Nếu không có sẵn, gọi lại từ InventoryService
+        this.inventoryService.getStoreStockByBook(id).subscribe({
+          next: (stocks) => {
+            this.storeStocks = stocks;
+            console.log('🏪 Store stocks:', this.storeStocks);
+          },
+          error: (err) => console.error('❌ Lỗi load store stock:', err)
+        });
+      }
     });
   }
 
@@ -519,8 +586,60 @@ export class DetailComponent implements OnInit {
   }
 
   updateBookQuantity() {
-  this.bookService.getBookById(this.book._id).subscribe((updatedBook) => {
-    this.book.quantity = updatedBook.quantity; // 🔄 Cập nhật số lượng hiển thị
-  });
-}
+    this.bookService.getBookById(this.book._id).subscribe((updatedBook) => {
+      this.book.quantity = updatedBook.quantity; // 🔄 Cập nhật số lượng hiển thị
+    });
+  }
+
+  openAddressDialog() {
+    this.showAddressDialog = true;
+    this.filteredAddresses = this.addresses;
+  }
+
+  filterAddresses() {
+    const keyword = this.addressSearch.toLowerCase();
+    this.filteredAddresses = this.addresses.filter(a =>
+      a.full.toLowerCase().includes(keyword)
+    );
+  }
+
+  selectAddress(addr: any) {
+    this.selectedAddress = addr;
+    this.showAddressDialog = false;
+
+    // Xác định khu vực từ địa chỉ
+    const region = this.detectRegion(addr.full);
+
+    // Tính phí và thời gian giao
+    this.updateShippingInfo(region);
+  }
+
+  saveNewAddress() {
+    if (!this.newAddress.full.trim()) return;
+    this.addresses.push({ full: this.newAddress.full });
+    this.filteredAddresses = this.addresses;
+    this.newAddress.full = '';
+    this.addingNew = false;
+  }
+
+  detectRegion(address: string): 'Miền Bắc' | 'Miền Trung' | 'Miền Nam' {
+    const lower = address.toLowerCase();
+    if (lower.includes('hồ chí minh') || lower.includes('cần thơ') || lower.includes('nam')) return 'Miền Nam';
+    if (lower.includes('hà nội') || lower.includes('bắc')) return 'Miền Bắc';
+    return 'Miền Trung';
+  }
+
+  updateShippingInfo(region: string) {
+    if (region === 'Miền Nam') this.shippingFee = 0;
+    else this.shippingFee = 20000;
+
+    const today = new Date();
+    const deliveryDate = new Date(today);
+    deliveryDate.setDate(today.getDate() + 2);
+
+    const weekday = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'][deliveryDate.getDay()];
+    const dateStr = deliveryDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+
+    this.deliveryTime = `Giao từ 18h - 20h, ngày ${dateStr} (${weekday})`;
+  }
 }

@@ -83,14 +83,6 @@
           <span *ngIf="!book.author?.name">Không rõ</span>
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
 
-          <!-- <div class="book-stock">
-            <p *ngIf="book && book.quantity !== undefined"><strong>
-              Số lượng trong kho:
-            </strong> 
-              {{ book.quantity > 0 ? book.quantity : 'Hết hàng' }}
-            </p>
-          </div> -->
-
           <div class="branch-chip-container" *ngIf="branchStocks.length > 0">
             <strong>Khu vực kho:</strong>
 
@@ -116,7 +108,7 @@
           <div class="branch-stock-info" *ngIf="selectedBranchStock">
             <p>
               <strong>Tồn kho tại {{ selectedBranch === 'ALL' ? 'tất cả kho' : selectedBranchStock.branchName }}:</strong>
-              {{ selectedBranchStock.quantity > 0 ? selectedBranchStock.quantity + ' cuốn' : 'Hết hàng' }}
+              {{ selectedBranchStock.quantity > 0 ? selectedBranchStock.quantity + ' sản phẩm' : 'Hết hàng' }}
             </p>
           </div>
         </div>
@@ -143,6 +135,120 @@
             severity="success">
           </p-button>
         </div>
+
+        <div class="address-shipping">
+          <div class="shipping-time" (click)="openAddressDialog()">
+            <i class="pi pi-map"></i>
+            <p style="margin-left: 8px;">
+              <a href="javascript:void(0)">
+                {{ selectedAddress ? ('Giao đến: ' + selectedAddress.full) : 'Chọn địa chỉ nhận hàng để biết thời gian giao' }}
+              </a>
+            </p>
+          </div>
+
+          <div *ngIf="selectedAddress" class="shipping-info">
+            <p><strong>Giao tiết kiệm:</strong> {{ deliveryTime }} — 
+              <span class="freeship">{{ shippingFee === 0 ? 'Miễn phí' : (shippingFee | currency:'VND') }}</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- 📍 Dialog chọn địa chỉ -->
+        <p-dialog header="Chọn địa chỉ nhận hàng"
+                  [(visible)]="showAddressDialog"
+                  [modal]="true"
+                  [style]="{ width: '600px' }">
+
+          <div class="address-dialog">
+            <input pInputText type="text" placeholder="Nhập địa chỉ (Tỉnh, Quận, Phường...)" 
+                  [(ngModel)]="addressSearch" (input)="filterAddresses()"
+                  class="address-search"/>
+
+            <p *ngIf="filteredAddresses.length === 0 && !addingNew">
+              <i>Chưa có địa chỉ nào được lưu.</i>
+            </p>
+
+            <!-- Danh sách địa chỉ đã lưu -->
+            <ul class="address-list" *ngIf="!addingNew">
+              <li *ngFor="let addr of filteredAddresses" (click)="selectAddress(addr)" class="address-item">
+                <div class="addr-text">
+                  {{ addr.full }}
+                </div>
+                <span class="addr-action">Chọn</span>
+              </li>
+            </ul>
+
+            <div class="divider">Hoặc</div>
+
+            <button pButton label="Thêm địa chỉ mới" icon="pi pi-plus" 
+                    class="btn-add-address" 
+                    (click)="addingNew = true" *ngIf="!addingNew"></button>
+
+            <!-- Form thêm mới -->
+            <div *ngIf="addingNew" class="new-address-form">
+              <input pInputText type="text" placeholder="Nhập địa chỉ đầy đủ..." [(ngModel)]="newAddress.full"/>
+              <button pButton label="Lưu địa chỉ" (click)="saveNewAddress()"></button>
+              <button pButton label="Hủy" class="p-button-text" (click)="addingNew = false"></button>
+            </div>
+          </div>
+        </p-dialog>
+
+
+        <div class="store-dialog">
+          <div class="url-branch" (click)="showStoreDialog = true">
+            <i class="pi pi-shop"></i>
+            <p style="margin-left: 8px;">
+              <a href="javascript:void(0)">Xem chi nhánh có hàng</a>
+            </p>
+          </div>
+        </div>
+
+        <p-dialog 
+          header="Xem chi nhánh có hàng" 
+          [(visible)]="showStoreDialog" 
+          [modal]="true" 
+          [style]="{ width: '700px', maxHeight: '80vh' }"
+        >
+          <div *ngIf="storeStocks?.length; else noStore" class="store-list">
+            <p class="store-total">
+              Có {{ storeStocks.length }} chi nhánh có hàng
+            </p>
+
+            <ul class="store-ul">
+              <li *ngFor="let s of storeStocks" class="store-item">
+                <div class="store-info">
+                  <div class="store-name">
+                    <strong>{{ s.name }}</strong> - <p style="color: #000; display: contents;"> Còn {{ s.quantity }} sản phẩm</p>
+                  </div>
+                  <div class="store-address">
+                    {{ s.address }}, {{ s.city }}, {{ s.region }}
+                  </div>
+                  <div class="store-links">
+                    <a 
+                      *ngIf="s.mapUrl" 
+                      [href]="s.mapUrl" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      Xem bản đồ
+                    </a>
+                    <span *ngIf="s.quantity > 0" class="store-action" (click)="orderFromStore(s)">
+                      Có hàng, đặt hàng tại đây
+                    </span>
+                    <span *ngIf="!s.quantity || s.quantity === 0" class="store-out">
+                      Hết hàng
+                    </span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <ng-template #noStore>
+            <p>Chưa có dữ liệu chi nhánh cửa hàng.</p>
+          </ng-template>
+        </p-dialog>
+
       </div>
     </div>
 

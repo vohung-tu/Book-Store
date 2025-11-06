@@ -417,8 +417,6 @@ export class InventoryService {
     ]);
   }
 
-
-
   async getAllBranches() {
     return this.branchModel
       .find()
@@ -450,4 +448,36 @@ export class InventoryService {
       { $sort: { title: 1 } }
     ]);
   }
+
+  async getStoreStockByBook(bookId: string) {
+    if (!bookId) throw new BadRequestException('Thiếu bookId');
+
+    const storeStocks = await this.connection.collection('storebranchinventories')
+      .aggregate([
+        { $match: { book: new Types.ObjectId(bookId) } },
+        {
+          $lookup: {
+            from: 'storebranches',
+            localField: 'storeBranch',
+            foreignField: '_id',
+            as: 'storeBranch'
+          }
+        },
+        { $unwind: { path: '$storeBranch', preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            _id: 0,
+            name: '$storeBranch.name',
+            region: '$storeBranch.region',
+            city: '$storeBranch.city',
+            address: '$storeBranch.address',
+            quantity: 1
+          }
+        }
+      ])
+      .toArray();
+
+    return storeStocks;
+  }
+
 }

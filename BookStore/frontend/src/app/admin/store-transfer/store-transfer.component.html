@@ -40,47 +40,75 @@
 
     <h3 class="st-subtitle">Dòng hàng</h3>
     <div class="st-table-wrap">
-      <table class="st-table">
+    <table class="st-table">
         <thead>
-          <tr>
-            <th style="width:60%">Sách</th>
-            <th style="width:20%">Số lượng</th>
-            <th style="width:20%"></th>
-          </tr>
+        <tr>
+            <th style="width:40%">Sách</th>
+            <th style="width:15%">Số lượng</th>
+            <th style="width:20%">Đơn giá</th>
+            <th style="width:20%">Thành tiền</th>
+            <th style="width:5%"></th>
+        </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let g of items.controls; let i = index" [formGroup]="$any(g)">
+        <tr *ngFor="let g of items.controls; let i = index" [formGroup]="$any(g)">
             <td>
-              <p-dropdown
+            <p-dropdown
                 formControlName="bookId"
                 [options]="books"
                 optionLabel="title"
                 optionValue="_id"
                 [filter]="true"
-                placeholder="Chọn sách">
+                placeholder="Chọn sách"
+                (onChange)="updatePrice(i)">
                 <ng-template pTemplate="item" let-opt>
-                  {{ opt.title }}
+                {{ opt.title }}
                 </ng-template>
-              </p-dropdown>
+            </p-dropdown>
             </td>
             <td>
-              <p-inputNumber formControlName="quantity" [min]="1" [useGrouping]="false"></p-inputNumber>
+            <p-inputNumber
+                formControlName="quantity"
+                [min]="1"
+                [useGrouping]="false"
+                (onInput)="updateSubtotal(i)">
+            </p-inputNumber>
             </td>
             <td>
-              <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger"
-                      (click)="removeLine(i)" *ngIf="items.length > 1"></button>
+            <p-inputNumber
+                formControlName="unitPrice"
+                [min]="0"
+                [useGrouping]="false"
+                mode="currency"
+                currency="VND"
+                locale="vi-VN"
+                (onInput)="updateSubtotal(i)">
+            </p-inputNumber>
             </td>
-          </tr>
+            <td class="text-right">
+            {{ g.value.quantity * g.value.unitPrice | number:'1.0-0' }} ₫
+            </td>
+            <td>
+            <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                class="p-button-text p-button-danger"
+                (click)="removeLine(i)"
+                *ngIf="items.length > 1">
+            </button>
+            </td>
+        </tr>
         </tbody>
-      </table>
+    </table>
     </div>
 
     <div class="st-actions">
-      <button pButton type="button" icon="pi pi-plus" label="Thêm dòng" (click)="addLine()"></button>
-      <div class="st-total">Tổng SL: <b>{{ totalQty() }}</b></div>
-      <button pButton type="button" class="btn-green"
-              [label]="loading() ? 'Đang tạo...' : 'Tạo phiếu chuyển'"
-              [disabled]="loading()" (click)="submit()"></button>
+      <button pButton type="button" label="Thêm dòng" icon="pi pi-plus" (click)="addLine()"></button>
+      <div class="st-total">
+          <strong>Tổng cộng: </strong>
+          {{ totalAmount | number:'1.0-0' }} ₫
+      </div>
     </div>
   </form>
 </div>
@@ -107,7 +135,38 @@
         <td>{{ row.toStore?.name || '—' }} ({{ row.toStore?.city || '' }})</td>
         <td>{{ row.items?.length || 0 }}</td>
         <td>{{ row.note || '—' }}</td>
+        <td>
+            <button pButton label="Xem" icon="pi pi-eye" (click)="viewDetail(row)"></button>
+        </td>
       </tr>
     </ng-template>
   </p-table>
 </div>
+<p-dialog header="Chi tiết phiếu chuyển" [(visible)]="displayDetail" [style]="{width:'700px'}">
+  <div *ngIf="selectedTransfer">
+    <p><b>Mã phiếu:</b> {{ selectedTransfer.code }}</p>
+    <p><b>Kho:</b> {{ selectedTransfer.fromWarehouse?.name }}</p>
+    <p><b>Cửa hàng:</b> {{ selectedTransfer.toStore?.name }}</p>
+    <p><b>Ghi chú:</b> {{ selectedTransfer.note || '—' }}</p>
+
+    <table class="inner-table">
+      <thead>
+        <tr>
+          <th>Tên sách</th>
+          <th>Số lượng</th>
+          <th>Đơn giá</th>
+          <th>Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of selectedTransfer.items">
+          <td>{{ getBookTitle(i.bookId) }}</td>
+          <td>{{ i.quantity }}</td>
+          <td>{{ i.unitPrice | number:'1.0-0' }}₫</td>
+          <td>{{ i.quantity * i.unitPrice | number:'1.0-0' }}₫</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</p-dialog>
+

@@ -49,4 +49,8 @@ export class InventoryService {
       `https://book-store-3-svnz.onrender.com/inventory/book/${bookId}/branches`
     );
   }
+
+  getStoreStockByBook(bookId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/store-stock/${bookId}`);
+  }
 }

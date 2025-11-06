@@ -11,6 +11,8 @@ export interface BookLite {
   title: string;
   stockQuantity: number;
   code: string;
+  price?: number; 
+  flashsale_price?: number;
 }
 
 @Injectable({ providedIn: 'root' })

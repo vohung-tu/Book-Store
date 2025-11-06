@@ -113,4 +113,9 @@ export class InventoryController {
   async getStockByBranch(@Param('branchId') branchId: string) {
     return this.service.getStockByBranch(branchId);
   }
+
+  @Get('store-stock/:bookId')
+  async getStoreStockByBook(@Param('bookId') bookId: string) {
+    return this.service.getStoreStockByBook(bookId);
+  }
 }

@@ -169,8 +169,228 @@
           }
         }
       }
+
+      .store-dialog {
+        margin-top: 12px;
+
+        .url-branch {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 10px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: background .2s ease;
+          user-select: none;
+
+          i {
+            font-size: 14px;
+          }
+
+          a {
+            text-decoration: none;
+            color: #0b63c5;
+            font-weight: 600;
+          }
+
+          &:hover {
+            background: #f4f7ff;
+          }
+        }
+      }
+
+      /* Nội dung trong p-dialog */
+      :host ::ng-deep .p-dialog {
+        .p-dialog-header {
+          font-weight: 700;
+        }
+
+        .p-dialog-content {
+          padding-top: 10px;
+        }
+      }
+
+      .store-list {
+        padding: 8px 12px;
+        max-height: 70vh;
+        overflow-y: auto;
+      }
+
+      .store-total {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #1e293b;
+      }
+
+      .store-ul {
+        list-style: disc;
+        padding-left: 20px;
+        margin: 0;
+
+        .store-item {
+          margin-bottom: 16px;
+          color: #0f172a;
+
+          .store-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 14px;
+            line-height: 1.4;
+          }
+
+          .store-name {
+            color: #0c4a6e;
+            font-weight: 600;
+            // display: flex;
+          }
+
+          .store-address {
+            color: #475569;
+          }
+
+          .store-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            a {
+              color: #2563eb;
+              text-decoration: none;
+              font-weight: 500;
+
+              &:hover {
+                text-decoration: underline;
+              }
+            }
+
+            .store-action {
+              color: #16a34a;
+              cursor: pointer;
+              font-weight: 500;
+
+              &:hover {
+                text-decoration: underline;
+              }
+            }
+
+            .store-out {
+              color: #64748b;
+              font-style: italic;
+            }
+          }
+        }
+      }
+
+      /* scrollbar nhỏ gọn */
+      .store-list::-webkit-scrollbar {
+        width: 6px;
+      }
+      .store-list::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      .store-list::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
     }
   }
+
+  .address-shipping {
+    margin-top: 16px;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 10px 12px;
+
+    .shipping-time {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: #0369a1;
+
+      a {
+        color: #0369a1;
+        text-decoration: none;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .shipping-info {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #1e293b;
+
+      .freeship {
+        color: #16a34a;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .address-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .address-search {
+      width: 100%;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    .address-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      .address-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        background: #f9fafb;
+        border-radius: 8px;
+        margin-bottom: 6px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+
+        &:hover {
+          background: #e2e8f0;
+        }
+
+        .addr-text {
+          font-size: 14px;
+          color: #0f172a;
+        }
+
+        .addr-action {
+          color: #2563eb;
+          font-weight: 600;
+        }
+      }
+    }
+
+    .divider {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .new-address-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      input {
+        border-radius: 8px;
+        padding: 8px;
+      }
+    }
+  }
+
 
   /* Book Detail 2: mô tả chi tiết */
   .book-detail-2 {
