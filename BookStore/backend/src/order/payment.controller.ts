@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { VnpayService } from './payment.service';
 import * as crypto from 'crypto';
 import { OrderService } from './order/order.service';
+import * as qs from 'qs';
 
 @Controller('vnpay')
 export class VnpayController {
@@ -75,17 +76,18 @@ export class VnpayController {
     delete vnp_Params['vnp_SecureHash'];
     delete vnp_Params['vnp_SecureHashType'];
 
-    const sortedParams = Object.keys(vnp_Params).sort().reduce((acc, key) => {
-      acc[key] = vnp_Params[key];
-      return acc;
-    }, {} as Record<string, string>);
+    const sortedParams = Object.keys(vnp_Params)
+      .sort()
+      .reduce((acc, key) => {
+        acc[key] = decodeURIComponent(vnp_Params[key]);
+        return acc;
+      }, {} as Record<string, string>);
 
-    const signData = Object.entries(sortedParams)
-      .map(([k, v]) => `${k}=${v}`)
-      .join('&');
+    const signData = qs.stringify(sortedParams, { encode: false });
 
-    const generatedHash = crypto.createHmac('sha512', vnp_HashSecret)
-      .update(signData, 'utf-8')
+    const generatedHash = crypto
+      .createHmac('sha512', vnp_HashSecret)
+      .update(Buffer.from(signData, 'utf-8'))
       .digest('hex');
 
     if (secureHash === generatedHash) {

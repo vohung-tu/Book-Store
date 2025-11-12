@@ -8,10 +8,10 @@ export class VnpayService {
     order: { amount: number; orderId: string; bankCode?: string },
     clientIp: string,
   ) {
-    const vnp_TmnCode = 'DK40Q8CI'; // ✅ thay bằng mã của bạn
-    const vnp_HashSecret = '42UVDXJJIS9UDHI5FOKD256NWKVFKBOF'; // ✅ secret của bạn
+    const vnp_TmnCode = 'DK40Q8CI';
+    const vnp_HashSecret = '42UVDXJJIS9UDHI5FOKD256NWKVFKBOF';
     const vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-    const vnp_ReturnUrl = 'https://book-store-v302.onrender.com/vnpay-return'; // ✅ sửa theo domain thực tế
+    const vnp_ReturnUrl = 'https://book-store-v302.onrender.com/vnpay-return';
 
     const date = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
@@ -53,19 +53,14 @@ export class VnpayService {
       }, {} as Record<string, string>);
 
     // raw string để ký (❌ không encode)
-    const signData = Object.entries(sortedParams)
-      .map(([k, v]) => `${k}=${v}`)
-      .join('&');
+    const signData = qs.stringify(sortedParams, { encode: false });
 
     const signed = crypto
       .createHmac('sha512', vnp_HashSecret)
-      .update(signData, 'utf-8')
+      .update(Buffer.from(signData, 'utf-8'))
       .digest('hex');
 
-    sortedParams['vnp_SecureHash'] = signed;
-
-    // build URL có encode
-    const paymentUrl = `${vnp_Url}?` + qs.stringify(sortedParams, { encode: true });
+    const paymentUrl = `${vnp_Url}?` + qs.stringify({ ...sortedParams, vnp_SecureHash: signed }, { encode: true });
     console.log('SignData:', signData);
     console.log('Signed Hash:', signed);
     console.log('Payment URL:', paymentUrl);
