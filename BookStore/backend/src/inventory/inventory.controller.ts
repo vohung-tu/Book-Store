@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Req, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
 import { QueryReceiptsDto } from "./dto/query-receipts.dto";
@@ -20,6 +20,14 @@ export class InventoryController {
   ): Promise<InventoryReceiptLean> {
     return this.service.createImport(body, body.userId) as Promise<InventoryReceiptLean>;
   }
+
+  @Post('transfer')
+    async transferToStore(@Body() dto: any, @Req() req) {
+      return this.service.transferToStore({
+        ...dto,
+        userId: req.user?._id,
+      });
+    }
 
   // =============================
   // 📤 Xuất kho

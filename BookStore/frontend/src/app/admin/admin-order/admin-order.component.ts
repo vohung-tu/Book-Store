@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { Order } from '../../model/order.model';
 import { OrderService } from '../../service/order.service';
 import { MessageService } from 'primeng/api';
+import { BooksService } from '../../service/books.service';
 
 @Component({
   selector: 'app-admin-order',
@@ -33,9 +34,6 @@ export class AdminOrderComponent implements OnInit {
   orders: Order[] = [];
   searchText: string = '';
   filteredOrders: Order[] = [];
-
-  // statusOptions = ['pending', 'processing', 'shipping', 'completed', 'cancelled', 'returned'];
-  // statusOptionItems = this.statusOptions.map(s => ({ label: s, value: s }));
   statusOptions = [
     { label: 'Chờ xử lý', value: 'pending' },
     { label: 'Đang xử lý', value: 'processing' },
@@ -49,7 +47,8 @@ export class AdminOrderComponent implements OnInit {
 
   constructor(
     private orderService: OrderService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private bookService: BooksService
   ) {}
 
   ngOnInit(): void {
@@ -90,18 +89,32 @@ export class AdminOrderComponent implements OnInit {
 
     this.orderService.updateOrderStatus(order._id, newStatus).subscribe({
       next: (updatedOrder) => {
-        this.messageService.add({severity:'success', summary:'Thành công', detail:'Cập nhật trạng thái thành công'});
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: 'Cập nhật trạng thái thành công'
+        });
 
-        // Gửi event thông báo đơn hàng đã cập nhật
-        localStorage.setItem('orderUpdated', JSON.stringify({
+        // Phát tín hiệu cho các màn khác cập nhật tồn kho
+        const payload = {
           orderId: updatedOrder._id,
           status: updatedOrder.status,
-          timestamp: new Date().getTime()
-        }));
+          timestamp: Date.now()
+        };
+
+        // 1) Cross-tab (khác tab / cửa sổ)
+        localStorage.setItem('orderUpdated', JSON.stringify(payload));
+
+        // 2) Same-tab (cùng SPA / cùng document)
+        window.dispatchEvent(new CustomEvent('order-updated', { detail: payload }));
       },
-      error: (err) => {
-        order.status = oldStatus;  // rollback
-        this.messageService.add({severity:'error', summary:'Lỗi', detail:'Cập nhật trạng thái thất bại'});
+      error: () => {
+        order.status = oldStatus; // rollback
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Lỗi',
+          detail: 'Cập nhật trạng thái thất bại'
+        });
       }
     });
   }

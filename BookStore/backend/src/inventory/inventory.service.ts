@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model, Connection, Types, Document } from 'mongoose';
 import { InventoryReceipt } from './schemas/inventory-receipt.schema';
@@ -9,6 +9,9 @@ import { Book } from 'src/books/book.schema';
 import * as XLSX from 'xlsx';
 import { Branch, Inventory } from './schemas/inventory-branch.schema';
 import { WarehouseAdmin } from './schemas/warehouse-admin.schema';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { StoreBranchInventory } from 'src/store-branch/schemas/store-branch-inventory.schema';
 
 @Injectable()
 export class InventoryService {
@@ -28,11 +31,14 @@ export class InventoryService {
     @InjectModel(WarehouseAdmin.name)
     private readonly branchModel: Model<WarehouseAdmin & Document>,
     
-    // @InjectModel(Branch.name)
-    // private readonly branchModel: Model<Branch & Document>,
+    @InjectModel(StoreBranchInventory.name)
+    private storeInventoryModel: Model<StoreBranchInventory>,
 
     @InjectConnection()
     private readonly connection: Connection,
+
+    @Inject(CACHE_MANAGER)
+     private readonly cacheManager: Cache,
     
   ) {}
 
@@ -235,6 +241,88 @@ export class InventoryService {
     }
   }
 
+  // chuyển kho -> cửa hàng:
+
+  async transferToStore(dto: {
+    bookId: string;
+    fromBranchId: string;   
+    toStoreBranchId: string;
+    quantity: number;
+    reason?: string;
+    userId: string;
+  }) {
+    const { bookId, fromBranchId, toStoreBranchId, quantity, userId } = dto;
+    if (!bookId || !fromBranchId || !toStoreBranchId || !quantity)
+      throw new BadRequestException('Thiếu thông tin khi chuyển kho');
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      // Kiểm tra sách
+      const book = await this.bookModel.findById(bookId).session(session);
+      if (!book) throw new NotFoundException('Không tìm thấy sách');
+
+      // Kiểm tra kho gốc
+      const inv = await this.inventoryModel.findOne({ bookId, branchId: fromBranchId }).session(session);
+      if (!inv || inv.quantity < quantity) {
+        throw new BadRequestException(`Kho ${fromBranchId} không đủ hàng`);
+      }
+
+      // Giảm kho gốc
+      await this.inventoryModel.updateOne(
+        { bookId, branchId: fromBranchId },
+        { $inc: { quantity: -quantity } },
+        { session }
+      );
+
+      // Tăng tồn kho cửa hàng (storebranchinventories)
+      const storeInventory = this.connection.collection('storebranchinventories');
+      await storeInventory.updateOne(
+        { book: new Types.ObjectId(bookId), storeBranch: new Types.ObjectId(toStoreBranchId) },
+        { $inc: { quantity: quantity } },
+        { upsert: true, session }
+      );
+
+      // Cập nhật tồn tổng trong bảng Book
+      await this.bookModel.updateOne(
+        { _id: book._id },
+        { $set: { quantity: book.quantity } }, // giữ nguyên tổng
+        { session }
+      );
+
+      // Ghi lại phiếu
+      const code = await this.generateCode('XK', new Date(), session);
+      const receipt = new this.receiptModel({
+        code,
+        type: 'transfer',
+        date: new Date(),
+        reason: dto.reason ?? 'Chuyển kho sang chi nhánh cửa hàng',
+        createdBy: new Types.ObjectId(userId),
+        totalQuantity: quantity,
+        totalAmount: 0,
+        details: [],
+      });
+      await receipt.save({ session });
+
+      // Xóa cache sách
+      try {
+        await this.cacheManager.del(`book:${bookId}`);
+        console.log(`🧹 Cache cleared after transfer: book:${bookId}`);
+      } catch (err) {
+        console.warn('⚠️ Không thể xóa cache sau khi chuyển kho:', err.message);
+      }
+
+      await session.commitTransaction();
+      return { message: 'Chuyển kho thành công', receiptCode: code };
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      session.endSession();
+    }
+  }
+
   // =====================================
   // 📋 DANH SÁCH PHIẾU XUẤT / NHẬP
   // =====================================
@@ -380,7 +468,7 @@ export class InventoryService {
       // 1️⃣ Lọc đúng sách
       { $match: { bookId: new Types.ObjectId(bookId) } },
 
-      // 2️⃣ Ép branchId về ObjectId (nếu đang lưu là string)
+      // 2️⃣ Ép branchId về ObjectId (phòng trường hợp lưu là string)
       {
         $addFields: {
           branchIdObj: {
@@ -393,11 +481,11 @@ export class InventoryService {
         }
       },
 
-      // 3️⃣ Join với collection "branches"
+      // 3️⃣ Join với collection "branches" (chính xác tên collection)
       {
         $lookup: {
-          from: "branches",              // ✅ chính xác tên collection trong MongoDB
-          localField: "branchIdObj",     // dùng field đã ép kiểu
+          from: "branches",             // ✅ đúng tên collection Mongo
+          localField: "branchIdObj",
           foreignField: "_id",
           as: "branch"
         }
@@ -406,11 +494,14 @@ export class InventoryService {
       // 4️⃣ Lấy phần tử đầu trong mảng branch
       { $unwind: { path: "$branch", preserveNullAndEmptyArrays: true } },
 
-      // 5️⃣ Chỉ trả về tên chi nhánh & tồn kho
+      // 5️⃣ Chỉ trả về _id của branch, tên và tồn kho
       {
         $project: {
-          _id: 0,
-          branchName: "$branch.name",  // ✅ lấy tên chi nhánh
+          _id: "$branch._id",           // ✅ SAI Ở ĐÂY LÚC TRƯỚC → giờ sửa lại
+          name: "$branch.name",         // ✅ lấy tên chi nhánh
+          region: "$branch.region",
+          city: "$branch.city",
+          address: "$branch.address",
           quantity: 1
         }
       }
@@ -424,6 +515,68 @@ export class InventoryService {
       .sort({ name: 1 })
       .lean();
   }
+
+  async decreaseBranchStock(bookId: string, branchId: string, quantity: number) {
+    if (!bookId || !branchId) {
+      throw new BadRequestException('Thiếu bookId hoặc branchId');
+    }
+
+    // Giảm số lượng tại chi nhánh
+    const updated = await this.inventoryModel.updateOne(
+      { bookId: new Types.ObjectId(bookId), branchId: new Types.ObjectId(branchId) },
+      { $inc: { quantity: -quantity } }
+    );
+
+    if (updated.matchedCount === 0) {
+      console.warn(`Không tìm thấy tồn kho cho book ${bookId} tại branch ${branchId}`);
+    }
+
+    // Giảm tổng tồn trong bảng Book
+    await this.bookModel.updateOne(
+      { _id: new Types.ObjectId(bookId) },
+      { $inc: { stockQuantity: -quantity, quantity: -quantity } }
+    );
+
+    // xóa cache để FE load tồn kho mới
+    try {
+      await this.cacheManager.del(`book:${bookId}`);
+      console.log(`Cache cleared: book:${bookId}`);
+    } catch (err) {
+      console.warn(`Không thể xoá cache book:${bookId}`, err.message);
+    }
+
+    return updated;
+  }
+
+  async decreaseStoreStock(bookId: string, storeBranchId: string, quantity: number) {
+    console.log('🧭 decreaseStoreStock CALLED', { bookId, storeBranchId, quantity });
+    if (!bookId || !storeBranchId) {
+      throw new BadRequestException('Thiếu bookId hoặc storeBranchId');
+    }
+
+    const updated = await this.storeInventoryModel.updateOne(
+      { book: new Types.ObjectId(bookId), storeBranch: new Types.ObjectId(storeBranchId) },
+      { $inc: { quantity: -quantity } }
+    );
+
+    if (updated.matchedCount === 0) {
+      console.warn(`⚠️ Không tìm thấy tồn kho cửa hàng của sách ${bookId} tại branch ${storeBranchId}`);
+    }
+
+    // Cập nhật tổng tồn trong Book
+    await this.bookModel.updateOne(
+      { _id: new Types.ObjectId(bookId) },
+      { $inc: { stockQuantity: -quantity, quantity: -quantity } }
+    );
+
+    // Xóa cache nếu có
+    if ((this as any).cacheManager) {
+      await (this as any).cacheManager.del(`book:${bookId}`);
+    }
+
+    return updated;
+  }
+
 
   async getStockByBranch(branchId: string) {
     return this.inventoryModel.aggregate([
@@ -466,7 +619,7 @@ export class InventoryService {
         { $unwind: { path: '$storeBranch', preserveNullAndEmptyArrays: true } },
         {
           $project: {
-            _id: 0,
+            _id: '$storeBranch._id',             
             name: '$storeBranch.name',
             region: '$storeBranch.region',
             city: '$storeBranch.city',
@@ -479,5 +632,6 @@ export class InventoryService {
 
     return storeStocks;
   }
+
 
 }

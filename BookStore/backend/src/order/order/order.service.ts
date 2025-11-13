@@ -5,13 +5,15 @@ import { Order, OrderProduct } from './order.schema';
 import { BooksService } from 'src/books/books.service';
 import { UpdateStatusDto } from './update-status.dto';
 import { LoyaltyService } from 'src/loyalty/loyalty.service';
+import { InventoryService } from 'src/inventory/inventory.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<Order>,
     private readonly loyaltyService: LoyaltyService,
-    private booksService: BooksService 
+    private readonly booksService: BooksService,
+    private readonly inventoryService: InventoryService,
   ) {}
 
   async backfillProductsBook(): Promise<number> {
@@ -47,11 +49,7 @@ export class OrderService {
 
     const preparedProducts = createOrderDto.products.map((p: any) => {
       const bookId = p.book || p._id || p.id || p.bookId;
-      if (!bookId) {
-        console.warn('⚠️ Thiếu book id:', p);
-        throw new BadRequestException('Thiếu ID sách trong sản phẩm!');
-      }
-
+      if (!bookId) throw new BadRequestException('Thiếu ID sách trong sản phẩm!');
       return {
         book: new Types.ObjectId(bookId),
         title: p.title,
@@ -60,9 +58,6 @@ export class OrderService {
         coverImage: p.coverImage,
       };
     });
-    for (const item of preparedProducts) {
-      await this.booksService.updateStock(item.book.toString(), item.quantity);
-    }
 
     const newOrder = new this.orderModel({
       ...createOrderDto,
@@ -113,9 +108,21 @@ export class OrderService {
 
     if (dto.status === 'completed') {
       for (const item of order.products as any[]) {
-        const ref = item.book; // ObjectId hoặc doc
+        const ref = item.book;
         const bookId = (ref && typeof ref === 'object' && ref._id) ? String(ref._id) : String(ref);
-        if (bookId) await this.booksService.updateStock(bookId, item.quantity);
+        const storeBranchId = (order as any).storeBranchId || item.storeBranchId; // 👈 đảm bảo lấy đúng id cửa hàng
+        const qty = item.quantity;
+
+        if (bookId) {
+          await this.booksService.updateStock(bookId, qty); // tổng kho
+
+          if (storeBranchId) {
+            console.log('🏪 Decreasing store stock for', bookId, storeBranchId);
+            await this.inventoryService.decreaseStoreStock(bookId, storeBranchId, qty);
+          } else {
+            console.warn('⚠️ Không có storeBranchId, bỏ qua giảm tồn cửa hàng');
+          }
+        }
       }
     }
 

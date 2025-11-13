@@ -21,6 +21,7 @@ import { WarehouseAdminModule } from './inventory/warehouse/warehouse-admin.modu
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { StoreBranchModule } from './store-branch/store-branch.module';
 import { StoreTransferModule } from './inventory/store-transfer/store-transfer.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -29,6 +30,10 @@ import { StoreTransferModule } from './inventory/store-transfer/store-transfer.m
     }),
     BooksModule,
     MongooseModule.forRoot('mongodb+srv://hungtu:123456%40@bookstorepam.lzrno.mongodb.net/book_store_pam?retryWrites=true&w=majority&appName=BookstorePam'),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 300, // cache 5 phút
+    }),
     UsersModule,
     AuthModule,
     OrdersModule,

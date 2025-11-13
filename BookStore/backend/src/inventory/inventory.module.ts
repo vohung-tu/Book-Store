@@ -7,6 +7,7 @@ import { InventoryReceiptDetail, InventoryReceiptDetailSchema } from './schemas/
 import { Book, BookSchema } from 'src/books/book.schema';
 import { Branch, BranchSchema, Inventory, InventorySchema } from './schemas/inventory-branch.schema';
 import { WarehouseAdminModule } from './warehouse/warehouse-admin.module';
+import { StoreBranchInventory, StoreBranchInventorySchema } from 'src/store-branch/schemas/store-branch-inventory.schema';
 
 @Module({
   imports: [
@@ -16,10 +17,12 @@ import { WarehouseAdminModule } from './warehouse/warehouse-admin.module';
       { name: Branch.name, schema: BranchSchema },
       { name: Inventory.name, schema: InventorySchema },
       { name: Book.name, schema: BookSchema },
+      { name: StoreBranchInventory.name, schema: StoreBranchInventorySchema }, 
     ]),
     WarehouseAdminModule,
   ],
   controllers: [InventoryController],
   providers: [InventoryService],
+  exports: [InventoryService],
 })
 export class InventoryModule {}

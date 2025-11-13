@@ -65,6 +65,7 @@ export interface DiscountCode {
   styleUrls: ['./checkout.component.scss']
 })
 export class CheckoutComponent implements OnInit {
+  selectedBranch: any = null;
   selectedBooks: BookDetails[] = [];
   totalAmount: number = 0;
   discountedAmount: number = 0;
@@ -85,13 +86,22 @@ export class CheckoutComponent implements OnInit {
 
   appliedCoupons: Coupon[] = []; 
 
-  orderInfo = {
+  orderInfo: {
+    name: string;
+    email: string;
+    address: string;
+    phone: string;
+    note: string;
+    payment: string;
+    storeBranch: { _id?: string; name?: string; city?: string } | null; 
+  } = {
     name: '',
     email: '',
     address: '',
     phone: '',
     note: '',
-    payment: ''
+    payment: '',
+    storeBranch: null
   };
 
   @ViewChild('qrMomoCanvas') qrMomoCanvas!: ElementRef<HTMLCanvasElement>;
@@ -137,6 +147,13 @@ export class CheckoutComponent implements OnInit {
 
       this.selectedAddress = this.addresses[0].value;
       this.orderInfo.address = this.selectedAddress;
+
+      const savedBranch = localStorage.getItem('selectedBranch');
+      if (savedBranch) {
+        this.selectedBranch = JSON.parse(savedBranch);
+        this.orderInfo.storeBranch = this.selectedBranch;
+        console.log(' Đã load chi nhánh từ localStorage:', this.selectedBranch);
+      }
     });
   
     // Cập nhật thông tin đơn hàng từ thông tin người dùng
@@ -146,7 +163,8 @@ export class CheckoutComponent implements OnInit {
       phone: String(this.userInfo.phone_number || ''),
       address: this.selectedAddress,  // Địa chỉ mặc định hoặc đầu tiên
       note: '',
-      payment: this.userInfo.payment || ''
+      payment: this.userInfo.payment || '',
+      storeBranch: this.selectedBranch || null
     };
   
     // Lấy giỏ hàng từ localStorage và tính toán tổng tiền
@@ -264,6 +282,7 @@ export class CheckoutComponent implements OnInit {
 
     const orderData = {
       userId: this.userInfo._id,
+      storeBranchId: this.orderInfo.storeBranch?._id || null, // ✅ thêm dòng này
       products: this.selectedBooks.map(book => ({
         book: book._id,
         quantity: book.quantity,
@@ -271,6 +290,7 @@ export class CheckoutComponent implements OnInit {
         price: book.price,
         flashsale_price: book.flashsale_price,
         coverImage: book.coverImage,
+        storeBranchId: this.orderInfo.storeBranch?._id || null // ✅ thêm dòng này
       })),
       name: this.orderInfo.name,
       email: this.orderInfo.email,
@@ -278,23 +298,20 @@ export class CheckoutComponent implements OnInit {
       address: this.orderInfo.address,
       total: this.totalAmount,
       orderDate: new Date(),
-      payment: this.orderInfo.payment
+      payment: this.orderInfo.payment,
+      note: this.orderInfo.note
     };
+
+    console.log('🧾 Sending orderData:', orderData);
 
     this.orderService.createOrder(orderData).subscribe({
       next: (response) => {
         console.log('✅ Order created:', response);
 
-        if (this.orderInfo.payment === 'vnpay') {
-          this.payWithVnpay();
-        } else if (this.orderInfo.payment === 'cod') {
-          alert('Đặt hàng thành công! Thanh toán COD');
+        if (this.orderInfo.payment === 'vnpay') this.payWithVnpay();
+        else {
+          alert('Đặt hàng thành công!');
           this.afterOrderSuccess();
-        } else if (this.orderInfo.payment === 'bank') {
-          alert('Đặt hàng thành công! Vui lòng chuyển khoản.');
-          this.afterOrderSuccess();
-        } else if (this.orderInfo.payment === 'momo') {
-          alert('MoMo đang phát triển');
         }
       },
       error: (err) => {
@@ -302,9 +319,8 @@ export class CheckoutComponent implements OnInit {
         alert('Đặt hàng thất bại, vui lòng thử lại!');
       }
     });
-    
   }
-  
+
 
   payWithVnpay() {
     const orderId = Date.now().toString(); // tạo mã đơn hàng

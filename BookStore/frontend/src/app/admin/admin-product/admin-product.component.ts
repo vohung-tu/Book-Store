@@ -120,6 +120,33 @@ export class AdminProductComponent {
         });
       }
     });
+
+    // Lắng nghe sự kiện cập nhật đơn hàng (khi admin đổi trạng thái sang Hoàn thành)
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'orderUpdated') {
+        try {
+          const info = JSON.parse(event.newValue || '{}');
+          if (info.status === 'completed') {
+            console.log('🧾 Đơn hàng hoàn thành → reload tồn kho sản phẩm...');
+            this.fetchProducts(); // Gọi lại để cập nhật cột "Tồn kho theo cửa hàng"
+            this.messageService.add({
+              severity: 'info',
+              summary: 'Cập nhật tồn kho',
+              detail: 'Đã cập nhật lại dữ liệu tồn kho cửa hàng sau khi hoàn thành đơn hàng.',
+              life: 2500
+            });
+          }
+        } catch (e) {
+          console.warn('⚠️ Không thể parse orderUpdated event:', e);
+        }
+      }
+    });
+
+    window.addEventListener('order-updated', (e: any) => {
+      if (e?.detail?.status === 'completed') {
+        this.fetchProducts(); // cập nhật "Tồn kho theo cửa hàng"
+      }
+    });
   }
 
   getCategoryLabel(value: string): string {

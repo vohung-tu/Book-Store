@@ -154,14 +154,26 @@ export class DetailComponent implements OnInit {
   // 📖 Tải thông tin sách
   private loadBookDetails(bookId: string): void {
     this.fetchBookDetails(bookId);
+
+    // 🧩 Lấy tồn kho chi nhánh
     this.inventoryService.getBranchStockByBook(bookId).subscribe({
       next: (stocks) => {
         this.branchStocks = stocks;
-
-        // Tính tổng tất cả chi nhánh
         const totalQty = stocks.reduce((sum, b) => sum + (b.quantity || 0), 0);
         this.selectedBranchStock = { branchName: 'Tất cả', quantity: totalQty };
-        this.books!.quantity = totalQty;
+
+        // ⚙️ Gán quantity chỉ khi this.books đã có dữ liệu
+        if (this.books) {
+          this.books.quantity = totalQty;
+        } else {
+          // Nếu books chưa có, lưu tạm lại và gán sau
+          const interval = setInterval(() => {
+            if (this.books) {
+              this.books.quantity = totalQty;
+              clearInterval(interval);
+            }
+          }, 100);
+        }
       },
       error: (err) => console.error('❌ Lỗi tải tồn kho:', err)
     });
@@ -169,7 +181,6 @@ export class DetailComponent implements OnInit {
     this.bookService.getBookById(bookId).subscribe(book => {
       this.book = { ...book };
 
-      // Chuẩn hóa author
       if (typeof this.book.author === 'string') {
         this.book.author = { _id: '', name: this.book.author };
       }
@@ -180,11 +191,10 @@ export class DetailComponent implements OnInit {
         this.author = this.book.author as any;
       }
 
-      // ✅ Thu hẹp category trước khi dùng
-      const slug = catSlug(this.book.categoryName);   // string
-      const name = catName(this.book.categoryName);   // string
+      const slug = catSlug(this.book.categoryName);
+      const name = catName(this.book.categoryName);
 
-      this.loadRelatedBooks(slug);                    // ← giờ hợp kiểu string
+      this.loadRelatedBooks(slug);
       this.getReviewsByProductId(bookId);
 
       this.breadcrumbItems = [
@@ -195,13 +205,16 @@ export class DetailComponent implements OnInit {
     });
   }
 
+
   orderFromStore(store: any) {
   if (!this.book) return;
+
+  localStorage.setItem('selectedBranch', JSON.stringify(store));
 
   // ✅ Thêm sản phẩm hiện tại vào giỏ hàng kèm thông tin chi nhánh
   this.cartService.addToCart({
     ...this.book,
-    selectedStore: store.name, // để biết cửa hàng nào
+    selectedStore: store, // để biết cửa hàng nào
     quantity: 1
   }).subscribe({
     next: () => {

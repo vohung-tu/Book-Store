@@ -27,6 +27,9 @@ export class Order extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'StoreBranch', required: false })
+  storeBranchId?: Types.ObjectId;
+
   @Prop({ required: true })
   address: string;
 

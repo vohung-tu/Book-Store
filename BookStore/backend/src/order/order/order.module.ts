@@ -9,11 +9,13 @@ import { VnpayController } from "../payment.controller";
 import { MailService } from "./email.service";
 import { BooksModule } from "src/books/books.module";
 import { LoyaltyModule } from "src/loyalty/loyalty.module";
+import { InventoryModule } from "src/inventory/inventory.module";
 
 @Module({
     imports: [
       ConfigModule,
       forwardRef(() => LoyaltyModule),
+      InventoryModule,
       MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
     forwardRef(() => BooksModule)
     ],
