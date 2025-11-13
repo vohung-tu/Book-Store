@@ -83,27 +83,6 @@
           <span *ngIf="!book.author?.name">Không rõ</span>
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
 
-          <div class="branch-chip-container" *ngIf="branchStocks.length > 0">
-            <strong>Khu vực kho:</strong>
-
-            <!-- Chip “Tất cả” -->
-            <div
-              class="branch-chip"
-              [class.active]="selectedBranch === 'ALL'"
-              (click)="selectBranch('ALL')">
-              Tất cả
-            </div>
-
-            <!-- Chip các chi nhánh -->
-            <div
-              *ngFor="let branch of branchStocks"
-              class="branch-chip"
-              [class.active]="selectedBranch === branch.branchName"
-              (click)="selectBranch(branch.branchName)">
-              {{ branch.branchName }}
-            </div>
-          </div>
-
           <!-- Hiển thị tồn kho -->
           <div class="branch-stock-info" *ngIf="selectedBranchStock">
             <p>

@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormArray, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormArray, FormBuilder, Validators, FormGroup, FormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CalendarModule } from 'primeng/calendar';
@@ -26,6 +26,7 @@ import { DialogModule } from 'primeng/dialog';
     CalendarModule,
     ButtonModule,
     TableModule,
+    FormsModule,
     ToastModule,
     DialogModule
   ],
@@ -37,8 +38,8 @@ export class StoreTransferComponent implements OnInit {
   
   form!: FormGroup;
   displayDetail = false;
-    selectedTransfer: any = null;
-    totalAmount = 0;
+  selectedTransfer: any = null;
+  totalAmount = 0;
   get items(): FormArray {
     return this.form.get('items') as FormArray;
   }
@@ -52,6 +53,8 @@ export class StoreTransferComponent implements OnInit {
   warehouses: any[] = [];
   storeBranches: StoreBranch[] = [];
   transfers: any[] = [];
+  filterText: string = '';
+  filteredTransfers: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -101,16 +104,36 @@ export class StoreTransferComponent implements OnInit {
 
   loadTransfers() {
     this.transferApi.list().subscribe({
-      next: (res) => (this.transfers = res || []),
+      next: (res) => {
+        this.transfers = res || [];
+        this.filteredTransfers = [...this.transfers]; // ✅ sao chép danh sách ban đầu
+      },
       error: () => this.toastError('Không tải được danh sách phiếu chuyển')
     });
+  }
+
+  applyFilter() {
+    const term = this.filterText.toLowerCase().trim();
+    if (!term) {
+      this.filteredTransfers = [...this.transfers];
+      return;
+    }
+
+    this.filteredTransfers = this.transfers.filter((t) =>
+      (t.code?.toLowerCase().includes(term)) ||
+      (t.fromWarehouse?.name?.toLowerCase().includes(term)) ||
+      (t.toStore?.name?.toLowerCase().includes(term)) ||
+      (t.note?.toLowerCase().includes(term))
+    );
   }
 
   addLine() {
     this.items.push(
       this.fb.group({
         bookId: [null, Validators.required],
-        quantity: [1, [Validators.required, Validators.min(1)]]
+        quantity: [1, [Validators.required, Validators.min(1)]],
+        unitPrice: [0],    
+        subtotal: [0]
       })
     );
   }
@@ -124,20 +147,18 @@ export class StoreTransferComponent implements OnInit {
       this.toastWarn('Vui lòng điền đủ thông tin.');
       return;
     }
-    if (!this.items.value?.length) {
-      this.toastWarn('Cần ít nhất 1 dòng sách.');
-      return;
-    }
 
     const v = this.form.value as any;
     const body = {
       fromWarehouse: v.fromWarehouse,
       toStore: v.toStore,
+      note: v.note || '',
       items: (v.items || []).map((x: any) => ({
         bookId: typeof x.bookId === 'object' ? x.bookId?._id : x.bookId,
-        quantity: Number(x.quantity || 0)
-      })),
-      note: v.note || ''
+        quantity: Number(x.quantity || 0),
+        unitPrice: Number(x.unitPrice || 0),    // ✅ thêm
+        subtotal: Number((x.quantity || 0) * (x.unitPrice || 0)) // ✅ thêm
+      }))
     };
 
     this.loading.set(true);
@@ -145,14 +166,7 @@ export class StoreTransferComponent implements OnInit {
       next: (res: any) => {
         this.loading.set(false);
         this.toastOk(`Đã tạo phiếu: ${res?.code || ''}`);
-        this.form.reset({
-          date: new Date(),
-          fromWarehouse: null,
-          toStore: null,
-          note: ''
-        });
-        while (this.items.length) this.items.removeAt(0);
-        this.addLine();
+        this.resetForm();
         this.loadTransfers();
       },
       error: (err) => {
@@ -179,40 +193,58 @@ export class StoreTransferComponent implements OnInit {
   }
 
   viewDetail(row: any) {
-  this.selectedTransfer = row;
-  this.displayDetail = true;
-}
+    this.selectedTransfer = row;
+    this.displayDetail = true;
+  }
 
-getBookTitle(bookId: string): string {
-  const book = this.books.find(b => b._id === bookId);
-  return book ? book.title : 'Không rõ';
-}
+  getBookTitle(bookId: string): string {
+    const book = this.books.find(b => b._id === bookId);
+    return book ? book.title : 'Không rõ';
+  }
 
-updatePrice(index: number) {
-  const group = this.items.at(index);
-  const bookId = group.value.bookId;
-  const selected = this.books.find((b: any) => b._id === bookId);
-
-  if (selected) {
-    const price = selected.flashsale_price || selected.price || 0;
+  updatePrice(index: number) {
+    const group = this.items.at(index);
+    const bookId = group.value.bookId;
+    const selected = this.books.find(b => b._id === bookId);
+    const price = selected?.flashsale_price || selected?.price || 0;
     group.patchValue({ unitPrice: price });
     this.updateSubtotal(index);
   }
-}
 
-updateSubtotal(index: number) {
-  const group = this.items.at(index);
-  const qty = group.value.quantity || 0;
-  const price = group.value.unitPrice || 0;
-  group.patchValue({ subtotal: qty * price }, { emitEvent: false });
+  updateSubtotal(index: number) {
+    const group = this.items.at(index);
+    const qty = group.value.quantity || 0;
+    const price = group.value.unitPrice || 0;
+    const subtotal = qty * price;
+    group.patchValue({ subtotal }, { emitEvent: false });
+    this.calcTotal();
+  }
 
-  this.calcTotal();
-}
+  calcTotal() {
+    this.totalAmount = this.items.controls.reduce((sum, g: any) => {
+      const v = g.value;
+      return sum + (v.quantity || 0) * (v.unitPrice || 0);
+    }, 0);
+  }
 
-calcTotal() {
-  this.totalAmount = this.items.controls.reduce((sum, g: any) => {
-    const v = g.value;
-    return sum + (v.quantity || 0) * (v.unitPrice || 0);
-  }, 0);
-}
+  resetForm() {
+    this.form.reset({
+      date: new Date(),
+      fromWarehouse: null,
+      toStore: null,
+      note: ''
+    });
+
+    // ✅ Xóa hết các dòng hàng hiện tại
+    while (this.items.length) {
+      this.items.removeAt(0);
+    }
+
+    // ✅ Thêm lại 1 dòng trống
+    this.addLine();
+
+    // ✅ Reset tổng tiền
+    this.totalAmount = 0;
+  }
+
 }

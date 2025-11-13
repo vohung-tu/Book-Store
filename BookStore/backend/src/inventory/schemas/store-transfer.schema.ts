@@ -20,6 +20,8 @@ export class StoreTransferReceipt extends Document {
       {
         bookId: { type: Types.ObjectId, ref: 'Book', required: true },
         quantity: { type: Number, required: true, min: 1 },
+        unitPrice: Number,
+        subtotal: Number,
       },
     ],
     default: [],

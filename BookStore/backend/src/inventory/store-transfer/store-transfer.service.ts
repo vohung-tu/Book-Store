@@ -40,7 +40,7 @@ export class StoreTransferService {
   async transferToStore(dto: {
     fromWarehouse: string;
     toStore: string;
-    items: { bookId: string; quantity: number }[];
+    items: { bookId: string; quantity: number; unitPrice: number; subtotal?: number }[];
     note?: string;
   }) {
     if (!dto.items?.length) {
@@ -57,6 +57,8 @@ export class StoreTransferService {
       items: dto.items.map((i) => ({
         bookId: new Types.ObjectId(i.bookId),
         quantity: i.quantity,
+        unitPrice: i.unitPrice ?? 0,
+        subtotal: (i.unitPrice ?? 0) * (i.quantity ?? 0)
       })),
       note: dto.note || '',
     });
