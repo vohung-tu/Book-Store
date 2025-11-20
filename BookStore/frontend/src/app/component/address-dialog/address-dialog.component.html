@@ -1,0 +1,55 @@
+<p-dialog 
+  header="Chọn địa chỉ giao hàng"
+  [(visible)]="visible"
+  [modal]="true"
+  [dismissableMask]="true"
+  [style]="{ width: '420px' }"
+>
+  <p>Hãy chọn địa chỉ nhận hàng để được dự báo thời gian giao hàng cùng phí vận chuyển chính xác nhất.</p>
+
+  <div *ngIf="currentLocationAddr" class="address-item gps">
+    <label>
+      <input
+        type="radio"
+        name="address"
+        [value]="{ value: currentLocationAddr, isDefault: false }"
+        [(ngModel)]="selectedAddress"
+      />
+      <span><b>Vị trí hiện tại:</b> {{ currentLocationAddr }}</span>
+    </label>
+  </div>
+
+  <hr *ngIf="currentLocationAddr && addressList?.length">
+
+  <div *ngIf="addressList?.length; else noAddress">
+    <div class="address-list">
+      <div class="address-item" *ngFor="let addr of addressList">
+        <label>
+          <input 
+            type="radio" 
+            name="address" 
+            [value]="addr" 
+            [(ngModel)]="selectedAddress"
+          />
+          <span>
+            {{ addr.value }}
+            <span *ngIf="addr.isDefault" class="default-tag">(Mặc định)</span>
+          </span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noAddress>
+    <p>Chưa có địa chỉ giao hàng nào.</p>
+  </ng-template>
+
+  <div class="dialog-footer">
+    <button 
+      pButton 
+      label="GIAO ĐẾN ĐỊA CHỈ NÀY" 
+      class="confirm-btn"
+      (click)="confirmAddress()"
+    ></button>
+  </div>
+</p-dialog>

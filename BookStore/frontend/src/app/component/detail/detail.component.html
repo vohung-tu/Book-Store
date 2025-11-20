@@ -335,7 +335,11 @@
   </div>
 
   <!-- Div 4: Sản phẩm liên quan -->
-  <div class="book-detail-4" *ngIf="relatedBooks.length > 0">
+   <div *ngIf="isLoadingRelated">
+    <p>Đang tải sản phẩm liên quan...</p>
+  </div>
+
+  <div class="book-detail-4" *ngIf="!isLoadingRelated && relatedBooks.length > 0">
     <h3>Sản phẩm liên quan</h3>
     <div class="related-products">
       <app-product-item

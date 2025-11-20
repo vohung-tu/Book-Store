@@ -144,7 +144,7 @@ Trả về JSON theo định dạng:
 
       const content = res.choices?.[0]?.message?.content ?? '';
 
-      // ✅ Tìm phần JSON trong chuỗi nếu AI trả thêm mô tả như “Dưới đây là...”
+      // Tìm phần JSON trong chuỗi nếu AI trả thêm mô tả như “Dưới đây là...”
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       const cleanJson = jsonMatch ? jsonMatch[0] : '[]';
 
@@ -156,4 +156,72 @@ Trả về JSON theo định dạng:
     }
   }
 
+  // Tạo embedding cho nội dung (title + description)
+
+  async createEmbedding(text: string): Promise<number[]> {
+    try {
+      const res = await this.client.embeddings.create({
+        model: "text-embedding-3-small",
+        input: text
+      });
+
+      return res.data[0].embedding;
+    } catch (err) {
+      console.error("❌ Error creating embedding:", err);
+      throw new InternalServerErrorException("Embedding generation failed");
+    }
+  }
+
+  // hàm tính độ tương đồng giữa 2 sản phẩm
+  cosineSimilarity(a: number[], b: number[]): number {
+    const dot = a.reduce((sum, val, i) => sum + val * b[i], 0);
+    const normA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+    const normB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+    return dot / (normA * normB);
+  }
+
+  // recommend 5 sách liên quan nhất dựa trên embedding
+
+  async recommendRelatedBooks(currentBook: any, allBooks: any[]) {
+    if (!currentBook.embedding?.length) return [];
+
+    const candidates = allBooks.filter(
+      b => b._id.toString() !== currentBook._id.toString() && b.embedding?.length
+    );
+
+    const scored = candidates.map(b => ({
+      ...b,
+      score: this.cosineSimilarity(currentBook.embedding, b.embedding)
+    }));
+
+    return scored
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+      .slice(0, 5);
+  }
+
+
+  // hàm dựng prompt Ai để recommend nếu chưa có Embedding (fallback sang AI text machine)
+
+  async recommendByAI(title: string, description: string, allBooks: any[]) {
+    const prompt = `
+      Dựa trên mô tả cuốn sách sau, hãy gợi ý những cuốn sách khác trong danh sách có nội dung tương tự:
+
+      Sách cần so sánh:
+      Tiêu đề: ${title}
+      Mô tả: ${description}
+
+      Danh sách toàn bộ sách (id + tiêu đề + mô tả):
+      ${allBooks.map(b => `- id: ${b._id}, title: ${b.title}, desc: ${b.description || ''}`).join("\n")}
+
+      Chỉ trả về JSON hợp lệ dạng:
+      [
+        { "_id": "mongoId", "title": "Tiêu đề sách" },
+        ...
+      ]
+      Tối đa 5 sách liên quan.
+    `;
+
+    const results = await this.getJsonResponse(prompt);
+    return Array.isArray(results) ? results : [];
+  }
 }

@@ -50,6 +50,9 @@ export class Book {
 
   @Prop({ type: Types.ObjectId, ref: 'Supplier', required: false })
   supplierId?: Types.ObjectId;
+
+  @Prop({ type: [Number], default: [] })
+  embedding: number[];
 }
 
 export const BookSchema = SchemaFactory.createForClass(Book);

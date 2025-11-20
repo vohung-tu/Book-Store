@@ -436,6 +436,137 @@ export class BooksService {
     return this.attachAuthorName(books);
   }
 
+    async getRelatedBooks(bookId: string) {
+      const currentBook = await this.bookModel.findById(bookId).lean();
+      if (!currentBook) {
+        throw new NotFoundException('Book not found');
+      }
+
+      // Lấy tất cả sách khác (không bao gồm sách hiện tại)
+      const allBooks = await this.bookModel.find(
+        { _id: { $ne: currentBook._id } },
+        { title: 1, description: 1, coverImage: 1, price: 1, flashsale_price: 1, discount_percent: 1, categoryName: 1, embedding: 1, author: 1 }
+      ).lean();
+
+      // Đảm bảo sách hiện tại có embedding
+      if (!Array.isArray(currentBook.embedding) || !currentBook.embedding.length) {
+        try {
+          const embed = await this.aiService.createEmbedding(
+            `${currentBook.title} ${currentBook.description || ''}`
+          );
+
+          await this.bookModel.updateOne(
+            { _id: currentBook._id },
+            { $set: { embedding: embed } }
+          );
+
+          (currentBook as any).embedding = embed;
+        } catch (e) {
+          console.error('❌ Cannot create embedding for current book:', currentBook._id, e);
+        }
+      }
+
+      // Lọc những sách có embedding để dùng cosine
+      const booksWithEmbedding = allBooks.filter(
+        b => Array.isArray(b.embedding) && b.embedding.length
+      );
+
+      // 🔹 1. Ưu tiên: Recommend bằng embedding nếu đủ dữ liệu
+      if (currentBook.embedding?.length && booksWithEmbedding.length >= 3) {
+        const byEmbedding = await this.aiService.recommendRelatedBooks(currentBook, booksWithEmbedding);
+
+        if (byEmbedding && byEmbedding.length) {
+          return byEmbedding.map(({ score, ...rest }) => rest); // bỏ field score
+        }
+      }
+
+      // 🔹 2. Fallback: dùng AI text để recommend
+      try {
+        const aiResult = await this.aiService.recommendByAI(
+          currentBook.title,
+          currentBook.description || '',
+          allBooks
+        );
+
+        if (aiResult && aiResult.length) {
+          // Nếu AI trả về _id → dùng trực tiếp
+          const idsFromAI = aiResult
+            .map((r: any) => r._id)
+            .filter((id: any) => !!id);
+
+          if (idsFromAI.length) {
+            const matched = await this.bookModel.find(
+              { _id: { $in: idsFromAI } },
+              { title: 1, author: 1, coverImage: 1, price: 1, flashsale_price: 1, discount_percent: 1, categoryName: 1 }
+            ).lean();
+
+            if (matched.length) return matched;
+          }
+
+          // Nếu AI chỉ trả title: match theo tiêu đề
+          const titles = aiResult
+            .map((r: any) => r.title)
+            .filter((t: any) => !!t)
+            .map((t: string) => new RegExp(t, 'i'));
+
+          if (titles.length) {
+            const matchedByTitle = await this.bookModel.find(
+              { title: { $in: titles }, _id: { $ne: currentBook._id } },
+              { title: 1, author: 1, coverImage: 1, price: 1, flashsale_price: 1, discount_percent: 1, categoryName: 1 }
+            )
+            .limit(5)
+            .lean();
+
+            if (matchedByTitle.length) return matchedByTitle;
+          }
+        }
+      } catch (e) {
+        console.error('❌ AI fallback recommend error:', e);
+      }
+
+      // 🔹 3. Fallback cuối: lấy random cùng category (phòng trường hợp AI hỏng)
+      const sameCategory = await this.bookModel.find(
+        {
+          _id: { $ne: currentBook._id },
+          categoryName: currentBook.categoryName
+        },
+        { title: 1, author: 1, coverImage: 1, price: 1, flashsale_price: 1, discount_percent: 1, categoryName: 1 }
+      )
+        .limit(5)
+        .lean();
+
+      return sameCategory;
+    }
+
+  async generateEmbeddingsForAll() {
+    const books = await this.bookModel.find({}, { title: 1, description: 1, embedding: 1 }).lean();
+
+    let updated = 0;
+
+    for (const book of books) {
+      // Nếu đã có embedding thì bỏ qua
+      if (Array.isArray(book.embedding) && book.embedding.length) continue;
+
+      try {
+        const embed = await this.aiService.createEmbedding(
+          `${book.title} ${book.description || ''}`
+        );
+
+        await this.bookModel.updateOne(
+          { _id: book._id },
+          { $set: { embedding: embed } }
+        );
+
+        updated++;
+      } catch (e) {
+        console.error('❌ Generate embedding failed for book:', book._id, e);
+      }
+    }
+
+    return { message: 'Embeddings generated successfully', updated };
+  }
+
+
   async findByCategory(categorySlug: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
     const parent = await this.categoryModel.findOne({ slug: categorySlug }).lean();

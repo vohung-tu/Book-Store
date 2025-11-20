@@ -22,7 +22,7 @@ import { CategoryService } from '../../service/category.service';
     DotSeparatorPipe
   ],
   templateUrl: './admin-dashboard.component.html',
-  styleUrl: './admin-dashboard.component.scss'
+  styleUrl: './admin-dashboard.component.scss'  
 })
 export class AdminDashboardComponent implements OnInit {
   /** KPI data */
@@ -40,7 +40,7 @@ export class AdminDashboardComponent implements OnInit {
   categoryChartOptions: any;
   userGrowthChartData: any;
   chartOptions: any;
-
+  userMap: Record<string, string> = {};
   /** Table data */
   topBooks: any[] = [];
   topCustomers: any[] = [];
@@ -99,13 +99,19 @@ export class AdminDashboardComponent implements OnInit {
         monthlyData[month] = (monthlyData[month] || 0) + order.total;
 
         // Top khách hàng
+        const userName =
+          this.userMap[order.userId] ||
+          order.email ||
+          'Khách hàng';
+
         if (!customerMap[order.userId]) {
           customerMap[order.userId] = {
-            name: order.name || 'Khách hàng',
+            name: userName,
             orderCount: 0,
             totalSpent: 0
           };
         }
+
         customerMap[order.userId].orderCount++;
         customerMap[order.userId].totalSpent += order.total;
 

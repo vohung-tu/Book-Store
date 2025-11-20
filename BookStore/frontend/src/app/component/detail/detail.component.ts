@@ -80,6 +80,7 @@ export class DetailComponent implements OnInit {
   currentUserId: User | null = null; // gán từ AuthService hoặc localStorage
   hasReviewed = false;
   breadcrumbItems: any[] = [];
+  isLoadingRelated = false;
   currentCoverImage: string | null = null;
 
   review: Review = {
@@ -181,6 +182,8 @@ export class DetailComponent implements OnInit {
     this.bookService.getBookById(bookId).subscribe(book => {
       this.book = { ...book };
 
+      this.relatedBooks = [];
+
       if (typeof this.book.author === 'string') {
         this.book.author = { _id: '', name: this.book.author };
       }
@@ -194,7 +197,6 @@ export class DetailComponent implements OnInit {
       const slug = catSlug(this.book.categoryName);
       const name = catName(this.book.categoryName);
 
-      this.loadRelatedBooks(slug);
       this.getReviewsByProductId(bookId);
 
       this.breadcrumbItems = [
@@ -202,6 +204,8 @@ export class DetailComponent implements OnInit {
         { label: name, url: `/category/${slug}` },
         { label: this.book.title }
       ];
+      this.loadRelatedBooks();
+
     });
   }
 
@@ -415,9 +419,17 @@ export class DetailComponent implements OnInit {
     this.averageRating = totalStars / totalReviews;
   }
 
-  loadRelatedBooks(categoryName: string) {
-    this.bookService.getProductsByCategory(categoryName).subscribe(allBooks => {
-      this.relatedBooks = allBooks.filter(b => b._id !== this.books?._id); // loại trừ sách đang xem
+  loadRelatedBooks() {
+    this.isLoadingRelated = true;
+    this.relatedBooks = [];
+
+    if (!this.book?._id) return;
+    console.log('🔍 Load related for book:', this.book._id, this.book.title);
+
+    this.bookService.getRelatedBooksAI(this.book._id).subscribe(res => {
+      console.log('✅ Related from API:', res);
+      this.relatedBooks = res ?? [];
+      this.isLoadingRelated = false;
     });
   }
 

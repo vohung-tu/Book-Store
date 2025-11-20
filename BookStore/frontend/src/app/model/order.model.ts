@@ -13,6 +13,12 @@ export interface Order {
   _id: string;
   userId: string;
   address: string;
+  storeBranch?: {
+    _id: string;
+    name: string;
+    region: string;
+    city?: string;
+  };
   note: string;
   products: Product[];
   name: string;

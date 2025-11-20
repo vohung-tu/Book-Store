@@ -14,6 +14,9 @@ export class OrderProduct {
   @Prop({ required: true })
   price: number;
 
+  @Prop()
+  flashsale_price: number;
+
   @Prop({ required: true })
   quantity: number;
 

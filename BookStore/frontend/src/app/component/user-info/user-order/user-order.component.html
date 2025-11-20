@@ -49,13 +49,13 @@
 
               <!-- Phí vận chuyển -->
               <h4 style="text-align: right; margin-top: 10px;">
-                Phí ship: 25.000 đ
+                Phí ship: {{ getShippingFee(order) | dotSeparator }} đ
               </h4>
 
               <!-- Giảm giá nếu có -->
               <div *ngIf="calculateDiscount(order) > 0" 
                   style="text-align: right; margin-top: 5px; color: #d32f2f;">
-                Giảm giá: -{{ calculateDiscount(order) | dotSeparator }} đ
+                Số tiền được giảm: {{ calculateDiscount(order) | dotSeparator }} đ
               </div>
 
               <!-- Tổng tiền cuối cùng -->
@@ -65,7 +65,7 @@
 
               <div class="rebuy">
                 <p-button 
-                  *ngIf="selectedTab !== 'completed' && selectedTab !== 'cancelled'" 
+                  *ngIf="order.status !== 'completed' && order.status !== 'cancelled'" 
                   class="cancel-btn" 
                   severity="success" 
                   label="Hủy Đơn" 

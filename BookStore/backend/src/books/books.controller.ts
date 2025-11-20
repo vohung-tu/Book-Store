@@ -75,6 +75,16 @@ export class BooksController {
     return this.booksService.findAllDetailed();
   }
 
+  @Get("generate-embeddings")
+  async generateAllEmbeddings() {
+    return this.booksService.generateEmbeddingsForAll();
+  }
+
+  @Get("related-ai/:id")
+  async getRelatedAI(@Param("id") id: string) {
+    return this.booksService.getRelatedBooks(id);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Book | null> {
     // giữ đặc biệt nếu bạn có thêm slug khác thì xử lý trước ở đây
@@ -114,6 +124,5 @@ export class BooksController {
     if (!book) throw new NotFoundException('Book not found');
     return { summary_ai: book.summary_ai || 'Chưa có tóm tắt' };
   }
-
 
 }

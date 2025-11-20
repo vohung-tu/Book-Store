@@ -54,6 +54,7 @@ export class OrderService {
         book: new Types.ObjectId(bookId),
         title: p.title,
         price: p.price,
+        flashsale_price: p.flashsale_price ?? p.price,
         quantity: p.quantity,
         coverImage: p.coverImage,
       };
@@ -69,7 +70,11 @@ export class OrderService {
 
 
   async findAll(): Promise<any[]> {
-    const orders = await this.orderModel.find().sort({ createdAt: -1 }).lean();
+    const orders = await this.orderModel
+    .find()
+    .populate('storeBranchId', 'name city region')
+    .sort({ createdAt: -1 })
+    .lean();
 
     // Lấy danh sách sách (dạng phân trang)
     const allBooks = await this.booksService.findAllBooks();
@@ -77,6 +82,7 @@ export class OrderService {
 
     return orders.map(order => ({
       ...order,
+      storeBranch: order.storeBranchId || null,
       products: order.products.map(prod => {
         const productId = (prod as any)._id?.toString?.();
         const book = bookItems.find(b => b._id.toString() === productId);

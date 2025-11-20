@@ -1,0 +1,37 @@
+.address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.address-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.25s;
+
+  &:hover {
+    background: #f8f9fa;
+  }
+
+  input[type='radio'] {
+    margin-right: 8px;
+  }
+
+  .default-tag {
+    color: #388e3c;
+    font-size: 13px;
+    margin-left: 6px;
+  }
+}
+
+.dialog-footer {
+  text-align: right;
+  margin-top: 12px;
+
+  .confirm-btn {
+    background-color: #388e3c;
+    border: none;
+  }
+}

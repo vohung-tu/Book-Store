@@ -98,8 +98,7 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private messageService: MessageService,
     private router: Router,
-    private bookService: BooksService,
-    private confirmationService: ConfirmationService
+    private bookService: BooksService
   ) {
     // Sản phẩm của đơn hàng nếu cần sử dụng riêng
     this.product$ = this.orderService.getOrders().pipe(
@@ -126,6 +125,7 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     if (typeof window !== 'undefined') {
       window.removeEventListener('storage', this.storageEventListener);
     }
+    
     this.totalAmount = this.selectedBooks.reduce(
       (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
       0
@@ -217,9 +217,10 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     }, 0);
   }
 
-  getFinalTotal(order: Order): number {
-    const discount = this.calculateDiscount(order);
-    return Math.max((order.total - discount) , 0);
+    getFinalTotal(order: Order): number {
+    const shipping = this.getShippingFee(order);
+
+    return Math.max(order.total + shipping, 0);
   }
   
   // Tính số đơn theo trạng thái (sử dụng lowercase để so sánh)
@@ -229,29 +230,28 @@ export class UserOrderComponent implements OnInit, OnDestroy {
       : this.orders.length;
   }
 
-  cancelOrder(orderId: string, reason: string) {
-    if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-      this.orderService.cancelOrder(orderId, reason).subscribe({
-        next: (res) => {
-          this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã hủy đơn hàng.' });
-          this.filterOrdersByTab(); // refresh lại đơn hàng
-        },
-        error: (err) => {
-          this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể hủy đơn hàng.' });
-        }
-      });
-    }
-  }
-
   confirmCancelOrder() {
     this.orderService.cancelOrder(this.selectedOrderIdToCancel, this.selectedCancelReason).subscribe({
       next: () => {
         this.confirmCancelDialogVisible = false; 
         this.cancelDialogVisible = false;
         this.selectedCancelReason = '';
-        this.isOrdersLoaded = false;
-        this.loadUserOrders();
-        this.messageService.add({severity:'success', summary:'Thành công', detail:'Đơn hàng đã được hủy.'});
+
+        // 🔥 Cập nhật lại status trong FE (không cần load lại toàn trang)
+        this.orders = this.orders.map(o =>
+          o._id === this.selectedOrderIdToCancel
+            ? { ...o, status: 'cancelled' }
+            : o
+        );
+
+        // 🔥 Lọc lại theo tab hiện tại
+        this.filterOrdersByTab();
+
+        this.messageService.add({
+          severity:'success',
+          summary:'Thành công',
+          detail:'Đơn hàng đã được hủy.'
+        });
       },
       error: err => {
         this.confirmCancelDialogVisible = false;
@@ -260,6 +260,7 @@ export class UserOrderComponent implements OnInit, OnDestroy {
       }
     });
   }
+
 
   rebuyOrder(products: any[]): void {
     const fetches = products.map(product =>
@@ -299,4 +300,31 @@ export class UserOrderComponent implements OnInit, OnDestroy {
       default: return 'Chờ thanh toán';
     }
   }
+
+  getRegionFromAddress(address: string): string {
+    if (!address) return '';
+
+    const lower = address.toLowerCase();
+
+    if (lower.includes('hồ chí minh') || lower.includes('miền nam')) return 'Miền Nam';
+    if (lower.includes('hà nội') || lower.includes('miền bắc')) return 'Miền Bắc';
+    if (lower.includes('đà nẵng') || lower.includes('miền trung')) return 'Miền Trung';
+
+    return '';
+  }
+
+  getShippingFee(order: Order): number {
+    if (!order || !order.address || !order.storeBranch?.region) return 25000;
+
+    const userRegion = this.getRegionFromAddress(order.address);
+    const branchRegion = order.storeBranch.region;
+
+    if (!userRegion) return 25000;
+
+    // Cùng miền → freeship
+    if (userRegion === branchRegion) return 0;
+
+    return 25000;
+  }
+
 }
