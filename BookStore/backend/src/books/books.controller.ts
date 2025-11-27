@@ -2,11 +2,13 @@ import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException, Q
 import { BooksService } from './books.service';
 import { Book } from './book.schema';
 import { AiService } from 'src/ai-helpers/ai.service';
+import { AlsRecommendService } from './als-recommend.service';
 
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService,
-    private readonly aiService: AiService
+    private readonly aiService: AiService, 
+    private readonly alsService: AlsRecommendService
   ) {}
 
   @Post()
@@ -83,6 +85,12 @@ export class BooksController {
   @Get("related-ai/:id")
   async getRelatedAI(@Param("id") id: string) {
     return this.booksService.getRelatedBooks(id);
+  }
+
+  //using als implicit embedding 
+  @Get('related-als/:id') 
+  async getRelatedAls(@Param('id') id: string) { 
+    return this.alsService.getRelatedBooks(id, 5); 
   }
 
   @Get(':id')

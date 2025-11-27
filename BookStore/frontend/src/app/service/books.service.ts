@@ -106,4 +106,8 @@ export class BooksService {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/related-ai/${bookId}`);
   }
 
+  getRelatedAls(id: string): Observable<BookDetails[]> {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/related-als/${id}`);
+  }
+
 }   

@@ -32,6 +32,45 @@
     </div>
   </div>
 
+  <!-- Sản phẩm bạn quan tâm  -->
+
+  <div class="als-suggestion-section" *ngIf="alsSuggestions?.length">
+
+    <div class="als-title">
+      <h1>
+        <i class="pi pi-eye"></i> Sản phẩm bạn quan tâm
+      </h1>
+    </div>
+
+    <div class="als-body">
+      <!-- Skeleton loading -->
+      <div *ngIf="isLoadingAls" class="skeleton-container">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+
+      <!-- Carousel ALS -->
+      <p-carousel 
+        *ngIf="!isLoadingAls && alsSuggestions.length > 0"
+        [value]="alsSuggestions"
+        [numVisible]="5"
+        [numScroll]="5"
+        [circular]="false"
+        [responsiveOptions]="responsiveOptions">
+        <ng-template let-book pTemplate="item">
+          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
+        </ng-template>
+      </p-carousel>
+
+      <!-- no items -->
+      <p *ngIf="!isLoadingAls && alsSuggestions.length === 0">
+        Chưa có dữ liệu đề xuất.
+      </p>
+
+    </div>
+  </div>
+
+  <!-- flashsale bán chạy -->
+
   <div class="container-flashsale">
     <div class="flash-sale-countdown">
       <h1>Sách bán chạy</h1>

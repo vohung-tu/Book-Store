@@ -65,6 +65,8 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   blogPosts = [ { date: '23/03/2025', author: 'Pam Blog', title: 'Yuval Noah Harari: Chúng ta cần giáo dục con trẻ như thế nào để thành công vào năm 2050?', summary: 'Yuval Noah Harari là tác giả người Israel được biết đến nhiều qua các cuốn sách...', }, { date: '21/04/2024', author: 'Pam Blog', title: '6 tựa sách hay về Trung Quốc đương đại khuyến đọc bởi tạp chí SupChina', summary: 'Trung Quốc đã đi một chặng đường dài kể từ những ngày đen tối của cách mạng văn hóa...', }, { date: '15/02/2025', author: 'Pam Blog', title: 'Một số thuật ngữ sách ngoại văn bạn nên biết', summary: '1. Movie tie-in edition là thuật ngữ dùng để chỉ một cuốn sách mà thì...', }, { date: '15/02/2025', author: 'Pam Blog', title: 'Một số thuật ngữ sách ngoại văn bạn nên biết', summary: '1. Movie tie-in edition là thuật ngữ dùng để chỉ một cuốn sách mà thì...', }, ];
   recommendedBooks: BookDetails[] = [];
   halloweenBooks: BookDetails[] = [];
+  alsSuggestions: any[] = [];
+  isLoadingAls = false;
 
   private observer?: IntersectionObserver;
   private timerSubscription?: Subscription;
@@ -106,11 +108,10 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setFavicon('assets/images/logo.png');
 
     this.categoryService.getCategories().subscribe({
-      next: (cats) => (this.categories = cats.filter((c) => !c.parentId)),
-      error: (err) => console.error('❌ Lỗi load categories:', err),
+      next: cats => (this.categories = cats.filter(c => !c.parentId))
     });
 
-    this.authorService.getAuthors().subscribe((data) => (this.authors = data));
+    this.authorService.getAuthors().subscribe(data => (this.authors = data));
 
     this.responsiveOptions = [
       { breakpoint: '1600px', numVisible: 5, numScroll: 5 },
@@ -120,17 +121,29 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
       { breakpoint: '575px', numVisible: 1, numScroll: 1 }
     ];
 
-    // ✅ thêm loading cho best seller
     this.isLoadingBestSeller = true;
-    this.bookService.getBestSellers().subscribe((bestSellers) => {
-      this.bestSellerBooks = (bestSellers ?? [])
-      .sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0));
-      this.isLoadingBestSeller = false;
+    this.bookService.getBestSellers().subscribe({
+      next: best => {
+        this.bestSellerBooks = (best ?? [])
+          .sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0));
+        this.isLoadingBestSeller = false;
+
+        // ⭐ Gọi ALS sau khi bestseller đã load
+        this.loadAlsSuggestions();
+      },
+      error: () => {
+        this.isLoadingBestSeller = false;
+
+        // fallback ALS luôn
+        this.loadAlsSuggestions();
+      }
     });
 
     this.loadHalloweenSection();
     this.loadRecommendedBooks();
   }
+
+
 
   ngAfterViewInit(): void {
     this.setupLazyObservers();
@@ -206,6 +219,46 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  // sản phẩm bạn đã quan tâm
+  loadAlsSuggestions() {
+    console.log("🔥 Gọi loadAlsSuggestions()");
+    this.isLoadingAls = true;
+
+    const lastViewed = localStorage.getItem("lastViewedBookId");
+    console.log("📌 lastViewed =", lastViewed);
+
+    if (lastViewed) {
+      // ⭐ ƯU TIÊN GỢI Ý THEO SÁCH USER VỪA XEM
+      this.bookService.getRelatedAls(lastViewed).subscribe({
+        next: res => {
+          this.alsSuggestions = res ?? [];
+          this.isLoadingAls = false;
+        },
+        error: err => {
+          console.error("ALS error:", err);
+          this.isLoadingAls = false;
+        }
+      });
+
+      return; // ⛔ KHÔNG fallback sang bestseller nữa
+    }
+
+    // ⭐ Nếu không có lastViewed → fallback bestseller
+    if (this.bestSellerBooks.length > 0) {
+      const first = this.bestSellerBooks[0]._id;
+      this.bookService.getRelatedAls(first).subscribe({
+        next: res => {
+          this.alsSuggestions = res ?? [];
+          this.isLoadingAls = false;
+        },
+        error: () => this.isLoadingAls = false
+      });
+      return;
+    }
+
+    // Chưa có bestseller → chờ 300ms rồi thử lại
+    setTimeout(() => this.loadAlsSuggestions(), 300);
+  }
   loadRecommendedBooks() {
     this.bookService.getRecommendedBooks().subscribe({
       next: (books) => {

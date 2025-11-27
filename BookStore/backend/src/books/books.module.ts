@@ -11,6 +11,7 @@ import { Category, CategorySchema } from 'src/categories/categories.schema';
 import { AiService } from 'src/ai-helpers/ai.service';
 import { Inventory, InventorySchema } from 'src/inventory/schemas/inventory-branch.schema';
 import { StoreBranchInventory, StoreBranchInventorySchema } from 'src/store-branch/schemas/store-branch-inventory.schema';
+import { AlsRecommendService } from './als-recommend.service';
 
 @Module({
   imports: [
@@ -25,8 +26,8 @@ import { StoreBranchInventory, StoreBranchInventorySchema } from 'src/store-bran
     CategoryModule,
     forwardRef(() => OrdersModule) // ✅ Tránh vòng lặp phụ thuộc
   ],
-  providers: [BooksService, AiService],
+  providers: [BooksService, AiService, AlsRecommendService],
   controllers: [BooksController],
-  exports: [BooksService, MongooseModule]
+  exports: [BooksService, MongooseModule, AlsRecommendService]
 })
 export class BooksModule {}

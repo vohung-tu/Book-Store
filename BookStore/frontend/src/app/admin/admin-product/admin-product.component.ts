@@ -22,6 +22,7 @@ import { InventoryService } from '../../service/inventory.service';
 import { forkJoin } from 'rxjs';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { BooksService } from '../../service/books.service';
+import { SidebarModule } from 'primeng/sidebar';
 
 @Component({
   selector: 'app-admin-product',
@@ -39,7 +40,8 @@ import { BooksService } from '../../service/books.service';
     DropdownModule,
     DotSeparatorPipe,
     Editor,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    SidebarModule
   ],
   providers: [MessageService],
   templateUrl: './admin-product.component.html',
@@ -79,6 +81,8 @@ export class AdminProductComponent {
     coverImage: '',
   };
   selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
+  displaySidebar: boolean = false;
+  selectedProduct: any = null;
 
   constructor(
     private http: HttpClient, 
@@ -217,7 +221,10 @@ export class AdminProductComponent {
     });
   }
 
-
+  openDetails(product: any) {
+    this.selectedProduct = product;
+    this.displaySidebar = true;
+  }
 
   openAddProductDialog() {
     this.displayAddDialog = true;

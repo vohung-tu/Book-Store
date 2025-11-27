@@ -34,17 +34,20 @@ export class SearchPageComponent implements OnInit{
   ) {}
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      this.keyword = params['keyword'] || '';
-  
-      if (this.keyword) {
-        this.bookService.getBooks().subscribe(res => {
-          this.products = res;
-          this.applyFilter(); // Gọi hàm lọc tại đây
+  this.route.queryParams.subscribe(params => {
+    this.keyword = params['keyword'] || '';
+
+    if (this.keyword) {
+      // this.isLoading = true;
+
+      this.bookService.searchBooks(this.keyword)
+        .subscribe(res => {
+          this.filteredProducts = res;
+          // this.isLoading = false;
         });
-      }
-    });
-  } // hàm ngOnInit chỉ đc gọi 1 lần ngay sau khi khởi tạo component và tất cả các @Input() đã được gán gtri
+    }
+  });
+}
   applyFilter() {
     const normalizedKeyword = this.normalize(this.keyword);
     this.filteredProducts = this.products.filter(product =>

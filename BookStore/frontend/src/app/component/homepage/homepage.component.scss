@@ -482,3 +482,24 @@ p-tab:hover {
     transition: all 0.3s ease;
   }
 }
+
+.als-suggestion-section {
+  margin-top: 30px;
+
+  .als-title {
+    h1 {
+      padding-left: 100px;
+      color: #105191;
+      i {
+        color: #105191;
+        font-size: 30px;
+      }
+    }
+  }
+
+  .als-body {
+    margin-top: 10px;
+    padding-left: 100px;
+    padding-right: 100px;
+  }
+}

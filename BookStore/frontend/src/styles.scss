@@ -24,3 +24,57 @@ html, body {
   background-color: #fff !important;
 }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* ===========================================
+   SIDEBAR FIX – GLOBAL CSS (BẮT BUỘC)
+   =========================================== */
+
+.product-sidebar.p-sidebar-right {
+  width: 650px !important;
+  max-width: 90vw;
+}
+
+.product-sidebar {
+  padding: 24px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background: #ffffff;
+}
+
+/* Fix description xuống dòng & không bị kéo ngang */
+.product-sidebar .p-sidebar-content .description,
+.product-sidebar .p-sidebar-content .description * {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  display: block !important;
+}
+
+.product-sidebar .p-sidebar-content .description p {
+  margin-bottom: 12px !important;
+}
+
+.product-sidebar .p-sidebar-content .description [style] {
+  white-space: normal !important; /* Override inline Quill style */
+}
+
+/* Ảnh bìa */
+.product-sidebar img[width="150"] {
+  width: 180px !important;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  border: 1px solid #e5e7eb;
+  object-fit: cover;
+}
+
+/* Ảnh phụ */
+.product-sidebar img[width="80"] {
+  width: 90px !important;
+  height: 90px !important;
+  border-radius: 8px;
+  margin: 6px;
+  object-fit: cover;
+  border: 1px solid #d1d5db;
+}
+.p-drawer {
+  width: 30rem !important;
+}

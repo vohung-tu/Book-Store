@@ -30,7 +30,7 @@
   </div>
   <!-- <p-progressSpinner *ngIf="loading"></p-progressSpinner> -->
   <p-table
-    #table 
+    #table
     [value]="filteredProducts"
     [(selection)]="selectedProducts"
     [paginator]="true"
@@ -41,80 +41,80 @@
     [showCurrentPageReport]="true"
     [rowsPerPageOptions]="[5,10,20]"
   >
+    <!-- HEADER -->
     <ng-template pTemplate="header">
       <tr>
         <th>
           <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
         </th>
+
         <th>Ảnh bìa</th>
+
         <th pSortableColumn="title">
           <div class="title-header">
-            <span>Tên sách <p-sortIcon field="title"></p-sortIcon></span>
+            <span>
+              Tên sách
+              <p-sortIcon field="title"></p-sortIcon>
+            </span>
           </div>
         </th>
+
         <th>Tác giả</th>
         <th>Mô tả</th>
         <th>Giá gốc</th>
         <th>Giá giảm</th>
-        <th>Giảm (%)</th>
-        <th>Ngày phát hành</th>
-        <th>Danh mục</th>
-        <th>Nhà cung cấp</th>
         <th>Số lượng</th>
-        <th>Tồn kho theo chi nhánh kho</th>
-        <th>Tồn kho theo cửa hàng</th>
         <th>Đã bán</th>
         <th>Ảnh phụ</th>
         <th>Thao tác</th>
       </tr>
     </ng-template>
+
+    <!-- BODY -->
     <ng-template pTemplate="body" let-product let-i="index">
       <tr [pSelectableRow]="product">
         <td>
           <p-tableCheckbox [value]="product"></p-tableCheckbox>
         </td>
-        <td><img [src]="product.coverImage" alt="cover" width="60" /></td>
-        <td>{{ product.title }}</td>
-        <td>{{ product.author?.name || 'Không rõ' }}</td>
+
         <td>
-          <span [innerHTML]="product.description"
-            [ngStyle]="{'max-height': expandedRows[i] ? '100%' : '82px', 'overflow': expandedRows[i] ? 'visible' : 'hidden'}"
-            style="white-space: normal; max-width: 300px; word-wrap: break-word; display: block;">
-          </span>
+          <img [src]="product.coverImage" alt="cover" width="60" />
+        </td>
+
+        <td>{{ product.title }}</td>
+
+        <td>
+          {{ product.author?.name || 'Không rõ' }}
+        </td>
+
+        <td>
+          <span
+            [innerHTML]="product.description"
+            [ngStyle]="{
+              'max-height': expandedRows[i] ? '100%' : '82px',
+              'overflow': expandedRows[i] ? 'visible' : 'hidden'
+            }"
+            style="
+              white-space: normal;
+              max-width: 300px;
+              word-wrap: break-word;
+              display: block;
+            "
+          ></span>
+
           <a class="expanded" (click)="toggleExpand(i)">
             <strong>{{ expandedRows[i] ? 'Thu gọn' : 'Xem thêm' }}</strong>
           </a>
         </td>
-        <td>{{ product.price | dotSeparator }}</td>
-        <td>{{ product.flashsale_price | dotSeparator }}</td>
-        <td>{{ product.discount_percent }}%</td>
-        <td>{{ product.publishedDate | date: 'dd/MM/yyyy' }}</td>
-        <td>{{ getCategoryLabel(product.categoryName) }}</td>
-        <td>{{ product.supplierId?.name || 'Không có' }}</td>
-        <td>{{ product.quantity }}</td>
-        <td>
-  <ng-container *ngIf="product.warehouseStocks?.length > 0; else noWarehouse">
-    <div *ngFor="let stock of product.warehouseStocks">
-      <strong>{{ stock.name }}</strong> ({{ stock.region }}): {{ stock.quantity }}
-    </div>
-  </ng-container>
-  <ng-template #noWarehouse>
-    <span style="color: gray;">Không có dữ liệu</span>
-  </ng-template>
-</td>
 
-<td>
-  <ng-container *ngIf="product.storeStocks?.length > 0; else noStore">
-    <div *ngFor="let s of product.storeStocks">
-      <strong>{{ s.name }}</strong> ({{ s.city }}): {{ s.quantity }}
-    </div>
-  </ng-container>
-  <ng-template #noStore>
-    <span style="color: gray;">Không có dữ liệu</span>
-  </ng-template>
-</td>
+        <td>{{ product.price | dotSeparator }}</td>
+
+        <td>{{ product.flashsale_price | dotSeparator }}</td>
+
+        <td>{{ product.quantity }}</td>
 
         <td>{{ product.sold }}</td>
+
         <td>
           <ng-container *ngIf="product.images?.length > 0; else noImages">
             <img
@@ -123,7 +123,12 @@
               alt="Ảnh phụ"
               width="40"
               height="40"
-              style="margin-right: 4px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc"
+              style="
+                margin-right: 4px;
+                object-fit: cover;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+              "
             />
           </ng-container>
 
@@ -131,15 +136,111 @@
             <span style="color: gray; font-style: italic;">Không có ảnh</span>
           </ng-template>
         </td>
+
         <td>
-          <div class="btn-table" style=" gap:10px">
-            <button pButton type="button" icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editProduct(product)"></button>
-          <button pButton type="button" icon="pi pi-trash" (click)="deleteProduct(product)"></button>
+          <div class="btn-table" style="gap: 10px;">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              class="p-button-text p-button-sm"
+              (click)="editProduct(product)"
+            ></button>
+
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              (click)="deleteProduct(product)"
+            ></button>
+
+            <button
+              pButton
+              icon="pi pi-eye"
+              class="p-button-text"
+              (click)="openDetails(product)"
+            ></button>
           </div>
         </td>
       </tr>
     </ng-template>
   </p-table>
+
+
+  <p-sidebar 
+    [(visible)]="displaySidebar" 
+    position="right" 
+    [baseZIndex]="10000" 
+    [modal]="true"
+    [style]="{width: '600px'}"
+    styleClass="product-sidebar">
+
+    <h2>{{ selectedProduct?.title }}</h2>
+
+    <img 
+      *ngIf="selectedProduct?.coverImage"
+      [src]="selectedProduct?.coverImage"
+      width="150" 
+      style="border-radius:8px; margin-bottom:10px"
+    />
+
+    <h3>Tác giả:</h3>
+    <p>{{ selectedProduct?.author?.name }}</p>
+
+    <h3>Mô tả:</h3>
+    <div [innerHTML]="selectedProduct?.description" class="description" ></div>
+
+    <h3>Ảnh phụ:</h3>
+    <img 
+      *ngFor="let img of selectedProduct?.images"
+      [src]="img"
+      width="80"
+      style="margin:3px; border-radius:4px"
+    />
+
+    <h3>Giá gốc:</h3>
+    <p>{{ selectedProduct?.price | dotSeparator }}</p>
+
+    <h3>Giá giảm:</h3>
+    <p>{{ selectedProduct?.flashsale_price | dotSeparator }}</p>
+
+    <h3>Giảm (%):</h3>
+    <p>{{ selectedProduct?.discount_percent }}%</p>
+
+    <h3>Ngày phát hành:</h3>
+    <p>{{ selectedProduct?.publishedDate | date: 'dd/MM/yyyy' }}</p>
+
+    <h3>Danh mục:</h3>
+    <p>{{ getCategoryLabel(selectedProduct?.categoryName) }}</p>
+
+    <h3>Nhà cung cấp:</h3>
+    <p>{{ selectedProduct?.supplierId?.name || 'Không có' }}</p>
+
+    <h3>Tồn kho theo chi nhánh:</h3>
+    <p>
+      <ng-container *ngIf="selectedProduct?.warehouseStocks?.length > 0; else noWarehouse">
+        <div *ngFor="let stock of selectedProduct?.warehouseStocks">
+          <strong>{{ stock.name }}</strong> ({{ stock.region }}): {{ stock.quantity }}
+        </div>
+      </ng-container>
+      <ng-template #noWarehouse>
+        <span style="color: gray;">Không có dữ liệu</span>
+      </ng-template>
+    </p>
+
+    <h4>Tồn kho theo cửa hàng:</h4>
+    <p>
+      <ng-container *ngIf="selectedProduct?.storeStocks?.length > 0; else noStore">
+        <div *ngFor="let s of selectedProduct?.storeStocks">
+          <strong>{{ s.name }}</strong> ({{ s.city }}): {{ s.quantity }}
+        </div>
+      </ng-container>
+      <ng-template #noStore>
+        <span style="color: rgb(143, 138, 138);">Không có dữ liệu</span>
+      </ng-template>
+    </p>
+
+  </p-sidebar>
 </div>
 <p-dialog [header]="isEditMode ? 'Sửa sản phẩm' : 'Thêm sản phẩm'" [(visible)]="displayAddDialog" [modal]="true" [closable]="true" [style]="{ width: '600px' }">
   <div class="p-fluid">
