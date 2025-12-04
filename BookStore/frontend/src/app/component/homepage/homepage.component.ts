@@ -67,6 +67,9 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   halloweenBooks: BookDetails[] = [];
   alsSuggestions: any[] = [];
   isLoadingAls = false;
+  recentViewedIds: string[] = [];
+  recentViewedBooks: BookDetails[] = [];
+  isLoadingRecentViews = true;
 
   private observer?: IntersectionObserver;
   private timerSubscription?: Subscription;
@@ -106,6 +109,7 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.setFavicon('assets/images/logo.png');
+    this.initSnow();
 
     this.categoryService.getCategories().subscribe({
       next: cats => (this.categories = cats.filter(c => !c.parentId))
@@ -138,12 +142,31 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadAlsSuggestions();
       }
     });
+    this.loadRecentViews();
 
     this.loadHalloweenSection();
     this.loadRecommendedBooks();
   }
 
+  loadRecentViews() {
+    const raw = localStorage.getItem('user');
+    if (!raw) return;
 
+    const user = JSON.parse(raw);
+    if (!user?._id) return;
+
+    this.isLoadingRecentViews = true;
+
+    this.bookService.getRecentViewed(user._id).subscribe({
+      next: books => {
+        this.recentViewedBooks = books ?? [];
+        this.isLoadingRecentViews = false;
+      },
+      error: () => {
+        this.isLoadingRecentViews = false;
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     this.setupLazyObservers();
@@ -220,45 +243,64 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // sản phẩm bạn đã quan tâm
-  loadAlsSuggestions() {
-    console.log("🔥 Gọi loadAlsSuggestions()");
+  async loadAlsSuggestions() {
     this.isLoadingAls = true;
 
+    const user = JSON.parse(localStorage.getItem("user") || "null");
     const lastViewed = localStorage.getItem("lastViewedBookId");
-    console.log("📌 lastViewed =", lastViewed);
 
+    // 1️⃣ Nếu user đăng nhập → gợi ý theo user
+    if (user?._id) {
+      this.bookService.getUserRecommend(user._id).subscribe({
+        next: res => {
+          this.alsSuggestions = res ?? [];
+          this.isLoadingAls = false;
+        },
+        error: err => {
+          console.error("ALS User Recommend Error:", err);
+          this.isLoadingAls = false;
+        }
+      });
+      return;
+    }
+
+    // 2️⃣ Nếu user chưa login nhưng có lastViewed → gợi ý theo sách vừa xem
     if (lastViewed) {
-      // ⭐ ƯU TIÊN GỢI Ý THEO SÁCH USER VỪA XEM
       this.bookService.getRelatedAls(lastViewed).subscribe({
         next: res => {
           this.alsSuggestions = res ?? [];
           this.isLoadingAls = false;
         },
         error: err => {
-          console.error("ALS error:", err);
+          console.error("ALS Item Recommend Error:", err);
           this.isLoadingAls = false;
         }
-      });
-
-      return; // ⛔ KHÔNG fallback sang bestseller nữa
-    }
-
-    // ⭐ Nếu không có lastViewed → fallback bestseller
-    if (this.bestSellerBooks.length > 0) {
-      const first = this.bestSellerBooks[0]._id;
-      this.bookService.getRelatedAls(first).subscribe({
-        next: res => {
-          this.alsSuggestions = res ?? [];
-          this.isLoadingAls = false;
-        },
-        error: () => this.isLoadingAls = false
       });
       return;
     }
 
-    // Chưa có bestseller → chờ 300ms rồi thử lại
+    // 3️⃣ Fallback bestseller → lấy sách 1 → ALS
+    if (this.bestSellerBooks.length > 0) {
+      const firstId = this.bestSellerBooks[0]._id;
+
+      this.bookService.getRelatedAls(firstId).subscribe({
+        next: res => {
+          this.alsSuggestions = res ?? [];
+          this.isLoadingAls = false;
+        },
+        error: err => {
+          console.error("Fallback ALS Error:", err);
+          this.isLoadingAls = false;
+        }
+      });
+
+      return;
+    }
+
+    // 4️⃣ Chờ bestseller load xong rồi gọi lại
     setTimeout(() => this.loadAlsSuggestions(), 300);
   }
+
   loadRecommendedBooks() {
     this.bookService.getRecommendedBooks().subscribe({
       next: (books) => {
@@ -350,6 +392,83 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   handleToast(event: any) {
     this.messageService.add({ ...event, key: 'tr', life: 3000 });
+  }
+
+  // tạo hiệu ứng tuyết rơi
+  initSnow() {
+    const canvas = document.getElementById('snow-canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const numFlakes = 120; // số hạt tuyết
+    const flakes = [] as any;
+
+    // tạo giọt tuyết
+    for (let i = 0; i < numFlakes; i++) {
+      flakes.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 3 + 1,    // kích thước
+        d: Math.random() + 1,        // độ rơi
+        s: Math.random() * 0.5 + 0.3 // lung linh
+      });
+    }
+
+    // hiệu ứng gió
+    let windAngle = 0;
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.shadowColor = "rgba(255, 255, 255, 0.6)";
+      ctx.shadowBlur = 8;
+
+      for (let flake of flakes) {
+        ctx.beginPath();
+        ctx.arc(flake.x, flake.y, flake.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      update();
+    }
+
+    function update() {
+      windAngle += 0.002; // tốc độ gió
+
+      for (let flake of flakes) {
+        // hiệu ứng lung linh
+        flake.x += Math.sin(windAngle) * 0.5;
+        flake.y += flake.d;
+
+        // cho tuyết bay lượn theo gió
+        flake.x += Math.sin(windAngle * flake.s) * 1.5;
+
+        // nếu tuyết rơi hết thì reset
+        if (flake.y > height) {
+          flake.x = Math.random() * width;
+          flake.y = -10;
+        }
+
+        // lệch trái phải vượt màn hình → xuất hiện lại
+        if (flake.x > width) flake.x = 0;
+        if (flake.x < 0) flake.x = width;
+      }
+    }
+
+    function animate() {
+      draw();
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    // Cập nhật canvas khi resize
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
   }
 
   ngOnDestroy(): void {

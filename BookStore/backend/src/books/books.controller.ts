@@ -90,7 +90,12 @@ export class BooksController {
   //using als implicit embedding 
   @Get('related-als/:id') 
   async getRelatedAls(@Param('id') id: string) { 
-    return this.alsService.getRelatedBooks(id, 5); 
+    return this.alsService.relatedBooks(id, 6); 
+  }
+
+  @Get("recommend-user/:userId")
+  async getUserRecommend(@Param("userId") userId: string) {
+    return this.alsService.recommendForUser(userId, 6);
   }
 
   @Get(':id')

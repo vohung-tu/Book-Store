@@ -118,6 +118,7 @@ export class DetailComponent implements OnInit {
 
   deliveryTime = '';
   shippingFee = 0;
+  productId!: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -145,11 +146,24 @@ export class DetailComponent implements OnInit {
       const bookId = params.get('id');
 
       if (bookId) {
+        this.productId = bookId;
         this.loadBookDetails(bookId);
+        this.recordView(bookId);
       }
     });
     this.currentUserId = this.authService.getCurrentUser();
     
+  }
+
+  recordView(bookId: string) {
+    console.log("Record view:", bookId);
+    const user = JSON.parse(localStorage.getItem('user')!);
+    if (!user?._id) return;
+
+    this.http.post('https://book-store-3-svnz.onrender.com/view-history/record', {
+      userId: user._id,
+      bookId: bookId
+    }).subscribe();
   }
 
   // 📖 Tải thông tin sách

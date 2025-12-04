@@ -1,8 +1,9 @@
+<canvas id="snow-canvas"></canvas>
 <ng-container class="container-ads">
   <p-toast position="top-right" key="tr"></p-toast>
 
   <div class="content-ads-1">
-    <img class="img-ads" src="assets/images/ngay_hoi_sach.webp" alt="" width="840px" height="340px" loading="lazy">
+    <img class="img-ads" src="assets/images/banner_noel.png" alt="" width="840px" height="340px" loading="lazy">
     <div class="content-ads-2">
       <a routerLink="/">
         <img src="assets/images/ads_2.webp" alt="" loading="lazy">
@@ -32,9 +33,42 @@
     </div>
   </div>
 
+  <!-- BẠN VỪA XEM  -->
+  <div class="recent-view-section" *ngIf="isLoadingRecentViews || recentViewedBooks?.length">
+    <div class="recent-title">
+      <h1><i class="pi pi-history"></i> Sản phẩm bạn vừa xem </h1>
+    </div>
+
+    <div class="recent-body">
+      <!-- Skeleton -->
+      <div *ngIf="isLoadingRecentViews" class="skeleton-container">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+
+      <!-- Carousel -->
+      <p-carousel 
+        *ngIf="!isLoadingRecentViews && recentViewedBooks.length > 0"
+        [value]="recentViewedBooks"
+        [numVisible]="5"
+        [numScroll]="5"
+        [circular]="false"
+        [responsiveOptions]="responsiveOptions">
+        <ng-template let-book pTemplate="item">
+          <app-product-item 
+            [book]="book"
+            (showToast)="handleToast($event)">
+          </app-product-item>
+        </ng-template>
+      </p-carousel>
+    </div>
+  </div>
+
+  <p-divider class="custom-divider"></p-divider>
+
+
   <!-- Sản phẩm bạn quan tâm  -->
 
-  <div class="als-suggestion-section" *ngIf="alsSuggestions?.length">
+  <div class="als-suggestion-section" *ngIf="isLoadingAls || alsSuggestions?.length">
 
     <div class="als-title">
       <h1>

@@ -110,4 +110,12 @@ export class BooksService {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/related-als/${id}`);
   }
 
+  getRecentViewed(userId: string) {
+    return this.http.get<BookDetails[]>(`https://book-store-3-svnz.onrender.com/view-history/${userId}`);
+  }
+
+  getUserRecommend(userId: string) {
+    return this.http.get<BookDetails[]>(`${this.apiUrl}/recommend-user/${userId}`);
+  }
+
 }   

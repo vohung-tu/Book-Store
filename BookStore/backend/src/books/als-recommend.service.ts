@@ -5,89 +5,146 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Book, BookDocument } from './book.schema';
 
-interface EmbeddingFile {
+interface AlsModelFile {
   embedding_dim: number;
-  embeddings: Record<string, number[]>;
+  users: string[];
+  books: string[];
+  user_factors: number[][];
+  item_factors: number[][];
 }
 
 @Injectable()
 export class AlsRecommendService {
   private readonly logger = new Logger(AlsRecommendService.name);
-  private embeddings = new Map<string, number[]>();
-  private dim = 0;
+
+  private users: string[] = [];
+  private books: string[] = [];
+
+  private userIndex = new Map<string, number>();
+  private bookIndex = new Map<string, number>();
+
+  private userFactors: number[][] = [];
+  private itemFactors: number[][] = [];
+
+  private embeddingDim = 0;
 
   constructor(
     @InjectModel(Book.name) private bookModel: Model<BookDocument>,
   ) {
-    this.loadEmbeddings();
+    this.loadALSModel();
   }
 
-  private loadEmbeddings() {
+  /** ============================================
+   *  Load mô hình từ file JSON
+   * ============================================ */
+  private loadALSModel() {
     try {
-      // 🔥 Tạo path an toàn tuyệt đối
-      const filePath = path.join(process.cwd(), 'dist', 'data', 'als_item_embeddings.json');
+      const distPath = path.join(process.cwd(), 'dist', 'data', 'als_user_item_model.json');
+      const devPath = path.join(process.cwd(), 'src', 'data', 'als_user_item_model.json');
+      const finalPath = fs.existsSync(distPath) ? distPath : devPath;
 
-      // Nếu chạy dev (chưa build), dùng file từ src
-      const devPath = path.join(process.cwd(), 'src', 'data', 'als_item_embeddings.json');
-
-      const finalPath = fs.existsSync(filePath) ? filePath : devPath;
-
-      this.logger.log(`📁 ALS Path đang dùng: ${finalPath}`);
+      this.logger.log(`📁 Loading ALS Model from: ${finalPath}`);
 
       const raw = fs.readFileSync(finalPath, 'utf8');
-      const parsed: EmbeddingFile = JSON.parse(raw);
+      const model: AlsModelFile = JSON.parse(raw);
 
-      this.dim = parsed.embedding_dim;
-      this.embeddings = new Map(Object.entries(parsed.embeddings));
+      this.embeddingDim = model.embedding_dim;
+      this.users = model.users;
+      this.books = model.books;
+      this.userFactors = model.user_factors;
+      this.itemFactors = model.item_factors;
 
-      this.logger.log(`✅ ALS loaded: ${this.embeddings.size} items`);
+      // Map userId → index
+      this.userIndex = new Map(model.users.map((u, i) => [u, i]));
+
+      // Map bookId → index
+      this.bookIndex = new Map(model.books.map((b, i) => [b, i]));
+
+      this.logger.log(
+        `✅ ALS model loaded: ${this.users.length} users, ${this.books.length} books`
+      );
+
     } catch (err) {
-      this.logger.error('❌ Không thể load ALS embeddings', err);
+      this.logger.error('❌ Failed to load ALS Model', err);
     }
   }
 
-
-  private cosineSimilarity(a: number[], b: number[]) {
-    let dot = 0,
-      magA = 0,
-      magB = 0;
+  /** ============================================
+   *  Cosine Similarity
+   * ============================================ */
+  private cosine(a: number[], b: number[]): number {
+    let dot = 0, ma = 0, mb = 0;
 
     for (let i = 0; i < a.length; i++) {
       dot += a[i] * b[i];
-      magA += a[i] * a[i];
-      magB += b[i] * b[i];
+      ma += a[i] * a[i];
+      mb += b[i] * b[i];
     }
+    if (ma === 0 || mb === 0) return 0;
 
-    if (magA === 0 || magB === 0) return 0;
-
-    return dot / Math.sqrt(magA * magB);
+    return dot / Math.sqrt(ma * mb);
   }
 
-  async getRelatedBooks(bookId: string, topN = 6) {
-    const target = this.embeddings.get(bookId);
+  /** ============================================
+   *  Gợi ý theo userId → Sách
+   * ============================================ */
+  async recommendForUser(userId: string, topN = 6) {
+    const uidx = this.userIndex.get(userId);
 
-    if (!target) {
-      this.logger.warn(`❗ Không có embedding cho sách ${bookId}`);
+    if (uidx === undefined) {
+      this.logger.warn(`❗ User không có trong mô hình ALS: ${userId}`);
       return [];
     }
 
+    const userVec = this.userFactors[uidx];
+
     const scores: { id: string; score: number }[] = [];
 
-    for (const [id, emb] of this.embeddings.entries()) {
-      if (id === bookId) continue;
-
-      const score = this.cosineSimilarity(target, emb);
-      scores.push({ id, score });
+    for (let i = 0; i < this.books.length; i++) {
+      const vec = this.itemFactors[i];
+      const score = this.cosine(userVec, vec);
+      scores.push({ id: this.books[i], score });
     }
 
     scores.sort((a, b) => b.score - a.score);
 
-    const topIds = scores.slice(0, topN).map((s) => s.id);
+    const ids = scores.slice(0, topN).map(s => s.id);
 
-    const books = await this.bookModel.find({ _id: { $in: topIds } }).lean();
+    const books = await this.bookModel.find({ _id: { $in: ids } }).lean();
+    const map = new Map(books.map(b => [String(b._id), b]));
 
-    const mapBooks = new Map(books.map((b) => [String(b._id), b]));
+    return ids.map(id => map.get(id)).filter(Boolean);
+  }
 
-    return topIds.map((id) => mapBooks.get(id)).filter(Boolean);
+  /** ============================================
+   *  Gợi ý item → item (Sản phẩm tương tự)
+   * ============================================ */
+  async relatedBooks(bookId: string, topN = 6) {
+    const bidx = this.bookIndex.get(bookId);
+
+    if (bidx === undefined) {
+      this.logger.warn(`❗ Book không có trong ALS: ${bookId}`);
+      return [];
+    }
+
+    const targetVec = this.itemFactors[bidx];
+
+    const scores: { id: string; score: number }[] = [];
+
+    for (let i = 0; i < this.books.length; i++) {
+      if (i === bidx) continue;
+
+      const score = this.cosine(targetVec, this.itemFactors[i]);
+      scores.push({ id: this.books[i], score });
+    }
+
+    scores.sort((a, b) => b.score - a.score);
+
+    const ids = scores.slice(0, topN).map((s) => s.id);
+
+    const books = await this.bookModel.find({ _id: { $in: ids } }).lean();
+    const map = new Map(books.map(b => [String(b._id), b]));
+
+    return ids.map(id => map.get(id)).filter(Boolean);
   }
 }
