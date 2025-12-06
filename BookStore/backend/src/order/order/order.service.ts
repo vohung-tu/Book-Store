@@ -1,19 +1,21 @@
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Order, OrderProduct } from './order.schema';
+import { Order, OrderDocument } from './order.schema';
 import { BooksService } from 'src/books/books.service';
 import { UpdateStatusDto } from './update-status.dto';
 import { LoyaltyService } from 'src/loyalty/loyalty.service';
 import { InventoryService } from 'src/inventory/inventory.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectModel(Order.name) private orderModel: Model<Order>,
+    @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     private readonly loyaltyService: LoyaltyService,
     private readonly booksService: BooksService,
     private readonly inventoryService: InventoryService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async backfillProductsBook(): Promise<number> {
@@ -94,7 +96,7 @@ export class OrderService {
     }));
   }
 
-  async findById(orderId: string): Promise<Order | null> {
+  async findById(orderId: string): Promise<OrderDocument | null> {
     const order = await this.orderModel
       .findById(orderId)
       .populate('products.book')
@@ -110,59 +112,76 @@ export class OrderService {
     if (!order) throw new NotFoundException('Order not found');
 
     const prev = order.status;
-    order.status = dto.status;
+    const newStatus = dto.status;
 
-    if (dto.status === 'completed') {
-      for (const item of order.products as any[]) {
-        const ref = item.book;
-        const bookId = (ref && typeof ref === 'object' && ref._id) ? String(ref._id) : String(ref);
-        const storeBranchId = (order as any).storeBranchId || item.storeBranchId; // 👈 đảm bảo lấy đúng id cửa hàng
-        const qty = item.quantity;
+    // Xử lý tồn kho & loyalty
+    if (newStatus === 'completed') {
+      for (const item of order.products) {
+        const bookId =
+          typeof item.book === 'object' && (item.book as any)._id
+            ? (item.book as any)._id.toString()
+            : item.book.toString();
 
-        if (bookId) {
-          await this.booksService.updateStock(bookId, qty); // tổng kho
+        await this.booksService.updateStock(bookId, item.quantity);
 
-          if (storeBranchId) {
-            console.log('🏪 Decreasing store stock for', bookId, storeBranchId);
-            await this.inventoryService.decreaseStoreStock(bookId, storeBranchId, qty);
-          } else {
-            console.warn('⚠️ Không có storeBranchId, bỏ qua giảm tồn cửa hàng');
-          }
+        const storeBranchId = (order as any).storeBranchId;
+        if (storeBranchId) {
+          await this.inventoryService.decreaseStoreStock(
+            bookId,
+            storeBranchId,
+            item.quantity
+          );
         }
       }
-    }
 
-    if (prev !== 'completed' && dto.status === 'completed' && !order.loyaltyApplied) {
-      try {
-        await this.loyaltyService.updateLoyaltyAfterOrder(order.userId, order.total as any as number);
-        order.loyaltyApplied = true;
-      } catch (e) {
-        console.error('[LOYALTY] updateStatus failed', e);
+      if (!order.loyaltyApplied) {
+        await this.loyaltyService.updateLoyaltyAfterOrder(order.userId, order.total);
       }
     }
 
-    return order.save();
+    // Update trạng thái *không validate* → không lỗi thiếu code
+    return this.orderModel.findByIdAndUpdate(
+      orderId,
+      { status: newStatus },
+      { new: true }
+    );
   }
 
   
-  async cancelOrder(orderId: string, userId: string): Promise<Order> {
+  async cancelOrder(orderId: string, userId: string) {
     const order = await this.orderModel.findById(orderId);
-    
-    if (!order) {
-      throw new NotFoundException('Đơn hàng không tồn tại');
-    }
 
+    if (!order) throw new NotFoundException('Đơn hàng không tồn tại');
     if (order.userId.toString() !== userId.toString()) {
       throw new ForbiddenException('Bạn không có quyền hủy đơn hàng này');
     }
-
     if (order.status === 'cancelled') {
       throw new ForbiddenException('Đơn hàng đã bị hủy');
     }
 
-    order.status = 'cancelled';
-    return await order.save();
+    // ❌ Không dùng order.save() → gây validate lỗi
+    const updatedOrder = await this.orderModel.findByIdAndUpdate(
+      orderId,
+      { status: 'cancelled' },
+      { new: true }
+    );
+
+    // 🔔 tạo thông báo
+    await this.notificationService.create({
+      userId,
+      type: 'order_cancelled',
+      title: 'Đơn hàng đã bị hủy',
+      message: `Đơn hàng ${order.code ?? order._id} đã bị hủy.`,
+      meta: {
+        orderId: order._id.toString(),
+        code: order.code ?? order._id.toString(),
+        status: 'cancelled',
+      },
+    });
+
+    return updatedOrder;
   }
+
 
   async findOrdersByUserId(userId: string) {
     return this.orderModel.find({ userId }).sort({ createdAt: -1 }).lean();
@@ -173,17 +192,15 @@ export class OrderService {
     if (!order) throw new NotFoundException(`Không tìm thấy order với txnRef ${txnRef}`);
 
     const prev = order.status;
-    order.status = status;
 
-    if (prev !== 'completed' && status === 'completed' && !order.loyaltyApplied) {
-      try {
-        await this.loyaltyService.updateLoyaltyAfterOrder(order.userId, order.total as any as number);
-        order.loyaltyApplied = true;
-      } catch (e) {
-        console.error('[LOYALTY] updateStatusByTxnRef failed', e);
-      }
+    if (status === 'completed' && !order.loyaltyApplied) {
+      await this.loyaltyService.updateLoyaltyAfterOrder(
+        order.userId,
+        order.total,
+      );
     }
-    return order.save();
+
+    return this.orderModel.findByIdAndUpdate(order._id, { status }, { new: true });
   }
 
   async markOrderCompleted(orderId: string) {
@@ -208,4 +225,54 @@ export class OrderService {
     await order.save();
     return order;
   }
+
+  async updateOrderStatus(orderId: string, status: string) {
+    const order = await this.orderModel.findById(orderId);
+    if (!order) throw new NotFoundException('Order not found');
+
+    await this.orderModel.findByIdAndUpdate(orderId, { status });
+
+    const userId = order.userId.toString();
+
+    let type = '';
+    let title = '';
+    let message = '';
+
+    switch (status) {
+      case 'shipping':
+        type = 'order_shipping';
+        title = 'Đơn hàng đang được giao';
+        message = `Đơn hàng ${order.code ?? order._id} đang được giao đến bạn.`;
+        break;
+
+      case 'delivered':
+        type = 'order_delivered';
+        title = 'Đơn hàng đã giao thành công';
+        message = `Đơn hàng ${order.code ?? order._id} đã giao thành công.`;
+        break;
+
+      case 'cancelled':
+        type = 'order_cancelled';
+        title = 'Đơn hàng đã bị hủy';
+        message = `Đơn hàng ${order.code ?? order._id} đã bị hủy.`;
+        break;
+    }
+
+    if (type) {
+      await this.notificationService.create({
+        userId,
+        type,
+        title,
+        message,
+        meta: {
+          orderId: order._id.toString(),
+          code: order.code ?? order._id.toString(),
+          status,
+        },
+      });
+    }
+
+    return this.orderModel.findById(orderId).lean();
+  }
+
 }

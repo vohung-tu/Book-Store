@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../service/auth.service';
 import { CommonModule, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { debounceTime, Observable, Subject } from 'rxjs';
+import { debounceTime, interval, Observable, Subject, Subscription, switchMap } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CartService } from '../../service/cart.service';
@@ -22,6 +22,8 @@ import { MegaMenu, MegaMenuModule } from 'primeng/megamenu';
 import { HttpClient } from '@angular/common/http';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
+import { NotificationService } from '../../service/notification.service';
+import { UserNotification } from '../../model/notification.model';
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
@@ -70,12 +72,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
   locationDialogVisible = false;
   addressList: any[] = [];
   selectedAddress: any;
+  notifications: UserNotification[] = [];
+  unreadCount = 0;
+  showNotiDropdown = false;
+  private pollingSub?: Subscription;
+  isLoadingNoti = false;
 
   constructor(private authService: AuthService,
     private cartService: CartService,
     private bookService: BooksService,
     private router: Router,
     private categoryService: CategoryService,
+    private notificationService: NotificationService,
     private http: HttpClient,
     private messageService: MessageService,
   private zone: NgZone
@@ -134,6 +142,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
       console.log('🧭 Gọi getUserLocation() khi chưa login');
       this.getUserLocation();
     }
+
+    this.loadNotifications();
+
+    // Polling mỗi 30s để đơn giản (sau này thích thì đổi sang socket)
+    this.pollingSub = interval(30000)
+      .pipe(switchMap(() => this.notificationService.getMyNotifications(20)))
+      .subscribe({
+        next: (data) => {
+          this.notifications = data as any;
+          this.updateUnreadCount();
+        },
+      });
   }
 
 
@@ -329,8 +349,75 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.pollingSub) {
+      this.pollingSub.unsubscribe();
+    }
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+
+  loadNotifications(): void {
+    this.isLoadingNoti = true;
+    this.notificationService.getMyNotifications(20).subscribe({
+      next: (data) => {
+        this.notifications = data as any;
+        this.updateUnreadCount();
+        this.isLoadingNoti = false;
+      },
+      error: () => {
+        this.isLoadingNoti = false;
+      },
+    });
+  }
+
+  loadUnreadCountOnly(): void {
+    this.notificationService.getUnreadCount().subscribe({
+      next: (res) => (this.unreadCount = res.count),
+    });
+  }
+
+  private updateUnreadCount(): void {
+    this.unreadCount = this.notifications.filter((n) => !n.isRead).length;
+  }
+
+  toggleNotiDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showNotiDropdown = !this.showNotiDropdown;
+    if (this.showNotiDropdown && this.notifications.length === 0) {
+      this.loadNotifications();
+    }
+  }
+
+  onClickNotification(n: UserNotification, event: MouseEvent): void {
+    event.stopPropagation();
+
+    if (!n.isRead) {
+      this.notificationService.markAsRead(n._id).subscribe({
+        next: () => {
+          n.isRead = true;
+          this.updateUnreadCount();
+        },
+      });
+    }
+
+    // Nếu muốn: navigate đến trang chi tiết đơn:
+    // if (n.meta?.orderId) {
+    //   this.router.navigate(['/order', n.meta.orderId]);
+    // }
+  }
+
+  markAllAsRead(event: MouseEvent): void {
+    event.stopPropagation();
+    this.notificationService.markAllAsRead().subscribe({
+      next: () => {
+        this.notifications = this.notifications.map((n) => ({
+          ...n,
+          isRead: true,
+        }));
+        this.updateUnreadCount();
+      },
+    });
   }
 
   navigateToCategory(slug: string, event?: MouseEvent) {

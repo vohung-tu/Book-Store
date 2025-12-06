@@ -15,22 +15,33 @@ export class OrderProduct {
   price: number;
 
   @Prop()
-  flashsale_price: number;
+  flashsale_price?: number;
 
   @Prop({ required: true })
   quantity: number;
 
   @Prop()
-  coverImage: string;
+  coverImage?: string;
 }
-const OrderProductSchema = SchemaFactory.createForClass(OrderProduct);
+
+export const OrderProductSchema = SchemaFactory.createForClass(OrderProduct);
+
+/* ============================================================
+   Order Schema chính
+   ============================================================ */
 
 @Schema({ timestamps: true })
-export class Order extends Document {
+export class Order {
+  // 👇 Quan trọng: khai báo _id để TS hiểu đúng loại
+  _id: Types.ObjectId;
+
+  @Prop({ required: true, unique: true })
+  code: string; // mã đơn hàng (DH-xxxx)
+
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'StoreBranch', required: false })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'StoreBranch' })
   storeBranchId?: Types.ObjectId;
 
   @Prop({ required: true })
@@ -43,13 +54,13 @@ export class Order extends Document {
   products: OrderProduct[];
 
   @Prop()
-  name: string;
+  name?: string;
 
   @Prop()
-  phone: string;
+  phone?: string;
 
   @Prop()
-  email: string;
+  email?: string;
 
   @Prop({ required: true })
   total: number;
@@ -60,10 +71,13 @@ export class Order extends Document {
   })
   status: string;
 
-  @Prop({ default: false })          // ✅ đặt ở cấp Order
+  @Prop({ default: false })
   loyaltyApplied: boolean;
 
   @Prop()
-  orderDate: Date;
+  orderDate?: Date;
 }
+
+export type OrderDocument = Order & Document;
+
 export const OrderSchema = SchemaFactory.createForClass(Order);

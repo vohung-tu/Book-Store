@@ -71,14 +71,77 @@
 
       <div class="header__top__right">
         <div class="header__top__right__cart">
-          <a class="bell-btn" mat-button>
-            <i class="pi pi-bell"></i>
-          </a>
+
+          <div class="noti-container" (click)="$event.stopPropagation()">
+            <a
+              class="bell-btn"
+              mat-button
+              (click)="toggleNotiDropdown($event)"
+            >
+              <i class="pi pi-bell"></i>
+              <p-badge
+                *ngIf="unreadCount > 0"
+                [value]="unreadCount"
+                severity="danger"
+              ></p-badge>
+            </a>
+
+            <!-- DROPDOWN -->
+            <div class="noti-dropdown" *ngIf="showNotiDropdown">
+              <div class="noti-header">
+                <span>Thông báo</span>
+                <button
+                  *ngIf="unreadCount > 0"
+                  mat-button
+                  class="mark-all-btn"
+                  (click)="markAllAsRead($event)"
+                >
+                  Đánh dấu đã đọc
+                </button>
+              </div>
+
+              <div class="noti-body" *ngIf="!isLoadingNoti; else loadingTpl">
+                <div
+                  *ngIf="notifications.length === 0"
+                  class="noti-empty"
+                >
+                  Chưa có thông báo nào
+                </div>
+
+                <div
+                  class="noti-item"
+                  *ngFor="let noti of notifications"
+                  (click)="onClickNotification(noti, $event)"
+                  [class.unread]="!noti.isRead"
+                >
+                  <div class="noti-title">{{ noti.title }}</div>
+                  <div class="noti-message">{{ noti.message }}</div>
+                  <div class="noti-time">
+                    {{ noti.createdAt | date: 'HH:mm dd/MM/yyyy' }}
+                  </div>
+                </div>
+              </div>
+
+              <ng-template #loadingTpl>
+                <div class="noti-loading">
+                  Đang tải thông báo...
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- CART -->
           <a routerLink="/cart" class="cart-btn" mat-button>
             <i class="pi pi-shopping-cart"></i>
-            <p-badge *ngIf="cartItemCount > 0" [value]="cartItemCount" severity="danger"></p-badge>
+            <p-badge
+              *ngIf="cartItemCount > 0"
+              [value]="cartItemCount"
+              severity="danger"
+            ></p-badge>
           </a>
-          <a routerLink="/wishlist" class="cart-btn"  mat-button>
+
+          <!-- WISHLIST -->
+          <a routerLink="/wishlist" class="cart-btn" mat-button>
             <i class="pi pi-heart-fill"></i>
           </a>
         </div>

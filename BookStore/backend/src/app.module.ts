@@ -23,6 +23,7 @@ import { StoreBranchModule } from './store-branch/store-branch.module';
 import { StoreTransferModule } from './inventory/store-transfer/store-transfer.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ViewHistoryModule } from './view-history/view-history.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -52,7 +53,8 @@ import { ViewHistoryModule } from './view-history/view-history.module';
     SuppliersModule,
     StoreBranchModule,
     StoreTransferModule,
-    ViewHistoryModule
+    ViewHistoryModule,
+    NotificationModule
   ],
   controllers: [AppController],
   providers: [AppService],

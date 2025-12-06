@@ -27,19 +27,19 @@ export class OrderController {
     const order = await this.orderService.findById(orderId);
     if (!order) throw new NotFoundException('Đơn hàng không tồn tại!');
 
-    // ✅ Cập nhật tồn kho khi thanh toán thành công
+    // Cập nhật tồn kho
     for (const item of order.products) {
       const bookId =
-        (item.book?._id || item.book || item._id)?.toString?.();
-      if (bookId) {
-        await this.booksService.updateStock(bookId, item.quantity);
-      }
+        typeof item.book === 'object' && (item.book as any)._id
+          ? (item.book as any)._id.toString()
+          : item.book.toString();
+
+      await this.booksService.updateStock(bookId, item.quantity);
     }
 
-    order.status = 'processing';
-    await order.save();
+    await this.orderService.updateStatus(orderId, { status: 'processing' });
 
-    return { message: '✅ Thanh toán thành công, đơn hàng chuyển sang chờ xử lý!' };
+    return { message: 'Thanh toán thành công, đơn hàng chuyển sang chờ xử lý!' };
   }
   
   @Patch(':id/status')
