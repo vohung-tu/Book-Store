@@ -62,12 +62,31 @@ export class OrderService {
       };
     });
 
+    const code = 'DH' + Date.now();
+
     const newOrder = new this.orderModel({
       ...createOrderDto,
+      code,
       products: preparedProducts,
     });
 
-    return await newOrder.save();
+    const saved = await newOrder.save();
+
+    // SAU KHI LƯU ĐƠN THÀNH CÔNG → TẠO THÔNG BÁO
+    await this.notificationService.create({
+      userId: saved.userId.toString(),
+      type: 'order_created',
+      title: 'Đặt hàng thành công',
+      message: `Đơn hàng ${saved.code} của bạn đã được đặt thành công.`,
+      meta: {
+        orderId: saved._id.toString(),
+        code: saved.code,
+        total: saved.total,
+        status: saved.status,
+      },
+    });
+
+    return saved;
   }
 
 
