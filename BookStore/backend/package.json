@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -29,8 +30,9 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-fastify": "^11.0.11",
-    "@payos/node": "^1.0.8",
+    "@payos/node": "^1.0.10",
     "@types/passport-jwt": "^4.0.1",
+    "axios": "^1.13.2",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "cache-manager": "^7.2.0",
