@@ -24,6 +24,7 @@ import { StoreTransferModule } from './inventory/store-transfer/store-transfer.m
 import { CacheModule } from '@nestjs/cache-manager';
 import { ViewHistoryModule } from './view-history/view-history.module';
 import { NotificationModule } from './notification/notification.module';
+import { PayOSModule } from './payos/payos.module';
 
 @Module({
   imports: [
@@ -54,7 +55,8 @@ import { NotificationModule } from './notification/notification.module';
     StoreBranchModule,
     StoreTransferModule,
     ViewHistoryModule,
-    NotificationModule
+    NotificationModule,
+    PayOSModule
   ],
   controllers: [AppController],
   providers: [AppService],

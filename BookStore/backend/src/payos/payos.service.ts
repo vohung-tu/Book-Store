@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import PayOS from '@payos/node';
+import PayOS = require('@payos/node');
 import { CreatePayOSCheckoutDto } from './dto/create-payos-checkout.dto';
 
 @Injectable()
@@ -9,14 +9,14 @@ export class PayOSService {
 
   constructor() {
     this.payOS = new PayOS(
-      process.env.PAYOS_CLIENT_ID!,
-      process.env.PAYOS_API_KEY!,
-      process.env.PAYOS_CHECKSUM_KEY!,
+      process.env.PAYOS_CLIENT_ID ?? '',
+      process.env.PAYOS_API_KEY ?? '',
+      process.env.PAYOS_CHECKSUM_KEY ?? '',
     );
   }
 
   async createCheckout(dto: CreatePayOSCheckoutDto) {
-    const orderCode = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    const orderCode = Number(`${Date.now()}${Math.floor(Math.random() * 1000)}`);
 
     const payload = {
       orderCode,
@@ -26,8 +26,6 @@ export class PayOSService {
       cancelUrl: process.env.PAYOS_CANCEL_URL,
       items: dto.items,
     };
-
-    this.logger.log(`Tạo link thanh toán PayOS: ${orderCode}`);
 
     const res = await this.payOS.createPaymentLink(payload);
 
@@ -39,6 +37,6 @@ export class PayOSService {
   }
 
   async verifyWebhook(raw: Buffer) {
-    return await this.payOS.verifyPaymentWebhook(raw);
+    return this.payOS.verifyPaymentWebhook(raw);
   }
 }
