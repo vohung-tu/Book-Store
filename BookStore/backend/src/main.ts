@@ -4,6 +4,7 @@ import * as bodyParser from 'body-parser';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as compression from 'compression';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -17,6 +18,15 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
+  app.use(
+    '/payos/webhook',
+    express.json({
+      verify: (req: any, _res, buf) => {
+        req.rawBody = buf; // lưu raw body vào req
+      },
+    }),
+  );
 
   // ✅ Cấu hình cache cho ảnh, JS, CSS: 7 ngày
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
