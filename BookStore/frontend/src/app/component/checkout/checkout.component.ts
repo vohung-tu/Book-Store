@@ -223,7 +223,7 @@ export class CheckoutComponent implements OnInit {
 
   onPaymentChange() {
     // render lại QR khi chọn phương thức thanh toán
-    if (this.orderInfo.payment === 'momo') {
+    if (this.orderInfo.payment === 'payos') {
       this.generatePayOSQR();
     } else if (this.orderInfo.payment === 'vnpay') {
       this.generateVnpayQR();
@@ -287,7 +287,7 @@ export class CheckoutComponent implements OnInit {
 
     const orderData = {
       userId: this.userInfo._id,
-      storeBranchId: this.orderInfo.storeBranch?._id || null, // ✅ thêm dòng này
+      storeBranchId: this.orderInfo.storeBranch?._id || null,
       products: this.selectedBooks.map(book => ({
         book: book._id,
         quantity: book.quantity,
@@ -295,7 +295,7 @@ export class CheckoutComponent implements OnInit {
         price: book.price,
         flashsale_price: book.flashsale_price,
         coverImage: book.coverImage,
-        storeBranchId: this.orderInfo.storeBranch?._id || null // ✅ thêm dòng này
+        storeBranchId: this.orderInfo.storeBranch?._id || null
       })),
       name: this.orderInfo.name,
       email: this.orderInfo.email,
@@ -307,57 +307,46 @@ export class CheckoutComponent implements OnInit {
       note: this.orderInfo.note
     };
 
-    console.log('🧾 Sending orderData:', orderData);
+    console.log("🧾 Sending orderData:", orderData);
 
     this.orderService.createOrder(orderData).subscribe({
-      next: (response) => {
-        console.log('✅ Order created:', response);
+      next: (orderRes) => {
 
+        // 🔥 Nếu chọn PayOS
         if (this.orderInfo.payment === 'payos') {
-          this.payWithPayOS();
+          this.payWithPayOS(orderRes);
           return;
         }
-        else {
-          alert('Đặt hàng thành công!');
-          this.afterOrderSuccess();
-        }
+
+        // 🔥 Nếu thanh toán COD
+        alert("Đặt hàng thành công!");
+        this.afterOrderSuccess();
       },
+
       error: (err) => {
-        console.error('❌ Lỗi khi đặt hàng:', err);
-        alert('Đặt hàng thất bại, vui lòng thử lại!');
+        console.error("❌ Lỗi tạo đơn hàng:", err);
+        alert("Tạo đơn hàng thất bại, vui lòng thử lại!");
       }
     });
   }
 
-  private payWithPayOS() {
-    // validate tối thiểu
-    if (!this.orderInfo.name || !this.orderInfo.phone || !this.orderInfo.address) {
-      alert('Vui lòng nhập đầy đủ thông tin nhận hàng trước khi thanh toán PayOS');
-      return;
-    }
 
-    const amount = (this.discountedAmount || this.totalAmount) + (this.shippingFee || 0);
-
-    const payload = {
-      amount,
-      items: this.selectedBooks.map((b) => ({
-        name: b.title,
-        quantity: b.quantity || 1,
-        price: b.flashsale_price || b.price,
-      })),
-    };
-
-    this.payosService.createPayment(payload).subscribe({
-      next: (res: PayOSCreatePaymentRes) => {
-        this.lastPayosOrderCode = res.orderCode;
-        // Cách 1 (đề xuất): chuyển trang sang PayOS luôn
-        window.location.href = res.checkoutUrl;
-
-        // Cách 2 (nếu bạn thích nhúng iframe trong checkout):
-        // this.payosCheckoutUrl = res.checkoutUrl;
+  payWithPayOS(order: any) {
+    this.payosService.createPayment({
+      amount: order.total,
+      items: order.products.map((p: any) => ({
+        name: p.title,
+        quantity: p.quantity,
+        price: p.price
+      }))
+    }).subscribe({
+      next: (payRes) => {
+        console.log("🔗 PayOS URL:", payRes.checkoutUrl);
+        window.location.href = payRes.checkoutUrl; // → chuyển sang PayOS
       },
-      error: () => {
-        alert('Tạo thanh toán PayOS thất bại, vui lòng thử lại.');
+      error: (err) => {
+        console.error("❌ Lỗi PayOS:", err);
+        alert("Thanh toán PayOS thất bại!");
       }
     });
   }
@@ -479,9 +468,9 @@ export class CheckoutComponent implements OnInit {
   }
 
   placeOrder() {
-    if (this.orderInfo.payment === 'momo') {
+    if (this.orderInfo.payment === 'payos') {
       // logic mở dialog MoMo
-      alert('Thanh toán bằng MOMO - hiển thị QR');
+      alert('Thanh toán bằng PayOS - hiển thị QR');
     } else if (this.orderInfo.payment === 'vnpay') {
       // logic mở dialog VNPAY
       alert('Thanh toán bằng VNPAY - hiển thị QR');
