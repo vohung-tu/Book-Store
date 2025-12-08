@@ -29,7 +29,7 @@ import { City, District, Ward } from '../user-info/address-book/address-book.com
 import { Dialog, DialogModule } from 'primeng/dialog';
 import QRCode from 'qrcode';
 import { Coupon } from '../../model/coupon.model';
-import { PayOSCreatePaymentRes, PayOSPaymentService } from '../../service/payos-payment.service';
+import { PayOSCreatePaymentApiResponse, PayOSCreatePaymentRes, PayOSPaymentService } from '../../service/payos-payment.service';
 export interface DiscountCode {
   code: string;
   minOrderAmount?: number;
@@ -330,7 +330,6 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-
   payWithPayOS(order: any) {
     this.payosService.createPayment({
       amount: order.total,
@@ -340,17 +339,22 @@ export class CheckoutComponent implements OnInit {
         price: p.price
       }))
     }).subscribe({
-      next: (payRes) => {
-        console.log("🔗 PayOS URL:", payRes.checkoutUrl);
-        window.location.href = payRes.checkoutUrl; // → chuyển sang PayOS
+      next: (res: PayOSCreatePaymentApiResponse) => {
+        if (!res.success) {
+          alert('Thanh toán PayOS thất bại (server trả về success=false)!');
+          return;
+        }
+
+        console.log('🔗 PayOS URL:', res.data.checkoutUrl);
+        window.location.href = res.data.checkoutUrl;
       },
       error: (err) => {
-        console.error("❌ Lỗi PayOS:", err);
-        alert("Thanh toán PayOS thất bại!");
+        console.error('❌ Lỗi PayOS:', err);
+        alert('Thanh toán PayOS thất bại!');
       }
     });
   }
-
+  
   afterOrderSuccess() {
     this.cartService.clearCart().subscribe({
       next: () => {
