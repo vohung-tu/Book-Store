@@ -28,8 +28,8 @@ export class PayOSService {
       orderCode,
       amount: dto.amount,
       description: `Thanh toán đơn hàng #${orderCode}`,
-      returnUrl: "https://book-store-v302.onrender.com/payment-result",
-      cancelUrl: "https://book-store-v302.onrender.com/checkout",
+      returnUrl: process.env.PAYOS_RETURN_URL,
+      cancelUrl: process.env.PAYOS_CANCEL_URL,
       items: dto.items,
     };
 
