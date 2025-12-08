@@ -7,6 +7,7 @@ import { UpdateStatusDto } from './update-status.dto';
 import { LoyaltyService } from 'src/loyalty/loyalty.service';
 import { InventoryService } from 'src/inventory/inventory.service';
 import { NotificationService } from 'src/notification/notification.service';
+import { PayOSService } from 'src/payos/payos.service';
 
 @Injectable()
 export class OrderService {
@@ -16,6 +17,7 @@ export class OrderService {
     private readonly booksService: BooksService,
     private readonly inventoryService: InventoryService,
     private readonly notificationService: NotificationService,
+    private readonly payOSService: PayOSService
   ) {}
 
   async backfillProductsBook(): Promise<number> {
@@ -67,26 +69,30 @@ export class OrderService {
     const newOrder = new this.orderModel({
       ...createOrderDto,
       code,
-      products: preparedProducts,
+      status: createOrderDto.paymentMethod === 'payos' ? 'pending' : 'created',
     });
 
     const saved = await newOrder.save();
 
-    // SAU KHI LƯU ĐƠN THÀNH CÔNG → TẠO THÔNG BÁO
+    // 🔔 tạo thông báo đặt hàng
     await this.notificationService.create({
       userId: saved.userId.toString(),
       type: 'order_created',
       title: 'Đặt hàng thành công',
-      message: `Đơn hàng ${saved.code} của bạn đã được đặt thành công.`,
-      meta: {
-        orderId: saved._id.toString(),
-        code: saved.code,
-        total: saved.total,
-        status: saved.status,
-      },
+      message: `Đơn hàng ${saved.code} đã được tạo.`,
     });
 
-    return saved;
+    // ⭐ Chỉ xử lý PayOS nếu được chọn
+    if (createOrderDto.paymentMethod === 'payos') {
+      const payment = await this.payOSService.createPayment(saved);
+      return {
+        order: saved,
+        checkoutUrl: payment.checkoutUrl,
+      };
+    }
+
+    // ⭐ Không cần PayOS → trả về order trực tiếp
+    return { order: saved };
   }
 
 

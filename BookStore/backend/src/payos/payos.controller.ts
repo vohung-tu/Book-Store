@@ -1,55 +1,44 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Headers,
-  Req,
-  Logger,
-  BadRequestException,
-} from '@nestjs/common';
+import { Controller, Get, Post, Query, Body } from '@nestjs/common';
 import { PayOSService } from './payos.service';
-import { CreatePayOSCheckoutDto } from './dto/create-payos-checkout.dto';
 
 @Controller('payos')
 export class PayOSController {
-  private readonly logger = new Logger(PayOSController.name);
-
   constructor(private readonly payOSService: PayOSService) {}
 
-  // Tạo link thanh toán
+  /**
+   * Tạo link thanh toán PayOS
+   * FE sẽ gửi orderId hoặc toàn bộ thông tin đơn hàng vào đây.
+   */
   @Post('create-payment')
-  async createPayment(@Body() dto: CreatePayOSCheckoutDto) {
-    try {
-      const data = await this.payOSService.createCheckout(dto);
-      return {
-        success: true,
-        message: 'Tạo link thanh toán thành công',
-        data,
-      };
-    } catch (error: any) {
-      this.logger.error(error);
-      throw new BadRequestException(error.message || 'Lỗi tạo thanh toán');
+  async createPayment(@Body() body: any) {
+    const { order } = body;
+
+    if (!order || !order.total || !order.code) {
+      return { error: 'Thiếu dữ liệu order để tạo thanh toán PayOS' };
     }
+
+    const payment = await this.payOSService.createPayment(order);
+    return {
+      checkoutUrl: payment.checkoutUrl,
+      orderCode: payment.orderCode,
+    };
   }
 
-  // Xử lý webhook từ PayOS
+  /**
+   * Callback PayOS → hệ thống backend sau khi thanh toán thành công
+   * PayOS sẽ gọi URL này
+   */
+  @Get('return')
+  async handleReturn(@Query() query: any) {
+    return this.payOSService.handleReturn(query);
+  }
+
+  /**
+   * Webhook notify → PayOS gửi về trạng thái mới
+   * Đây là endpoint quan trọng nhất
+   */
   @Post('webhook')
-  async handleWebhook(@Req() req: any, @Headers('x-payos-signature') signature: string) {
-    try {
-      const rawBody = req.rawBody; // Nhớ bật rawBody trong main.ts và app.use(express.raw())
-
-      const data = await this.payOSService.verifyWebhook(rawBody);
-
-      this.logger.log('Webhook PayOS:', data);
-
-      // data.action === 'payment.completed'
-      // data.data.amount
-      // data.data.orderCode
-
-      return { received: true };
-    } catch (error: any) {
-      this.logger.error('Webhook Error: ' + error.message);
-      return { received: false };
-    }
+  async handleWebhook(@Body() body: any) {
+    return this.payOSService.handleWebhook(body);
   }
 }
