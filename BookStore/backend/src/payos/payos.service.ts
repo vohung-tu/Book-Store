@@ -27,7 +27,7 @@ export class PayOSService {
       items: dto.items,
     };
 
-    const res = await this.payOS.createPaymentLink(payload);
+    const res = await this.payOS.createPayment(payload);
 
     return {
       orderCode,
