@@ -51,6 +51,8 @@ export class OrderService {
       throw new BadRequestException('Danh sách sản phẩm không hợp lệ!');
     }
 
+    const paymentMethod = createOrderDto.paymentMethod ?? createOrderDto.payment;
+
     const preparedProducts = createOrderDto.products.map((p: any) => {
       const bookId = p.book || p._id || p.id || p.bookId;
       if (!bookId) throw new BadRequestException('Thiếu ID sách trong sản phẩm!');
@@ -68,8 +70,9 @@ export class OrderService {
 
     const newOrder = new this.orderModel({
       ...createOrderDto,
+      products: preparedProducts,
       code,
-      status: createOrderDto.paymentMethod === 'payos' ? 'pending' : 'created',
+      status: paymentMethod === 'payos' ? 'pending' : 'created',
     });
 
     const saved = await newOrder.save();
@@ -82,17 +85,7 @@ export class OrderService {
       message: `Đơn hàng ${saved.code} đã được tạo.`,
     });
 
-    // // ⭐ Chỉ xử lý PayOS nếu được chọn
-    // if (createOrderDto.paymentMethod === 'payos') {
-    //   const payment = await this.payOSService.createPayment(saved);
-    //   return {
-    //     order: saved,
-    //     checkoutUrl: payment.checkoutUrl,
-    //   };
-    // }
-
-    // ⭐ Không cần PayOS → trả về order trực tiếp
-    return { order: saved };
+    return saved;
   }
 
 

@@ -84,7 +84,8 @@ export class CheckoutComponent implements OnInit {
   selectedDistrict: District | undefined;
   selectedWard: Ward | undefined;
   vietnamAddresses: City[] = [];
-
+  payosValue: string = '';
+  vnpayValue: string = '';
   appliedCoupons: Coupon[] = []; 
 
   orderInfo: {
@@ -108,11 +109,9 @@ export class CheckoutComponent implements OnInit {
   payosCheckoutUrl: string | null = null;
   lastPayosOrderCode: string | null = null;
 
-  @ViewChild('qrPayosCanvas') qrPayosCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('qrPayosCanvas', { static: false })
+  qrPayosCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('qrVnpayCanvas') qrVnpayCanvas!: ElementRef<HTMLCanvasElement>;
-
-  payosValue = 'https://momo.vn/payment/your-order-id';   // link hoặc dữ liệu QR MoMo
-  vnpayValue = 'https://vnpay.vn/payment/your-order-id'; // link hoặc dữ liệu QR VNPAY
 
   shipping = {
     selected: 'other_provinces',  // This will hold the selected shipping method
@@ -196,20 +195,40 @@ export class CheckoutComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    // render QR mặc định nếu có chọn MoMo/VNPAY
-    if (this.orderInfo.payment === 'payos') {
+    setTimeout(() => {
+    if (this.orderInfo.payment === 'payos' && this.payosValue) {
       this.generatePayOSQR();
     }
-    if (this.orderInfo.payment === 'vnpay') {
-      this.generateVnpayQR();
-    }
+  }, 0);
   }
 
   generatePayOSQR() {
-    if (this.qrPayosCanvas) {
-      QRCode.toCanvas(this.qrPayosCanvas.nativeElement, this.payosValue, {
-        width: 250,
+    try {
+      const canvas = this.qrPayosCanvas?.nativeElement;
+
+      if (!canvas) {
+        console.error("QR Canvas not ready!"); 
+        return;
+      }
+
+      const ctx = canvas.getContext('2d');
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (!this.payosValue) {
+        console.error("PayOS QR value is empty");
+        return;
+      }
+
+      QRCode.toCanvas(canvas, this.payosValue, {
+        errorCorrectionLevel: 'H',
+        scale: 6,
+      }, err => {
+        if (err) console.error("QR error:", err);
+        else console.log("PayOS QR generated!");
       });
+
+    } catch (err) {
+      console.error("generatePayOSQR Exception:", err);
     }
   }
 
@@ -222,11 +241,8 @@ export class CheckoutComponent implements OnInit {
   }
 
   onPaymentChange() {
-    // render lại QR khi chọn phương thức thanh toán
-    if (this.orderInfo.payment === 'payos') {
-      this.generatePayOSQR();
-    } else if (this.orderInfo.payment === 'vnpay') {
-      this.generateVnpayQR();
+    if (this.orderInfo.payment === 'vnpay') {
+      setTimeout(() => this.generateVnpayQR(), 0);
     }
   }
 
@@ -303,18 +319,18 @@ export class CheckoutComponent implements OnInit {
       address: this.orderInfo.address,
       total: this.totalAmount,
       orderDate: new Date(),
-      payment: this.orderInfo.payment,
+      paymentMethod: this.orderInfo.payment,
       note: this.orderInfo.note
     };
 
     console.log("🧾 Sending orderData:", orderData);
 
     this.orderService.createOrder(orderData).subscribe({
-      next: (orderRes) => {
+      next: () => {
 
         // 🔥 Nếu chọn PayOS
         if (this.orderInfo.payment === 'payos') {
-          this.payWithPayOS(orderRes);
+          this.payWithPayOS();
           return;
         }
 
@@ -330,7 +346,12 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  payWithPayOS(order: any) {
+  payWithPayOS() {
+    const order = {
+      total: this.totalAmount,
+      products: this.selectedBooks
+    };
+
     this.payosService.createPayment({
       amount: order.total,
       items: order.products.map((p: any) => ({
@@ -340,20 +361,22 @@ export class CheckoutComponent implements OnInit {
       }))
     }).subscribe({
       next: (res: PayOSCreatePaymentApiResponse) => {
-        if (!res.success) {
-          alert('Thanh toán PayOS thất bại (server trả về success=false)!');
-          return;
-        }
+        console.log("PayOS response:", res);
+        this.lastPayosOrderCode = res.data.orderCode;
+        this.payosValue = res.data.qrCode;
+        this.payosCheckoutUrl = res.data.checkoutUrl;
 
-        console.log('🔗 PayOS URL:', res.data.checkoutUrl);
-        window.location.href = res.data.checkoutUrl;
+        setTimeout(() => this.generatePayOSQR(), 20);
+        alert("Vui lòng quét QR để thanh toán PayOS");
       },
+
       error: (err) => {
         console.error('❌ Lỗi PayOS:', err);
         alert('Thanh toán PayOS thất bại!');
       }
     });
   }
+
   
   afterOrderSuccess() {
     this.cartService.clearCart().subscribe({

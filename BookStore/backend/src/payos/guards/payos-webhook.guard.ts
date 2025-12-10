@@ -14,6 +14,9 @@ export class PayosWebhookGuard implements CanActivate {
     const dataToSignature = createHmac('sha256', checksumKey)
       .update(dataQueryStr)
       .digest('hex');
+    console.log("🟣 CLIENT SIGNATURE:", currentSignature);
+    console.log("🟣 BACKEND RAW QUERY:", dataQueryStr);
+    console.log("🟣 BACKEND SIGNATURE:", dataToSignature);
     return dataToSignature == currentSignature;
   }
 

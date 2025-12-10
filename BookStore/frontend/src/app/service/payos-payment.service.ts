@@ -6,6 +6,7 @@ export interface PayOSCreatePaymentRes {
   orderCode: string;
   checkoutUrl: string;
   paymentLinkId: string;
+  qrCode: string;
 }
 
 export interface PayOSCreatePaymentApiResponse {
