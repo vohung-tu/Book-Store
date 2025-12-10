@@ -10,8 +10,10 @@ export interface PayOSCreatePaymentRes {
 }
 
 export interface PayOSCreatePaymentApiResponse {
-  success: boolean;
-  data: PayOSCreatePaymentRes;
+  code: string;                  // ví dụ: "00", "201" 
+  desc?: string;                 // <- thêm dòng này, PayOS trả khi lỗi
+  success?: boolean;
+  data: PayOSCreatePaymentRes | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -22,6 +24,8 @@ export class PayOSPaymentService {
 
   createPayment(payload: {
     amount: number;
+    orderId: string;        // 🔥 thêm vào
+    description: string;
     items: { name: string; quantity: number; price: number }[];
   }): Observable<PayOSCreatePaymentApiResponse> {
     return this.http.post<PayOSCreatePaymentApiResponse>(

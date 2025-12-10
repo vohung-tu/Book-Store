@@ -164,17 +164,9 @@
         </div>
 
         <div *ngIf="orderInfo.payment === 'payos'">
-          <p *ngIf="!payosValue">Vui lòng nhấn Đặt hàng để tạo mã QR PayOS</p>
-
-          <div *ngIf="payosValue">
-            <p>Quét QR PayOS để thanh toán:</p>
-            <canvas #qrPayosCanvas></canvas>
-
-            <div class="mt-2">
-              <a [href]="payosCheckoutUrl" target="_blank">Mở trang thanh toán PayOS</a>
-            </div>
-          </div>
+          <p *ngIf="!payosCheckoutUrl">Đang tạo liên kết thanh toán...</p>
         </div>
+
 
         <!-- VNPAY -->
         <div class="flex-1 items-center" style="display: flex;">

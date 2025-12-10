@@ -354,30 +354,36 @@ export class CheckoutComponent implements OnInit {
 
     this.payosService.createPayment({
       amount: order.total,
+      description: "Thanh toan don hang",   // ❗ Giới hạn 25 ký tự của PayOS
+      orderId: Date.now().toString(),
       items: order.products.map((p: any) => ({
         name: p.title,
         quantity: p.quantity,
         price: p.price
       }))
     }).subscribe({
-      next: (res: PayOSCreatePaymentApiResponse) => {
+      next: (res) => {
         console.log("PayOS response:", res);
+
+        if (!res.data) {
+          alert("Thanh toán PayOS thất bại: " + (res.desc ?? res.code));
+          return;
+        }
+
         this.lastPayosOrderCode = res.data.orderCode;
-        this.payosValue = res.data.qrCode;
         this.payosCheckoutUrl = res.data.checkoutUrl;
 
-        setTimeout(() => this.generatePayOSQR(), 20);
-        alert("Vui lòng quét QR để thanh toán PayOS");
+        // 👉 Không dùng QR nữa — chuyển hướng luôn
+        window.location.href = this.payosCheckoutUrl;
       },
 
       error: (err) => {
-        console.error('❌ Lỗi PayOS:', err);
-        alert('Thanh toán PayOS thất bại!');
+        console.error("❌ Lỗi PayOS:", err);
+        alert("Không kết nối được PayOS!");
       }
     });
   }
 
-  
   afterOrderSuccess() {
     this.cartService.clearCart().subscribe({
       next: () => {
