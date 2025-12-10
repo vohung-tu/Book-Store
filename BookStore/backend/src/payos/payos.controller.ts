@@ -1,5 +1,7 @@
-import { Controller, Get, Post, Query, Body } from '@nestjs/common';
+import { Controller, Get, Post, Query, Body, UseGuards } from '@nestjs/common';
 import { PayOSService } from './payos.service';
+import { CreatePaymentDto } from './types/dto';
+import { PayosWebhookGuard } from './guards/payos-webhook.guard';
 
 @Controller('payos')
 export class PayOSController {
@@ -10,18 +12,8 @@ export class PayOSController {
    * FE sẽ gửi orderId hoặc toàn bộ thông tin đơn hàng vào đây.
    */
   @Post('create-payment')
-  async createPayment(@Body() body: any) {
-    const { order } = body;
-
-    if (!order || !order.total || !order.code) {
-      return { error: 'Thiếu dữ liệu order để tạo thanh toán PayOS' };
-    }
-
-    const payment = await this.payOSService.createPayment(order);
-    return {
-      checkoutUrl: payment.checkoutUrl,
-      orderCode: payment.orderCode,
-    };
+  async createPayment(@Body() body: CreatePaymentDto): Promise<any> {
+    return this.payOSService.createPayment(body);
   }
 
   /**
@@ -38,7 +30,8 @@ export class PayOSController {
    * Đây là endpoint quan trọng nhất
    */
   @Post('webhook')
-  async handleWebhook(@Body() body: any) {
-    return this.payOSService.handleWebhook(body);
+  @UseGuards(PayosWebhookGuard)
+  handleWebhook() {
+    return this.payOSService.handleWebhook();
   }
 }

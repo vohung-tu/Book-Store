@@ -3,62 +3,50 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { OrderDocument } from 'src/order/order/order.schema';
 import { ConfigService } from '@nestjs/config';
+import { CreatePaymentDto } from './types/dto';
+import { generateSignature } from './payos-utils';
+import { PayosRequestPaymentPayload } from './dto/payos-request-payment.payload';
 
 @Injectable()
 export class PayOSService {
-  private readonly clientId = process.env.PAYOS_CLIENT_ID;
-  private readonly apiKey = process.env.PAYOS_API_KEY;
-  private readonly checksumKey = process.env.PAYOS_CHECKSUM_KEY;
 
   constructor(private readonly httpService: HttpService,
     private readonly configService: ConfigService
   ) {
-    if (!this.clientId || !this.apiKey || !this.checksumKey) {
-      console.error('[PayOS] Missing environment variables');
-    }
   }
 
   /**
    * Tạo link thanh toán PayOS
    */
-  async createPayment(order: OrderDocument) {
-    const body = {
-      orderCode: order.code,
-      amount: order.total,
-      description: `Thanh toán đơn hàng ${order.code}`,
-
-      // ⚡ Lấy theo ENV bạn đã cung cấp
-      returnUrl: this.configService.get<string>('PAYOS_RETURN_URL'),
-      cancelUrl: this.configService.get<string>('PAYOS_CANCEL_URL'),
+  async createPayment(body: CreatePaymentDto): Promise<any> {
+    const url = `https://api-merchant.payos.vn/v2/payment-requests`;
+    const config = {
+      headers: {
+        'x-client-id': this.configService.getOrThrow<string>('PAYOS_CLIENT_ID'),
+        'x-api-key': this.configService.getOrThrow<string>('PAYOS_API_KEY'),
+      },
     };
-
-    try {
-      const response = await this.httpService.axiosRef.post(
-        'https://api.payos.vn/v2/payment-requests',
-        body,
-        {
-          headers: {
-            'x-client-id': this.configService.get('PAYOS_CLIENT_ID'),
-            'x-api-key': this.configService.get('PAYOS_API_KEY'),
-          },
-        },
-      );
-
-      return response.data;
-    } catch (error) {
-      console.error(error.response?.data || error);
-      throw new BadRequestException('Không tạo được yêu cầu thanh toán');
-    }
+    const dataForSignature = {
+      orderCode: Number(body.orderId),
+      amount: body.amount,
+      description: body.description,
+      cancelUrl: 'https://book-store-v302.onrender.com/cancel',
+      returnUrl: 'https://book-store-v302.onrender.com/return',
+    };
+    const signature = generateSignature(
+      dataForSignature,
+      this.configService.getOrThrow<string>('PAYOS_CHECKSUM_KEY'),
+    );
+    const payload: PayosRequestPaymentPayload = {
+      ...dataForSignature,
+      signature,
+    };
+    const response = await firstValueFrom(
+      this.httpService.post(url, payload, config),
+    );
+    return response.data;
   }
 
-  /**
-   * Generate signature PayOS (bắt buộc)
-   */
-  private generateSignature(order: any) {
-    const raw = `${order.code}|${order.total}|${this.checksumKey}`;
-    const crypto = require('crypto');
-    return crypto.createHash('sha256').update(raw).digest('hex');
-  }
 
   /**
    * PayOS redirect người dùng về đây sau thanh toán (không đảm bảo trạng thái)
@@ -74,19 +62,9 @@ export class PayOSService {
    * Webhook từ PayOS báo trạng thái thanh toán
    * → Đây mới là trạng thái "chính xác"
    */
-  async handleWebhook(body: any) {
-    console.log('[PayOS] Webhook received:', body);
-
-    const { data } = body;
-
-    if (!data) {
-      throw new BadRequestException('Webhook không hợp lệ');
-    }
-
+  async handleWebhook() {
     return {
-      success: true,
-      orderCode: data.orderCode,
-      status: data.status,
+      received: true
     };
   }
 }

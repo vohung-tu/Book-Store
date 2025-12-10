@@ -82,14 +82,14 @@ export class OrderService {
       message: `Đơn hàng ${saved.code} đã được tạo.`,
     });
 
-    // ⭐ Chỉ xử lý PayOS nếu được chọn
-    if (createOrderDto.paymentMethod === 'payos') {
-      const payment = await this.payOSService.createPayment(saved);
-      return {
-        order: saved,
-        checkoutUrl: payment.checkoutUrl,
-      };
-    }
+    // // ⭐ Chỉ xử lý PayOS nếu được chọn
+    // if (createOrderDto.paymentMethod === 'payos') {
+    //   const payment = await this.payOSService.createPayment(saved);
+    //   return {
+    //     order: saved,
+    //     checkoutUrl: payment.checkoutUrl,
+    //   };
+    // }
 
     // ⭐ Không cần PayOS → trả về order trực tiếp
     return { order: saved };
