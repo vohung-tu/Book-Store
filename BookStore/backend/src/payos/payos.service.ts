@@ -24,7 +24,7 @@ export class PayOSService {
     amount: body.amount,
     description: body.description,
   });
-    const url = `https://api-merchant.payos.vn/v1/payment-requests`;
+    const url = `https://api-merchant.payos.vn/v2/payment-requests`;
     const config = {
       headers: {
         'x-client-id': this.configService.getOrThrow<string>('PAYOS_CLIENT_ID'),
