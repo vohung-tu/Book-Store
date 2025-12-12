@@ -20,6 +20,10 @@ export class OrderService {
     return this.http.get<Order[]>(this.apiUrl);
   }
 
+  getOrderByCode(orderCode: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/by-code/${orderCode}`);
+  }
+
   confirmPayment(orderId: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${orderId}/confirm-payment`, {});
   }

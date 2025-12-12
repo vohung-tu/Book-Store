@@ -200,7 +200,6 @@ export class OrderService {
     return updatedOrder;
   }
 
-
   async findOrdersByUserId(userId: string) {
     return this.orderModel.find({ userId }).sort({ createdAt: -1 }).lean();
   }
@@ -259,6 +258,9 @@ export class OrderService {
     return saved;
   }
 
+  async getOrderByCode(orderCode: string) {
+    return this.orderModel.findOne({ orderCode });
+  }
 
   async markOrderCompleted(orderId: string) {
     const order = await this.orderModel.findById(orderId);
