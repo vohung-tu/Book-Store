@@ -1,0 +1,15 @@
+<div class="payment-result">
+  <h2>Thanh toán thất bại</h2>
+
+  <p *ngIf="orderCode">Mã đơn hàng của bạn:</p>
+  <div *ngIf="orderCode" class="order-code-box">
+    {{ orderCode }}
+  </div>
+
+  <p>Bạn đã hủy thanh toán hoặc thanh toán không thành công.</p>
+  <p>Vui lòng thử lại hoặc chọn phương thức khác.</p>
+
+  <div class="actions">
+    <button routerLink="/cart">Quay lại giỏ hàng</button>
+  </div>
+</div>

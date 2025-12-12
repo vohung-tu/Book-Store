@@ -16,7 +16,6 @@ import { AdminProductComponent } from './admin/admin-product/admin-product.compo
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminOrderComponent } from './admin/admin-order/admin-order.component';
 import { LayoutUserComponent } from './component/user-info/layout-user/layout-user.component';
-import { VnpayReturnComponent } from './component/checkout/vnpay-return/vnpay-return.component';
 import { AdminAuthorComponent } from './admin/admin-author/admin-author.component';
 import { AuthorDetailsComponent } from './component/author-details/author-details.component';
 import { UserOrderComponent } from './component/user-info/user-order/user-order.component';
@@ -35,6 +34,7 @@ import { AdminWarehouseComponent } from './admin/admin-warehouse/admin-warehouse
 import { AdminSupplierComponent } from './admin/admin-supplier/admin-supplier.component';
 import { StoreBranchComponent } from './admin/store-branch/store-branch.component';
 import { StoreTransferComponent } from './admin/store-transfer/store-transfer.component';
+import { payOSReturnComponent } from './component/checkout/payos-return/payos-return.component';
 
 const routes: Routes = [
   {
@@ -192,7 +192,7 @@ const routes: Routes = [
     loadComponent: () =>
       import('./component/search-page/search-page.component').then(m => m.SearchPageComponent)
   },
-  { path: 'vnpay-return', component: VnpayReturnComponent },
+  { path: 'cancel', component: payOSReturnComponent },
   {
     path: 'author/:id', // id hoặc slug
     component: AuthorDetailsComponent

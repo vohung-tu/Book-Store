@@ -158,15 +158,17 @@
             (onClick)="onPaymentChange()"
           />
           <div style="padding: 10px; display: flex;">
-            <!-- <img src="assets/images/payos.png" alt="payos" width="32" height="32" /> -->
-            <label for="paymentPayOS" style="padding-left: 10px;">PayOS</label>
+            <img src="assets/images/vietqr.png" alt="payos" width="32" height="32" />
+            <label for="paymentPayOS" style="padding-left: 10px;">VietQR</label>
           </div>
         </div>
 
         <div *ngIf="orderInfo.payment === 'payos'">
-          <p *ngIf="!payosCheckoutUrl">Đang tạo liên kết thanh toán...</p>
+          <div *ngIf="isProcessingPayOS" class="loading-container">
+            <div class="spinner"></div>
+            <p>Đang tạo liên kết thanh toán PayOS...</p>
+          </div>
         </div>
-
 
         <!-- VNPAY -->
         <div class="flex-1 items-center" style="display: flex;">

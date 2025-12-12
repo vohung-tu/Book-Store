@@ -87,6 +87,7 @@ export class CheckoutComponent implements OnInit {
   payosValue: string = '';
   vnpayValue: string = '';
   appliedCoupons: Coupon[] = []; 
+  isProcessingPayOS = false;
 
   orderInfo: {
     name: string;
@@ -328,13 +329,14 @@ export class CheckoutComponent implements OnInit {
     this.orderService.createOrder(orderData).subscribe({
       next: () => {
 
-        // 🔥 Nếu chọn PayOS
+        // Nếu chọn PayOS
         if (this.orderInfo.payment === 'payos') {
+          this.isProcessingPayOS = true; 
           this.payWithPayOS();
           return;
         }
 
-        // 🔥 Nếu thanh toán COD
+        // Nếu thanh toán COD
         alert("Đặt hàng thành công!");
         this.afterOrderSuccess();
       },
@@ -354,7 +356,7 @@ export class CheckoutComponent implements OnInit {
 
     this.payosService.createPayment({
       amount: order.total,
-      description: "Thanh toan don hang",   // ❗ Giới hạn 25 ký tự của PayOS
+      description: "Thanh toan don hang", 
       orderId: Date.now().toString(),
       items: order.products.map((p: any) => ({
         name: p.title,
@@ -365,6 +367,8 @@ export class CheckoutComponent implements OnInit {
       next: (res) => {
         console.log("PayOS response:", res);
 
+        this.isProcessingPayOS = false;
+
         if (!res.data) {
           alert("Thanh toán PayOS thất bại: " + (res.desc ?? res.code));
           return;
@@ -373,7 +377,6 @@ export class CheckoutComponent implements OnInit {
         this.lastPayosOrderCode = res.data.orderCode;
         this.payosCheckoutUrl = res.data.checkoutUrl;
 
-        // 👉 Không dùng QR nữa — chuyển hướng luôn
         window.location.href = this.payosCheckoutUrl;
       },
 

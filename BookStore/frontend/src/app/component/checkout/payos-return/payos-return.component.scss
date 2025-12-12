@@ -1,0 +1,79 @@
+.payment-result {
+  max-width: 480px;
+  margin: 60px auto;
+  padding: 32px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+
+  animation: fadeIn 0.4s ease;
+
+  h2 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #d32f2f; // đỏ lỗi giống Fahasa
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 16px;
+    color: #444;
+    margin-bottom: 8px;
+
+    strong {
+      color: #000;
+    }
+  }
+
+  .order-code-box {
+    background: #fff4f4;
+    border: 1px solid #ffb3b3;
+    padding: 12px;
+    border-radius: 10px;
+    margin: 12px 0;
+    color: #c62828;
+    font-weight: 500;
+  }
+
+  .actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+
+    button {
+      background-color: #d32f2f;
+      border: none;
+      color: #fff;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.25s;
+
+      &:hover {
+        background-color: #b71c1c;
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
+    }
+  }
+}
+
+/* Animation fade-in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
