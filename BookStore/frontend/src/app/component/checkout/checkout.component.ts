@@ -354,7 +354,7 @@ export class CheckoutComponent implements OnInit {
 
     this.payosService.createPayment({
       amount: payableAmount,
-      description: "Thanh toán đơn hàng BookStore",
+      description: "Thanh toan don hang",
       orderId: Date.now().toString(),
       items: this.selectedBooks.map(p => ({
         name: p.title,
