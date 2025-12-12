@@ -31,7 +31,7 @@ export class PayOSController {
    */
   @Post('webhook')
   @UseGuards(PayosWebhookGuard)
-  handleWebhook() {
-    return this.payOSService.handleWebhook();
+  handleWebhook(@Body() body: any) {
+    return this.payOSService.handleWebhook(body);
   }
 }

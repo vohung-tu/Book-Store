@@ -1,0 +1,22 @@
+<div class="success-container">
+  <div class="success-card">
+    <div class="icon-wrap">
+      <div class="checkmark"></div>
+    </div>
+
+    <h2>Thanh toán thành công!</h2>
+
+    <p class="message">
+      Cảm ơn bạn đã thanh toán. Đơn hàng của bạn đã được xác nhận.
+    </p>
+
+    <div class="order-info" *ngIf="orderCode">
+      <p><strong>Mã đơn hàng:</strong> {{ orderCode }}</p>
+      <p><strong>Tổng tiền:</strong> {{ totalAmount | currency:'VND':'' }}₫</p>
+    </div>
+
+    <button class="btn-view-order" routerLink="/user/orders">
+      Xem đơn hàng của tôi
+    </button>
+  </div>
+</div>

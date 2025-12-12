@@ -11,7 +11,6 @@ import { BooksModule } from "src/books/books.module";
 import { LoyaltyModule } from "src/loyalty/loyalty.module";
 import { InventoryModule } from "src/inventory/inventory.module";
 import { NotificationModule } from "src/notification/notification.module";
-import { PayOSModule } from "src/payos/payos.module";
 
 @Module({
     imports: [
@@ -19,7 +18,6 @@ import { PayOSModule } from "src/payos/payos.module";
       forwardRef(() => LoyaltyModule),
       InventoryModule,
       NotificationModule,
-      PayOSModule,
       MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
     forwardRef(() => BooksModule)
     ],

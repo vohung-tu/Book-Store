@@ -6,12 +6,14 @@ import { ConfigService } from '@nestjs/config';
 import { CreatePaymentDto } from './types/dto';
 import { generateSignature } from './payos-utils';
 import { PayosRequestPaymentPayload } from './dto/payos-request-payment.payload';
+import { OrderService } from 'src/order/order/order.service';
 
 @Injectable()
 export class PayOSService {
 
   constructor(private readonly httpService: HttpService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly orderService: OrderService
   ) {
   }
 
@@ -67,9 +69,26 @@ export class PayOSService {
    * Webhook từ PayOS báo trạng thái thanh toán
    * → Đây mới là trạng thái "chính xác"
    */
-  async handleWebhook() {
-    return {
-      received: true
-    };
+  async handleWebhook(body: any) {
+    const data = body.data;
+    console.log("Webhook PayOS:", data);
+
+    if (!data || !data.orderCode) {
+      return { status: "INVALID" };
+    }
+
+    // Chỉ khi thanh toán thành công
+    if (data.status === "PAID") {
+      return await this.orderService.createOrderFromPayOS(data);
+    }
+
+    // Trạng thái thất bại hoặc bị hủy
+    if (["CANCELLED", "FAILED"].includes(data.status)) {
+      console.log("PayOS Payment Failed:", data.status);
+      return { status: "FAILED" };
+    }
+
+    return { status: "IGNORED" };
   }
+
 }

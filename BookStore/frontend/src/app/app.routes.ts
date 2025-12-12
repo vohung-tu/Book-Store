@@ -35,6 +35,7 @@ import { AdminSupplierComponent } from './admin/admin-supplier/admin-supplier.co
 import { StoreBranchComponent } from './admin/store-branch/store-branch.component';
 import { StoreTransferComponent } from './admin/store-transfer/store-transfer.component';
 import { payOSReturnComponent } from './component/checkout/payos-return/payos-return.component';
+import { PaymentSuccessComponent } from './component/checkout/payos-success/payos-success.component';
 
 const routes: Routes = [
   {
@@ -193,6 +194,7 @@ const routes: Routes = [
       import('./component/search-page/search-page.component').then(m => m.SearchPageComponent)
   },
   { path: 'cancel', component: payOSReturnComponent },
+  { path: 'return', component: PaymentSuccessComponent },
   {
     path: 'author/:id', // id hoặc slug
     component: AuthorDetailsComponent

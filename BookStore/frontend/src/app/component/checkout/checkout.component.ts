@@ -349,19 +349,17 @@ export class CheckoutComponent implements OnInit {
   }
 
   payWithPayOS() {
-    const order = {
-      total: this.totalAmount,
-      products: this.selectedBooks
-    };
+    const payableAmount = this.discountedAmount + this.shippingFee;
+    this.isProcessingPayOS = true;
 
     this.payosService.createPayment({
-      amount: order.total,
-      description: "Thanh toan don hang", 
+      amount: payableAmount,
+      description: "Thanh toán đơn hàng BookStore",
       orderId: Date.now().toString(),
-      items: order.products.map((p: any) => ({
+      items: this.selectedBooks.map(p => ({
         name: p.title,
-        quantity: p.quantity,
-        price: p.price
+        quantity: p.quantity ?? 1,
+        price: p.flashsale_price || p.price
       }))
     }).subscribe({
       next: (res) => {
@@ -380,8 +378,8 @@ export class CheckoutComponent implements OnInit {
         window.location.href = this.payosCheckoutUrl;
       },
 
-      error: (err) => {
-        console.error("❌ Lỗi PayOS:", err);
+      error: () => {
+        this.isProcessingPayOS = false;
         alert("Không kết nối được PayOS!");
       }
     });
