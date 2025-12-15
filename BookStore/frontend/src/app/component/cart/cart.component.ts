@@ -80,7 +80,6 @@ export class CartComponent implements OnInit {
     this.cart$ = this.cartService.getCart();
     this.cart$.subscribe(cart => {
       this.cartData = cart ?? [];
-      this.originalTotal = this.calculateCartTotal();
       this.updateTotalWithCoupons();
     });
   }
@@ -139,63 +138,129 @@ export class CartComponent implements OnInit {
     );
   }
 
-  /** 📊 Tiến trình đạt minOrder */
-  getProgress(coupon: Coupon): number {
-    if (!coupon.minOrder) return 100;
-    const progress = Math.min((this.originalTotal / coupon.minOrder) * 100, 100);
-    return Math.round(progress);
+  getCouponActionLabel(coupon: Coupon): string {
+    return this.canApplyCoupon(coupon) ? 'Áp mã' : 'Mua thêm';
   }
 
-  /** ✅ Áp dụng mã */
-  applyCoupon(coupon: Coupon) {
-  // ✅ Kiểm tra category trước (nếu coupon có yêu cầu category)
-  if (coupon.categories && coupon.categories.length > 0) {
-    const hasCategory = this.cartData.some(item =>
-      coupon.categories!.includes(item.categoryName?._id ?? '')
-    );
-
-    if (!hasCategory) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Không áp dụng được',
-        detail: `Giỏ hàng không có sản phẩm thuộc danh mục yêu cầu để áp dụng mã.`,
-      });
-      return;
+  onCouponAction(coupon: Coupon) {
+    if (this.canApplyCoupon(coupon)) {
+      this.applyCoupon(coupon);
+    } else {
+      this.goShopping();
     }
   }
 
-  // ✅ Kiểm tra minOrder với hàm isCouponDisabled (chỉ tính các sản phẩm thuộc category)
-  if (this.isCouponDisabled(coupon)) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Không áp dụng được',
-      detail: 'Đơn hàng chưa đủ điều kiện để áp dụng mã này.',
-    });
-    return;
+  canApplyCoupon(coupon: Coupon): boolean {
+    if (this.selectedBooks.length === 0) return false;
+
+    const couponCategories = this.getCouponCategorySlugs(coupon);
+
+    const applicableTotal = this.selectedBooks
+      .filter(item => {
+        if (couponCategories.length === 0) return true;
+        return couponCategories.includes(this.getItemCategorySlug(item));
+      })
+      .reduce(
+        (sum, item) =>
+          sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+        0
+      );
+
+    if (coupon.minOrder && applicableTotal < coupon.minOrder) return false;
+
+    return applicableTotal > 0;
   }
 
-  // ✅ Chỉ cho phép 1 coupon giảm giá cùng lúc
-  if (this.appliedCoupons.length > 0) {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Chỉ áp dụng 1 mã giảm giá',
-      detail: 'Vui lòng xóa mã hiện tại trước khi áp mã mới.',
-    });
-    return;
+
+  goShopping() {
+    this.router.navigate(['/']);
   }
 
-  // ✅ Lưu coupon vào appliedCoupons
-  this.appliedCoupons.push(coupon);
-  localStorage.setItem('appliedCoupons', JSON.stringify(this.appliedCoupons));
-  this.updateTotalWithCoupons();
+  private getItemCategorySlug(item: any): string {
+    const c = item.categoryName;
 
-  this.messageService.add({
-    severity: 'success',
-    summary: 'Đã áp dụng',
-    detail: `Mã ${coupon.code} đã được áp dụng!`,
-  });
-}
+    if (!c) return '';
 
+    // Nếu backend trả string
+    if (typeof c === 'string') {
+      return c.toLowerCase();
+    }
+
+    // Nếu TS vẫn nghĩ là Category object
+    if (typeof c === 'object') {
+      return (c.slug || c.name || '').toLowerCase();
+    }
+
+    return '';
+  }
+
+
+  /** Tiến trình đạt minOrder */
+  getProgress(coupon: Coupon): number {
+    if (!coupon.minOrder) return 100;
+
+    const couponCategories = this.getCouponCategorySlugs(coupon);
+
+    const applicableItems = this.cartData.filter(item => {
+      if (couponCategories.length === 0) return true;
+      return couponCategories.includes(this.getItemCategorySlug(item));
+    });
+
+    const applicableTotal = applicableItems.reduce(
+      (sum, item) =>
+        sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+      0
+    );
+
+    return Math.min(
+      Math.round((applicableTotal / coupon.minOrder) * 100),
+      100
+    );
+  }
+
+
+  /** ✅ Áp dụng mã */
+  applyCoupon(coupon: Coupon) {
+    if (!this.canApplyCoupon(coupon)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Không thể áp mã',
+        detail: 'Vui lòng chọn sản phẩm phù hợp và đủ điều kiện.',
+      });
+      return;
+    }
+
+    if (this.appliedCoupons.length > 0) {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Chỉ áp dụng 1 mã',
+        detail: 'Vui lòng gỡ mã hiện tại trước khi áp mã mới.',
+      });
+      return;
+    }
+
+    this.appliedCoupons = [coupon];
+
+    // 🔥 đảm bảo pricing chạy theo selectedBooks
+    this.updateTotalWithCoupons();
+
+    // ✅ TOAST THÀNH CÔNG (giống logic cũ)
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Áp dụng thành công',
+      detail: `Mã ${coupon.code} đã được áp dụng.`,
+    });
+  }
+
+
+  private getCouponCategorySlugs(coupon: Coupon): string[] {
+    if (!coupon.categories || coupon.categories.length === 0) return [];
+
+    return coupon.categories.map(c =>
+      c.toLowerCase().trim()
+    );
+  }
+  
 
   /** ❌ Gỡ mã */
   removeAppliedCoupon(coupon: Coupon) {
@@ -205,42 +270,95 @@ export class CartComponent implements OnInit {
 
   /** 🚫 Check disable */
   isCouponDisabled(coupon: Coupon): boolean {
-    // Nếu coupon có categories -> chỉ tính tổng của những sản phẩm thuộc categories đó
-    const applicableItems = this.cartData.filter(item => {
-      if (!coupon.categories || coupon.categories.length === 0) return true; // áp dụng cho mọi sản phẩm
+  // Chưa chọn sản phẩm → không cho áp
+    if (this.selectedBooks.length === 0) return true;
 
-      // So sánh dựa vào tên category (hoặc slug, tùy bạn)
-      const itemCategoryName = item.categoryName?.name?.toLowerCase() ?? '';
-      return coupon.categories.some(c => c.toLowerCase() === itemCategoryName);
-    });
+    if (!coupon.minOrder) return false;
 
-    const applicableTotal = applicableItems.reduce(
-      (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+    const couponCategories = this.getCouponCategorySlugs(coupon);
+
+    const applicableTotal = this.selectedBooks
+      .filter(item => {
+        if (couponCategories.length === 0) return true;
+        return couponCategories.includes(this.getItemCategorySlug(item));
+      })
+      .reduce(
+        (sum, item) =>
+          sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+        0
+      );
+
+    return applicableTotal < coupon.minOrder;
+  }
+
+  get pricingItems(): BookDetails[] {
+    return this.selectedBooks;
+  }
+
+  get activeSubtotal(): number {
+    if (this.pricingItems.length === 0) return 0;
+
+    return this.pricingItems.reduce(
+      (sum, item) =>
+        sum + (item.flashsale_price || item.price) * (item.quantity || 1),
       0
     );
+  }
 
-    return coupon.minOrder ? applicableTotal < coupon.minOrder : false;
+  private getCouponApplicableTotal(coupon: Coupon): number {
+    const couponCategories = this.getCouponCategorySlugs(coupon);
+
+    return this.pricingItems
+      .filter(item => {
+        if (couponCategories.length === 0) return true;
+        return couponCategories.includes(this.getItemCategorySlug(item));
+      })
+      .reduce(
+        (sum, item) =>
+          sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+        0
+      );
   }
 
 
   /** 🔄 Update tổng tiền khi áp dụng mã */
   updateTotalWithCoupons() {
-    let total = this.originalTotal;
+  // 1️⃣ Không chọn gì
+    if (this.selectedBooks.length === 0) {
+      this.totalDiscount = 0;
+      this.totalPrice = 0;
+      return;
+    }
+
+    // 2️⃣ Luôn lấy tạm tính trước
+    const subtotal = this.activeSubtotal;
+
+    // 3️⃣ Nếu KHÔNG có coupon → tổng tiền = tạm tính
+    if (this.appliedCoupons.length === 0) {
+      this.totalDiscount = 0;
+      this.totalPrice = subtotal;
+      return;
+    }
+
+    // 4️⃣ Có coupon → tính giảm
     let discount = 0;
 
     for (const coupon of this.appliedCoupons) {
-      if (coupon.minOrder && total < coupon.minOrder) continue;
+      const applicableTotal = this.getCouponApplicableTotal(coupon);
+
+      if (coupon.minOrder && applicableTotal < coupon.minOrder) continue;
 
       if (coupon.type === 'percent') {
-        discount += (total * coupon.value) / 100;
-      } else if (coupon.type === 'amount') {
+        discount += (applicableTotal * coupon.value) / 100;
+      } else {
         discount += coupon.value;
       }
     }
 
     this.totalDiscount = discount;
-    this.totalPrice = Math.max(total - discount, 0);
+    this.totalPrice = Math.max(subtotal - discount, 0);
   }
+
 
   /** 🔼/🔽 Tăng giảm số lượng */
   increaseQuantity(book: BookDetails): void {
@@ -262,6 +380,10 @@ export class CartComponent implements OnInit {
   }
   deselectAll(): void {
     this.selectedBooks = [];
+  }
+
+  onSelectionChange() {
+    this.updateTotalWithCoupons();
   }
 
   /** 🧾 Chuyển sang thanh toán */

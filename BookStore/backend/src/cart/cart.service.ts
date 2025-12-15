@@ -9,20 +9,25 @@ export class CartService {
 
     // Lấy giỏ hàng của user
     async getUserCart(userId: string) {
-        const items = await this.cartModel.find({ user: userId })
+        const items = await this.cartModel
+            .find({ user: userId })
             .populate({
             path: 'product',
-            select: 'title price flashsale_price coverImage', // chỉ field cần
+            select: 'title price flashsale_price coverImage categoryName',
             })
             .lean();
 
         return items.map((it: any) => ({
             cartItemId: it._id,
             productId: it.product?._id,
-            ...it.product,
+            title: it.product?.title,
+            price: it.product?.price,
+            flashsale_price: it.product?.flashsale_price,
+            coverImage: it.product?.coverImage,
+            categoryName: it.product?.categoryName,
             quantity: it.quantity,
         }));
-        }
+    }
 
     // Thêm sản phẩm vào giỏ
     async addToCart(userId: string, productId: string) {

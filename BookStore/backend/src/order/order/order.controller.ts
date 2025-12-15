@@ -22,6 +22,11 @@ export class OrderController {
     return this.orderService.findAll(); // gọi tới service
   }
 
+  @Get('by-code/:orderCode')
+  async getByCode(@Param('orderCode') orderCode: string) {
+    return this.orderService.getOrderByCode(orderCode);
+  }
+
   @Patch(':orderId/confirm-payment')
   async confirmPayment(@Param('orderId') orderId: string) {
     const order = await this.orderService.findById(orderId);

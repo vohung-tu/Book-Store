@@ -78,12 +78,14 @@ export class OrderService {
     const saved = await newOrder.save();
 
     // 🔔 tạo thông báo đặt hàng
-    await this.notificationService.create({
-      userId: saved.userId.toString(),
-      type: 'order_created',
-      title: 'Đặt hàng thành công',
-      message: `Đơn hàng ${saved.code} đã được tạo.`,
-    });
+    if (paymentMethod !== 'payos') {
+      await this.notificationService.create({
+        userId: saved.userId.toString(),
+        type: 'order_created',
+        title: 'Đặt hàng thành công',
+        message: `Đơn hàng ${saved.code} đã được tạo.`,
+      });
+    }
 
     return saved;
   }

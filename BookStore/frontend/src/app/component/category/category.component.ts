@@ -7,6 +7,8 @@ import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 import { ProductItemComponent } from '../product-item/product-item.component';
 import { CategoryService } from '../../service/category.service';
 import { combineLatest } from 'rxjs';
+import { MessageService } from 'primeng/api';
+import { Toast } from 'primeng/toast';
 // import { MegaMenuItem, MenuItem } from 'primeng/api';
 // import { MegaMenu } from 'primeng/megamenu'; 
 
@@ -19,9 +21,11 @@ import { combineLatest } from 'rxjs';
     BreadcrumbComponent,
     ProductItemComponent,
     // MegaMenu
+    Toast
   ],
   templateUrl: './category.component.html',
-  styleUrls: ['./category.component.scss']
+  styleUrls: ['./category.component.scss'],
+  providers: [MessageService]
 })
 export class CategoryComponent implements OnInit {
   @Input() product!: BookDetails;
@@ -44,7 +48,8 @@ export class CategoryComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private bookService: BooksService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private messageService: MessageService
   ) {}
 
   ngOnInit(): void {
@@ -97,6 +102,15 @@ export class CategoryComponent implements OnInit {
       }
     }
     return null;
+  }
+
+  handleToast(event: { severity: string; summary: string; detail: string }) {
+    this.messageService.add({
+      severity: event.severity || 'success',
+      summary: event.summary || 'Thành công',
+      detail: event.detail || 'Thao tác đã hoàn tất',
+      key: 'tr',
+    });
   }
 
   loadProductsByCategory(slug: string) {

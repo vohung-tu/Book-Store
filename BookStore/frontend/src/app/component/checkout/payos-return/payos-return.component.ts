@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-payos-return',
   standalone: true,
   imports: [
-    CommonModule
+    CommonModule,
+    RouterModule
   ],
   templateUrl: './payos-return.component.html',
   styleUrls: ['./payos-return.component.scss']
@@ -14,7 +15,8 @@ import { ActivatedRoute } from '@angular/router';
 export class payOSReturnComponent implements OnInit {
   orderCode?: string;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute,
+    private router: Router) {}
 
   ngOnInit() {
     this.orderCode = this.route.snapshot.queryParamMap.get('orderCode') ?? '';

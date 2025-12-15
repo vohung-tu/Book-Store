@@ -576,13 +576,40 @@
 .book-summary {
   margin-top: 20px;
 
-  .summary-btn {
-    background-color: #f5f5f5;
-    color: #333;
-    border: 1px solid #ddd;
-    &:hover {
-      background-color: #eee;
-    }
+  .ai-summary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+
+    padding: 10px 16px;
+    border-radius: 999px; /* bo tròn pill */
+    box-shadow: 0 6px 16px rgba(37, 117, 252, 0.35);
+
+    transition: all 0.3s ease;
+  }
+
+  .ai-summary-btn .pi {
+    font-size: 16px;
+  }
+
+  .ai-summary-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 24px rgba(37, 117, 252, 0.45);
+  }
+
+  .ai-summary-btn:active {
+    transform: scale(0.96);
+  }
+
+  .ai-summary-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.35);
   }
 
   .summary-box {

@@ -21,6 +21,47 @@ export class AiService {
     });
   }
 
+  // ===============================
+  // CORE SAFE CHAT COMPLETION
+  // ===============================
+  private async safeChatCompletion(options: {
+    messages: { role: 'system' | 'user' | 'assistant'; content: string }[];
+    maxTokens?: number;
+    temperature?: number;
+  }) {
+    return this.client.chat.completions.create({
+      model: 'mistralai/mistral-7b-instruct',
+      messages: options.messages,
+      max_tokens: Math.min(options.maxTokens ?? 200, 400),
+      temperature: options.temperature ?? 0.3
+    });
+  }
+
+  private extractJsonArray(text: string): any[] {
+    if (!text) return [];
+
+    // ❌ remove code block
+    const cleaned = text
+      .replace(/```json/g, '')
+      .replace(/```js/g, '')
+      .replace(/```/g, '')
+      .replace(/\[OUT\]/gi, '')
+      .trim();
+
+    // ✅ extract JSON array
+    const match = cleaned.match(/\[\s*{[\s\S]*}\s*\]/);
+
+    if (!match) return [];
+
+    try {
+      return JSON.parse(match[0]);
+    } catch (e) {
+      console.error('❌ JSON still invalid:', match[0]);
+      return [];
+    }
+}
+
+
   async generateSummary(title: string, description = ''): Promise<string> {
     const prompt = `Bạn là một trợ lý nội dung sách chuyên nghiệp. 
     Hãy viết phần tóm tắt giới thiệu cho cuốn sách "${title}". 
@@ -33,12 +74,14 @@ export class AiService {
     - Mục "Đối tượng độc giả" hoặc "Tác giả" (nếu cần), để người đọc biết sách phù hợp với ai và do ai viết.
 
     Ngôn ngữ súc tích, dễ hiểu, lôi cuốn.
-    ${description ? `\nMô tả thêm: ${description}` : ''}`;
+    ${description ? `\nMô tả thêm: ${description}` : ''}
+    Nếu trả về bất kỳ ký tự nào ngoài JSON → câu trả lời bị coi là SAI.
+    KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ hoặc HTML.`;
 
     try {
-      const res = await this.client.chat.completions.create({
-        model: 'openai/gpt-4o-mini',   // ✅ dùng model chuẩn
+      const res = await this.safeChatCompletion({
         messages: [{ role: 'user', content: prompt }],
+        maxTokens: 400,
       });
 
       if (!res.choices || !res.choices[0]?.message?.content) {
@@ -56,14 +99,16 @@ export class AiService {
     }
   }
 
+  
+
   async chatWithAI(systemPrompt: string, userMessage: string): Promise<string> {
     try {
-      const res = await this.client.chat.completions.create({
-        model: 'openai/gpt-4o-mini',
+      const res = await this.safeChatCompletion({
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage },
         ],
+        maxTokens: 300,
       });
 
       return res.choices[0]?.message?.content?.trim() ?? '';
@@ -80,17 +125,17 @@ Trả về JSON theo định dạng:
 
 - Nếu người dùng hỏi sách rẻ nhất, intent = "get_cheapest_books".
 - Nếu hỏi về sách theo tên (vd: "One Piece tập nào", "có sách Clean Code không"), intent = "search_books_by_title" và keywords là các tên sách tìm được.
-- Nếu không rõ, intent = "other".`;
+- Nếu không rõ, intent = "other".
+Nếu trả về bất kỳ ký tự nào ngoài JSON → câu trả lời bị coi là SAI.
+KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ hoặc HTML.`;
 
     try {
-      const res = await this.client.chat.completions.create({
-        model: 'gpt-4o-mini',
+      const res = await this.safeChatCompletion({
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message },
         ],
-        response_format: { type: 'json_object' },
-        temperature: 0,
+        maxTokens: 150,
       });
 
       return JSON.parse(res.choices[0].message?.content || '{}');
@@ -112,11 +157,13 @@ Trả về JSON theo định dạng:
       ...
     ]
     Trả về CHỈ JSON, KHÔNG viết chú thích, không giải thích.
+    Nếu trả về bất kỳ ký tự nào ngoài JSON → câu trả lời bị coi là SAI.
+    KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ hoặc HTML.
     `;
 
-    const res = await this.client.chat.completions.create({
-      model: 'gpt-4o-mini',
+    const res = await this.safeChatCompletion({
       messages: [{ role: 'user', content: prompt }],
+      maxTokens: 300,
     });
 
     // ⚙️ Xử lý kết quả an toàn
@@ -129,32 +176,37 @@ Trả về JSON theo định dạng:
 
       const data = JSON.parse(cleanJson);
       return Array.isArray(data) ? data : [];
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.error?.code === 402) {
+        console.warn('⚠️ OpenRouter hết credit / token');
+        return [];
+      }
+
       console.error('❌ Lỗi parse JSON AI response:', error);
       return [];
     }
   }
 
-  async getJsonResponse(prompt: string, model = 'gpt-4o-mini'): Promise<any[]> {
+  async getJsonResponse(prompt: string): Promise<any[]> {
     try {
-      const res = await this.client.chat.completions.create({
-        model,
+      const res = await this.safeChatCompletion({
         messages: [{ role: 'user', content: prompt }],
+        maxTokens: 250,
       });
 
       const content = res.choices?.[0]?.message?.content ?? '';
+      return this.extractJsonArray(content);
+    } catch (error: any) {
+      if (error?.error?.code === 402) {
+        console.warn('⚠️ OpenRouter hết credit / token');
+        return [];
+      }
 
-      // Tìm phần JSON trong chuỗi nếu AI trả thêm mô tả như “Dưới đây là...”
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
-      const cleanJson = jsonMatch ? jsonMatch[0] : '[]';
-
-      const data = JSON.parse(cleanJson);
-      return Array.isArray(data) ? data : [];
-    } catch (error) {
       console.error('❌ Lỗi parse JSON AI response:', error);
       return [];
     }
   }
+
 
   // Tạo embedding cho nội dung (title + description)
 
@@ -202,26 +254,53 @@ Trả về JSON theo định dạng:
 
   // hàm dựng prompt Ai để recommend nếu chưa có Embedding (fallback sang AI text machine)
 
-  async recommendByAI(title: string, description: string, allBooks: any[]) {
+  // hàm dựng prompt AI để recommend nếu chưa có Embedding
+  // ⚠️ chỉ dùng khi KHÔNG có embedding (fallback)
+
+  async recommendByAI(
+    title: string,
+    description: string,
+    allBooks: any[],
+  ) {
+    // 🔥 1. GIỚI HẠN SỐ SÁCH ĐƯA CHO AI (RẤT QUAN TRỌNG)
+    const limitedBooks = allBooks
+      .filter(b => b.title && b._id) // an toàn
+      .slice(0, 20); // ✅ chỉ lấy 20 sách
+
+    // 🔥 2. PROMPT NGẮN – RÕ – TRẢ JSON
     const prompt = `
-      Dựa trên mô tả cuốn sách sau, hãy gợi ý những cuốn sách khác trong danh sách có nội dung tương tự:
+  Bạn là hệ thống gợi ý sách cho website bán sách.
 
-      Sách cần so sánh:
-      Tiêu đề: ${title}
-      Mô tả: ${description}
+  Dựa trên cuốn sách sau, hãy chọn ra tối đa 5 cuốn sách trong danh sách có nội dung tương tự nhất.
 
-      Danh sách toàn bộ sách (id + tiêu đề + mô tả):
-      ${allBooks.map(b => `- id: ${b._id}, title: ${b.title}, desc: ${b.description || ''}`).join("\n")}
+  Sách đang xem:
+  - Tiêu đề: ${title}
+  - Mô tả: ${description}
 
-      Chỉ trả về JSON hợp lệ dạng:
-      [
-        { "_id": "mongoId", "title": "Tiêu đề sách" },
-        ...
-      ]
-      Tối đa 5 sách liên quan.
-    `;
+  Danh sách sách để so sánh:
+  ${limitedBooks
+    .map(
+      b =>
+        `- id: ${b._id}, title: ${b.title}, desc: ${b.description || 'Không có mô tả'}`
+    )
+    .join('\n')}
 
+  ⚠️ YÊU CẦU BẮT BUỘC:
+  - Chỉ trả về JSON hợp lệ
+  - KHÔNG giải thích
+  - KHÔNG thêm text ngoài JSON
+
+  Định dạng JSON:
+  [
+    { "_id": "mongoId", "title": "Tên sách" }
+  ]
+  Nếu trả về bất kỳ ký tự nào ngoài JSON → câu trả lời bị coi là SAI.
+  KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ hoặc HTML.`;
+
+    // 🔥 3. GỌI AI VỚI MAX TOKENS NHỎ
     const results = await this.getJsonResponse(prompt);
+
     return Array.isArray(results) ? results : [];
   }
+
 }

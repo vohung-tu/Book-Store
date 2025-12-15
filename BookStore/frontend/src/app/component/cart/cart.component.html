@@ -24,7 +24,9 @@
         [rows]="5"
         [rowsPerPageOptions]="[5, 10, 20]"
         [(selection)]="selectedBooks"
-        dataKey="_id"
+        dataKey="cartItemId"
+        selectionMode="multiple"
+        (selectionChange)="onSelectionChange()"
       >
         <ng-template pTemplate="header">
           <tr>
@@ -83,9 +85,12 @@
             </div>
           </div>
 
-          <button class="btn-apply" [disabled]="isCouponDisabled(c)" (click)="applyCoupon(c)">
-            {{ isCouponDisabled(c) ? 'Mua thêm' : 'Áp mã' }}
+          <button
+            class="btn-apply"
+            (click)="onCouponAction(c)">
+            {{ getCouponActionLabel(c) }}
           </button>
+
         </div>
 
         <div class="applied-coupons" *ngIf="appliedCoupons.length > 0">
@@ -100,7 +105,7 @@
       <div class="cart-summary" *ngIf="cartData.length > 0">
         <div class="price-now">
           <h3>Tạm tính:</h3>
-          <span>{{ originalTotal | dotSeparator }} đ</span>
+          <span>{{ activeSubtotal | dotSeparator }} đ</span>
         </div>
 
         <div class="discount" *ngIf="totalDiscount > 0">
@@ -112,7 +117,7 @@
 
         <div class="price-final">
           <h3>Tổng tiền:</h3>
-          <span>{{ totalPrice | dotSeparator }} đ</span>
+          <span>{{ (selectedBooks.length ? totalPrice : 0) | dotSeparator }} đ</span>
         </div>
 
         <p-button class="pay-btn" severity="success" label="THANH TOÁN" (click)="goToCheckout()"></p-button>

@@ -1,3 +1,4 @@
+<p-toast key="tr" position="top-right"></p-toast>
 <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
 <h2 class="category__title">Sản phẩm thuộc danh mục: {{ displayName }}</h2>
 
@@ -68,6 +69,7 @@
       <app-product-item
         *ngFor="let product of (filteredProducts.length > 0 ? filteredProducts : (!selectedPrice && !selectedAuthor ? products : []))"
         [book]="product"
+        (showToast)="handleToast($event)"
       ></app-product-item>
     </div>
 
