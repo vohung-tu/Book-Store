@@ -44,8 +44,8 @@ export interface CreateImportDto {
 }
 export interface CreateExportDto {
   date: string; 
-  receiverName?: 
-  string; reason?: string; 
+  receiverName?: string;
+  reason?: string; 
   lines: Array<{ bookId: string; quantity: number; unitPrice?: number }>; 
   userId?: string;
 }

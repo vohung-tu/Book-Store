@@ -51,20 +51,34 @@ export class OrderService {
       throw new BadRequestException('Danh sách sản phẩm không hợp lệ!');
     }
 
-    const paymentMethod = createOrderDto.paymentMethod ?? createOrderDto.payment;
+    const paymentMethod =
+      createOrderDto.paymentMethod ?? createOrderDto.payment;
 
-    const preparedProducts = createOrderDto.products.map((p: any) => {
-      const bookId = p.book || p._id || p.id || p.bookId;
-      if (!bookId) throw new BadRequestException('Thiếu ID sách trong sản phẩm!');
-      return {
-        book: new Types.ObjectId(bookId),
-        title: p.title,
-        price: p.price,
-        flashsale_price: p.flashsale_price ?? p.price,
-        quantity: p.quantity,
-        coverImage: p.coverImage,
-      };
-    });
+    const preparedProducts = createOrderDto.products.map(
+      (p: any, index: number) => {
+
+        // ✅ LẤY BOOK ID AN TOÀN
+        const bookId =
+          typeof p.book === 'object' && p.book?._id
+            ? p.book._id
+            : p.book || p.bookId || p._id || p.id;
+
+        if (!bookId) {
+          throw new BadRequestException(
+            `Thiếu ID sách trong sản phẩm (index ${index})`
+          );
+        }
+
+        return {
+          book: new Types.ObjectId(bookId),
+          title: p.title,
+          price: p.price,
+          flashsale_price: p.flashsale_price ?? p.price,
+          quantity: p.quantity ?? 1,
+          coverImage: p.coverImage,
+        };
+      }
+    );
 
     const code = 'DH' + Date.now();
 
@@ -72,12 +86,11 @@ export class OrderService {
       ...createOrderDto,
       products: preparedProducts,
       code,
-      status: paymentMethod === 'payos' ? 'pending' : 'created',
+      status: paymentMethod === 'payos' ? 'pending' : 'processing',
     });
 
     const saved = await newOrder.save();
 
-    // 🔔 tạo thông báo đặt hàng
     if (paymentMethod !== 'payos') {
       await this.notificationService.create({
         userId: saved.userId.toString(),

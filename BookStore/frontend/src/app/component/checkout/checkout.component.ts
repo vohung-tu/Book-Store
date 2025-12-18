@@ -30,6 +30,8 @@ import { Dialog, DialogModule } from 'primeng/dialog';
 import QRCode from 'qrcode';
 import { Coupon } from '../../model/coupon.model';
 import { PayOSCreatePaymentApiResponse, PayOSCreatePaymentRes, PayOSPaymentService } from '../../service/payos-payment.service';
+import { Observable } from 'rxjs';
+import { CartItem } from '../../model/cart.model';
 export interface DiscountCode {
   code: string;
   minOrderAmount?: number;
@@ -67,7 +69,8 @@ export interface DiscountCode {
 })
 export class CheckoutComponent implements OnInit {
   selectedBranch: any = null;
-  selectedBooks: BookDetails[] = [];
+  // cart$: Observable<CartItem[]>;
+  selectedBooks: CartItem[] = [];
   totalAmount: number = 0;
   discountedAmount: number = 0;
   totalDiscount: number = 0;
@@ -300,18 +303,28 @@ export class CheckoutComponent implements OnInit {
     if (!this.selectedBooks || this.selectedBooks.length === 0) {
       alert('Giỏ hàng trống!');
       return;
-    }
+    }   
+    
+    console.log(
+      '🛒 selectedBooks raw:',
+      this.selectedBooks
+    );
+
+    console.log(
+      '🧪 book ids:',
+      this.selectedBooks.map(b => b._id)
+    );
 
     const orderData = {
       userId: this.userInfo._id,
       storeBranchId: this.orderInfo.storeBranch?._id || null,
-      products: this.selectedBooks.map(book => ({
-        bookId: book._id || book.id,
-        quantity: book.quantity,
-        title: book.title,
-        price: book.price,
-        flashsale_price: book.flashsale_price,
-        coverImage: book.coverImage,
+      products: this.selectedBooks.map(item => ({
+        book: item.productId,
+        quantity: item.quantity,
+        title: item.title,
+        price: item.price,
+        flashsale_price: item.flashsale_price,
+        coverImage: item.coverImage,
         storeBranchId: this.orderInfo.storeBranch?._id || null
       })),
       name: this.orderInfo.name,

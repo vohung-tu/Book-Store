@@ -30,7 +30,7 @@ export class AiService {
     temperature?: number;
   }) {
     return this.client.chat.completions.create({
-      model: 'mistralai/mistral-7b-instruct',
+      model: 'mistralai/mistral-7b-instruct', 
       messages: options.messages,
       max_tokens: Math.min(options.maxTokens ?? 200, 400),
       temperature: options.temperature ?? 0.3
@@ -63,25 +63,31 @@ export class AiService {
 
 
   async generateSummary(title: string, description = ''): Promise<string> {
-    const prompt = `Bạn là một trợ lý nội dung sách chuyên nghiệp. 
-    Hãy viết phần tóm tắt giới thiệu cho cuốn sách "${title}". 
-    Trình bày theo phong cách bìa sau sách, bao gồm:
+    const prompt = `
+      Viết tóm tắt giới thiệu cho sách "${title}" theo phong cách bìa sau.
 
-    - Một đoạn mở đầu hấp dẫn, gợi ý lý do nên đọc.
-    - Mục "Nội dung": mô tả ngắn gọn chủ đề và hành trình chính của cuốn sách.
-    - Các ý quan trọng được liệt kê rõ ràng dưới dạng bullet point.
-    - Mục "Điểm nổi bật" hoặc "Vì sao nên đọc": nêu giá trị, lợi ích, điều độc giả nhận được.
-    - Mục "Đối tượng độc giả" hoặc "Tác giả" (nếu cần), để người đọc biết sách phù hợp với ai và do ai viết.
+      Yêu cầu:
+      - 1 đoạn mở đầu ngắn, hấp dẫn
+      - Nội dung chính (2–3 câu)
+      - 3 ý nổi bật
+      - Đối tượng độc giả phù hợp
 
-    Ngôn ngữ súc tích, dễ hiểu, lôi cuốn.
-    ${description ? `\nMô tả thêm: ${description}` : ''}
-    Nếu trả về bất kỳ ký tự nào ngoài JSON → câu trả lời bị coi là SAI.
-    KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ hoặc HTML.`;
+      Trả về JSON đúng format:
+      {
+        "intro": "",
+        "content": "",
+        "highlights": ["", "", ""],
+        "audience": ""
+      }
+
+      Không markdown, không ký hiệu đặc biệt.
+      ${description ? `Mô tả thêm: ${description}` : ''}
+      `;
 
     try {
       const res = await this.safeChatCompletion({
         messages: [{ role: 'user', content: prompt }],
-        maxTokens: 400,
+        maxTokens: 120,
       });
 
       if (!res.choices || !res.choices[0]?.message?.content) {
@@ -98,8 +104,6 @@ export class AiService {
       throw new Error('AI summary generation failed');
     }
   }
-
-  
 
   async chatWithAI(systemPrompt: string, userMessage: string): Promise<string> {
     try {
