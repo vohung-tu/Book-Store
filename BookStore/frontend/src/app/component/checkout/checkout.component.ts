@@ -306,7 +306,7 @@ export class CheckoutComponent implements OnInit {
       userId: this.userInfo._id,
       storeBranchId: this.orderInfo.storeBranch?._id || null,
       products: this.selectedBooks.map(book => ({
-        book: book._id,
+        bookId: book._id || book.id,
         quantity: book.quantity,
         title: book.title,
         price: book.price,
