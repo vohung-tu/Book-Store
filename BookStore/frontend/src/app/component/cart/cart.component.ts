@@ -404,10 +404,10 @@ export class CartComponent implements OnInit {
     }
 
     localStorage.setItem('cart', JSON.stringify(this.selectedBooks));
+    localStorage.setItem('appliedCoupons', JSON.stringify(this.appliedCoupons));
     localStorage.setItem('totalAmount', JSON.stringify(this.totalPrice));
+    localStorage.setItem('totalDiscount', JSON.stringify(this.totalDiscount));
 
-    this.router.navigate(['/checkout'], {
-      state: { cart: this.selectedBooks, total: this.totalPrice }
-    });
+    this.router.navigate(['/checkout']);
   }
 }

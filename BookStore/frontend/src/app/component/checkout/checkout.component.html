@@ -214,7 +214,7 @@
     <div class="price-summary">
       <div class="line">
         <strong>Tạm tính:</strong>
-        <p>{{ totalAmount | dotSeparator }} đ</p>
+        <p>{{ subtotalAmount  | dotSeparator }} đ</p>
       </div>
 
       <div class="line discount" *ngIf="totalDiscount > 0">
@@ -231,7 +231,9 @@
 
       <div class="line total">
         <strong>Tổng thanh toán:</strong>
-        <p class="final-price">{{ (discountedAmount + shippingFee) | dotSeparator }} đ</p>
+        <p class="final-price">
+          {{ finalPayAmount | dotSeparator }} đ
+        </p>
       </div>
 
       <button

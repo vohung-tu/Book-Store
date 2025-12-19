@@ -74,6 +74,8 @@ export class CheckoutComponent implements OnInit {
   totalAmount: number = 0;
   discountedAmount: number = 0;
   totalDiscount: number = 0;
+  subtotalAmount = 0;   // tổng gốc
+  finalAmount = 0;
 
   userInfo: User | null = null;
   addresses: Address[] = [];
@@ -180,18 +182,24 @@ export class CheckoutComponent implements OnInit {
     this.selectedBooks = savedCart ? JSON.parse(savedCart) : [];
   
     // Tính tổng số tiền
-    this.totalAmount = this.selectedBooks.reduce(
-      (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
+    this.subtotalAmount = this.selectedBooks.reduce((sum, item) => {
+      const price = item.flashsale_price || item.price;
+      const qty = item.quantity || 1;
+      return sum + price * qty;
+    }, 0);
+
+    // discount đã lấy từ localStorage
+    this.finalAmount = Math.max(
+      this.subtotalAmount - this.totalDiscount,
       0
     );
-    this.discountedAmount = this.totalAmount;
+    this.totalDiscount = JSON.parse(
+      localStorage.getItem('totalDiscount') || '0'
+    );
 
      // ✅ Lấy các mã đã applied từ localStorage
     const savedCoupons = localStorage.getItem('appliedCoupons');
-    this.appliedCoupons = savedCoupons ? JSON.parse(savedCoupons) : [];
-
-    this.updateTotalWithCoupons();
-    
+    this.appliedCoupons = savedCoupons ? JSON.parse(savedCoupons) : [];    
     this.http.get<City[]>('/assets/json/vietnamAddress.json').subscribe((data) => {
       this.vietnamAddresses = data;
       this.cities = data; // Lấy danh sách tỉnh/thành phố
@@ -260,27 +268,16 @@ export class CheckoutComponent implements OnInit {
     );
   }
 
-  updateTotalWithCoupons() {
-    this.totalDiscount = 0;
-    this.discountedAmount = this.totalAmount;
-
-    this.appliedCoupons.forEach(c => {
-      let discount = 0;
-      if (c.type === 'percent') {
-        discount = this.totalAmount * (c.value / 100);
-      } else if (c.type === 'amount') {
-        discount = c.value;
-      }
-      this.totalDiscount += discount;
-    });
-
-    this.discountedAmount = Math.max(this.totalAmount - this.totalDiscount, 0);
+  get finalPayAmount(): number {
+    return Math.max(
+      this.subtotalAmount - this.totalDiscount + this.shippingFee,
+      0
+    );
   }
 
   removeCoupon(coupon: Coupon) {
     this.appliedCoupons = this.appliedCoupons.filter(c => c.code !== coupon.code);
     localStorage.setItem('appliedCoupons', JSON.stringify(this.appliedCoupons));
-    this.updateTotalWithCoupons();
   }
 
   onCityChange(): void {
@@ -331,7 +328,13 @@ export class CheckoutComponent implements OnInit {
       email: this.orderInfo.email,
       phone: this.orderInfo.phone,
       address: this.orderInfo.address,
-      total: this.totalAmount,
+      total: this.finalAmount + this.shippingFee,
+      discount: this.totalDiscount,
+      coupons: this.appliedCoupons.map(c => ({
+        code: c.code,
+        type: c.type,
+        value: c.value
+      })),
       orderDate: new Date(),
       paymentMethod: this.orderInfo.payment,
       note: this.orderInfo.note
@@ -362,7 +365,9 @@ export class CheckoutComponent implements OnInit {
   }
 
   payWithPayOS() {
-    const payableAmount = this.discountedAmount + this.shippingFee;
+    const payableAmount =
+      Math.max(this.subtotalAmount - this.totalDiscount, 0)
+      + this.shippingFee;
     this.isProcessingPayOS = true;
 
     this.payosService.createPayment({
