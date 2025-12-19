@@ -42,14 +42,14 @@ export class UserOrderComponent implements OnInit, OnDestroy {
   product$: Observable<Product[]>;
   orders: Order[] = [];
   filteredOrders: Order[] = [];
-  selectedTab: string = ''; 
+  selectedTab: string = 'all'; 
   isOrdersLoaded = false; // Kiểm soát việc gọi API nhiều lần
   discountedAmount: number = 0;
   selectedBooks: BookDetails[] = [];
   totalAmount: number = 0;
 
   tabs = [
-    { value: '', title: 'Tất cả', content: 'Tất cả đơn hàng' },
+    { value: 'all', title: 'Tất cả', content: 'Tất cả đơn hàng' },
     { value: 'pending', title: 'Chờ thanh toán', content: 'Đơn hàng chờ thanh toán' },
     { value: 'processing', title: 'Đang xử lý', content: 'Đơn hàng đang xử lý' },
     { value: 'shipping', title: 'Đang giao', content: 'Đơn hàng đang được vận chuyển' },
@@ -104,20 +104,16 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     this.product$ = this.orderService.getOrders().pipe(
       map(orders => orders.flatMap(order => order.products))
     );
-    this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
-        this.selectedTab = ''; // reset về tab mặc định
-        this.filterOrdersByTab(); // lọc lại nếu cần
-      }
-    });
   }
 
   ngOnInit(): void {
-    this.selectedTab = '';
+    this.selectedTab = this.tabs[0].value; // 'all' ✅
+    this.filterOrdersByTab();
+
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', this.storageEventListener);
     }
-    // Chỉ gọi API 1 lần
+
     this.loadUserOrders();
   }
 
@@ -130,6 +126,10 @@ export class UserOrderComponent implements OnInit, OnDestroy {
       (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
       0
     );
+  }
+
+  ngDoCheck(): void {
+    this.filterOrdersByTab();
   }
 
   // Hàm reload (có thể được gọi qua sự kiện storage) sẽ bỏ qua kiểm tra isOrdersLoaded
@@ -173,11 +173,11 @@ export class UserOrderComponent implements OnInit, OnDestroy {
   }
 
   // Khi chọn tab, cập nhật selectedTab (sử dụng lowercase để so sánh)
-  selectTab(tabValue: string): void {
-    this.selectedTab = tabValue.toLowerCase();
-    console.log('Selected Tab:', this.selectedTab);
-    this.filterOrdersByTab();
-  }
+  // selectTab(tabValue: string): void {
+  //   this.selectedTab = tabValue.toLowerCase();
+  //   console.log('Selected Tab:', this.selectedTab);
+  //   this.filterOrdersByTab();
+  // }
 
   openCancelDialog(orderId: string) {
     this.selectedOrderIdToCancel = orderId;
@@ -193,13 +193,23 @@ export class UserOrderComponent implements OnInit, OnDestroy {
   }
 
   getOrdersByStatus(status: string): Order[] {
-    if (!status) return this.orders;
-    return this.orders.filter(order => order.status?.toLowerCase() === status.toLowerCase());
+    if (!status || status === 'all') {
+      return this.orders;
+    }
+    return this.orders.filter(
+      order => order.status?.toLowerCase() === status.toLowerCase()
+    );
   }
 
   // Lọc đơn hàng theo selectedTab
   filterOrdersByTab(): void {
-    this.filteredOrders = this.getOrdersByStatus(this.selectedTab);
+    if (this.selectedTab === 'all') {
+      this.filteredOrders = this.orders;
+    } else {
+      this.filteredOrders = this.orders.filter(
+        o => o.status?.toLowerCase() === this.selectedTab
+      );
+    }
   }
 
   calculateDiscount(order: Order): number {
@@ -225,9 +235,13 @@ export class UserOrderComponent implements OnInit, OnDestroy {
   
   // Tính số đơn theo trạng thái (sử dụng lowercase để so sánh)
   getOrderCountByStatus(status: string): number {
-    return status 
-      ? this.orders.filter(order => order.status.toLowerCase() === status.toLowerCase()).length 
-      : this.orders.length;
+    if (!status || status === 'all') {
+      return this.orders.length;
+    }
+
+    return this.orders.filter(
+      order => order.status?.toLowerCase() === status.toLowerCase()
+    ).length;
   }
 
   confirmCancelOrder() {

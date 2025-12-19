@@ -1,8 +1,8 @@
 <p-toast></p-toast>
-<p-tabs [(value)]="selectedTab">
+<p-tabs [(value)]="selectedTab" lazy>
   <p-tablist>
     <!-- Mỗi tab gọi selectTab (không gọi thêm filterOrdersByTab ở đây) -->
-    <p-tab *ngFor="let tab of tabs; trackBy: trackByValue" (click)="selectTab(tab.value)">
+    <p-tab *ngFor="let tab of tabs; trackBy: trackByValue" [value]="tab.value">
       {{ tab.title }} ({{ getOrderCountByStatus(tab.value) }})
     </p-tab>
   </p-tablist>
@@ -10,7 +10,7 @@
   <p-tabpanels> 
     <!-- thư viện của primeng hỗ trợ -->
     <!-- Duyệt qua mảng tabs, nhưng chỉ panel nào ứng với selectedTab mới render nội dung -->
-    <p-tabpanel *ngFor="let tab of tabs; trackBy: trackByValue" >
+    <p-tabpanel *ngFor="let tab of tabs; trackBy: trackByValue" [value]="tab.value">
       <ng-container *ngIf="selectedTab === tab.value">
         <h3>{{ tab.content }}</h3>
         <div>

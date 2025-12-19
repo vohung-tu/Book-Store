@@ -36,6 +36,7 @@ import { StoreBranchComponent } from './admin/store-branch/store-branch.componen
 import { StoreTransferComponent } from './admin/store-transfer/store-transfer.component';
 import { payOSReturnComponent } from './component/checkout/payos-return/payos-return.component';
 import { PaymentSuccessComponent } from './component/checkout/payos-success/payos-success.component';
+import { NotificationListComponent } from './component/user-info/user-notification/notification-list.component';
 
 const routes: Routes = [
   {
@@ -76,7 +77,8 @@ const routes: Routes = [
       { path: 'address-book', component: AddressBookComponent },
       { path: 'user-order', component: UserOrderComponent },
       { path: 'reset-pass', component: ResetPasswordComponent},
-      { path: 'user-loyalty', component: UserLoyaltyComponent}
+      { path: 'user-loyalty', component: UserLoyaltyComponent},
+      { path: 'notification', component: NotificationListComponent}
     ]
   },
   {

@@ -86,7 +86,7 @@ export class OrderService {
       ...createOrderDto,
       products: preparedProducts,
       code,
-      status: paymentMethod === 'payos' ? 'pending' : 'processing',
+      status: paymentMethod === 'payos' ? 'pending_payment' : 'processing',
     });
 
     const saved = await newOrder.save();
@@ -235,42 +235,132 @@ export class OrderService {
     return this.orderModel.findByIdAndUpdate(order._id, { status }, { new: true });
   }
 
-  async createOrderFromPayOS(payosData: any) {
-    const orderCode = payosData.orderCode;
+  // async createOrderFromPayOS(payosData: any) {
+  //   const orderCode = payosData.orderCode;
 
-    // Tránh tạo trùng đơn
-    const existed = await this.orderModel.findOne({ payosOrderCode: orderCode });
-    if (existed) {
-      console.log("⚠ Đã tồn tại đơn PayOS:", orderCode);
-      return existed;
+  //   // Tránh tạo trùng đơn
+  //   const existed = await this.orderModel.findOne({ payosOrderCode: orderCode });
+  //   if (existed) {
+  //     console.log("⚠ Đã tồn tại đơn PayOS:", orderCode);
+  //     return existed;
+  //   }
+
+  //   const newOrder = new this.orderModel({
+  //     userId: payosData.extraData?.userId ?? null,
+  //     products: payosData.items.map((item) => ({
+  //       book: item.productId,
+  //       title: item.name,
+  //       quantity: item.quantity,
+  //       price: item.price,
+  //     })),
+  //     total: payosData.amount,
+  //     paymentMethod: "payos",
+  //     paymentStatus: "paid",
+  //     status: "processing",
+  //     payosOrderCode: orderCode,
+  //   });
+
+  //   const saved = await newOrder.save();
+
+  //   await this.notificationService.create({
+  //     userId: saved.userId.toString(),
+  //     type: 'order_created',
+  //     title: 'Thanh toán thành công',
+  //     message: `Đơn hàng ${saved.code ?? saved._id} đã thanh toán thành công.`,
+  //   });
+
+  //   console.log("Đã tạo đơn hàng PayOS:", saved._id);
+  //   return saved;
+  // }
+
+  async markOrderPaidByPayOS(data: any) {
+    const order = await this.orderModel.findOne({
+      payosOrderCode: data.orderCode,
+    });
+
+    if (!order) {
+      console.warn("❌ Không tìm thấy order PayOS:", data.orderCode);
+      return;
     }
 
-    const newOrder = new this.orderModel({
-      userId: payosData.extraData?.userId ?? null,
-      products: payosData.items.map((item) => ({
-        book: item.productId,
-        title: item.name,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      total: payosData.amount,
-      paymentMethod: "payos",
-      paymentStatus: "paid",
-      status: "processing",
-      payosOrderCode: orderCode,
+    // ✅ Chống webhook gọi nhiều lần
+    if (order.paymentStatus === 'paid') {
+      return;
+    }
+
+    order.paymentStatus = 'paid';
+    order.status = 'processing';
+    await order.save();
+
+    // 🔔 TẠO NOTIFICATION TẠI ĐÂY (DUY NHẤT)
+    await this.notificationService.create({
+      userId: order.userId.toString(),
+      type: 'order_paid',
+      title: 'Thanh toán thành công',
+      message: `Đơn hàng ${order.code} đã được thanh toán thành công.`,
+      meta: {
+        orderId: order._id.toString(),
+        code: order.code,
+        status: order.status,
+      },
+    });
+  }
+
+  async markOrderFailedByPayOS(payosData: any) {
+    const order = await this.orderModel.findOne({
+      payosOrderCode: payosData.orderCode,
     });
 
-    const saved = await newOrder.save();
+    if (!order) return null;
+
+    // ⛔ chống webhook gọi trùng
+    if (order.paymentStatus !== 'unpaid') return order;
+
+    order.paymentStatus = 'failed';
+    order.status = 'payment_failed';
+    await order.save();
 
     await this.notificationService.create({
-      userId: saved.userId.toString(),
-      type: 'order_created',
-      title: 'Thanh toán thành công',
-      message: `Đơn hàng ${saved.code ?? saved._id} đã thanh toán thành công.`,
+      userId: order.userId.toString(),
+      type: 'order_payment_failed',
+      title: 'Thanh toán thất bại',
+      message: `Giao dịch đơn hàng ${order.code} đã bị hủy hoặc không thành công.`,
+      meta: {
+        orderId: order._id.toString(),
+        code: order.code,
+        status: 'payment_failed',
+      },
     });
 
-    console.log("Đã tạo đơn hàng PayOS:", saved._id);
-    return saved;
+    return order;
+  }
+
+  async handlePayOSWebhook(payload: any) {
+    if (payload.status !== 'PAID') return;
+
+    const order = await this.orderModel.findOne({
+      payosOrderCode: payload.orderCode,
+    });
+
+    if (!order) return;
+
+    if (order.status !== 'pending_payment') return;
+
+    order.status = 'processing';
+    order.paymentStatus = 'paid';
+    await order.save();
+
+    await this.notificationService.create({
+      userId: order.userId.toString(),
+      type: 'order_paid',
+      title: 'Thanh toán thành công',
+      message: `Đơn hàng ${order.code} đã được thanh toán thành công.`,
+      meta: {
+        orderId: order._id.toString(),
+        code: order.code,
+        status: order.status,
+      },
+    });
   }
 
   async getOrderByCode(orderCode: string) {

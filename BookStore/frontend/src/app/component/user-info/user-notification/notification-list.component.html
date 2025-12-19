@@ -1,0 +1,76 @@
+<div class="notification-wrapper">
+
+  <ng-template #listTpl let-list="list">
+    <div *ngIf="loading" class="loading">
+      Đang tải thông báo...
+    </div>
+
+    <div *ngIf="!loading && list.length === 0" class="empty">
+      Không có thông báo
+    </div>
+
+    <div class="notification-list" *ngIf="!loading">
+      <div
+        class="notification-item"
+        *ngFor="let noti of list"
+        [class.unread]="!noti.isRead"
+        (click)="goToDetail(noti._id)"
+      >
+        <div class="content">
+          <h4>{{ noti.title }}</h4>
+          <p class="message">{{ noti.message }}</p>
+        </div>
+
+        <div class="meta">
+          <span class="time">
+            {{ noti.createdAt | date:'dd/MM/yyyy HH:mm' }}
+          </span>
+          <span *ngIf="!noti.isRead" class="dot"></span>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- LOADING TOÀN TRANG -->
+  <div *ngIf="loading" class="page-loading">
+    <p-progressSpinner></p-progressSpinner>
+    <p>Đang tải thông báo...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <h2>Thông báo của tôi</h2>
+
+    <p-tabs value="0">
+      <p-tablist>
+        <p-tab value="0">Tất cả</p-tab>
+        <p-tab value="1">Đơn hàng</p-tab>
+        <p-tab value="2">Sự kiện</p-tab>
+        <p-tab value="3">Mã giảm giá</p-tab>
+        <p-tab value="4">Xác nhận</p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+        <p-tabpanel value="0">
+          <ng-container *ngTemplateOutlet="listTpl; context:{ list: getByType('all') }"></ng-container>
+        </p-tabpanel>
+
+        <p-tabpanel value="1">
+          <ng-container *ngTemplateOutlet="listTpl; context:{ list: getByType('order') }"></ng-container>
+        </p-tabpanel>
+
+        <p-tabpanel value="2">
+          <ng-container *ngTemplateOutlet="listTpl; context:{ list: getByType('event') }"></ng-container>
+        </p-tabpanel>
+
+        <p-tabpanel value="3">
+          <ng-container *ngTemplateOutlet="listTpl; context:{ list: getByType('coupon') }"></ng-container>
+        </p-tabpanel>
+
+        <p-tabpanel value="4">
+          <ng-container *ngTemplateOutlet="listTpl; context:{ list: getByType('system') }"></ng-container>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </ng-container>
+
+</div>

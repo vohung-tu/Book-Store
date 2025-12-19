@@ -86,7 +86,7 @@
               ></p-badge>
             </a>
 
-            <!-- DROPDOWN -->
+           <!-- DROPDOWN -->
             <div class="noti-dropdown" *ngIf="showNotiDropdown">
               <div class="noti-header">
                 <span>Thông báo</span>
@@ -101,10 +101,7 @@
               </div>
 
               <div class="noti-body" *ngIf="!isLoadingNoti; else loadingTpl">
-                <div
-                  *ngIf="notifications.length === 0"
-                  class="noti-empty"
-                >
+                <div *ngIf="notifications.length === 0" class="noti-empty">
                   Chưa có thông báo nào
                 </div>
 
@@ -122,12 +119,24 @@
                 </div>
               </div>
 
+              <!-- 🔽 FOOTER -->
+              <div class="noti-footer">
+                <a
+                  style="color: #1368c2;"
+                  class="view-all"
+                  (click)="goToNotificationPage($event)"
+                >
+                  Xem tất cả
+                </a>
+              </div>
+
               <ng-template #loadingTpl>
                 <div class="noti-loading">
                   Đang tải thông báo...
                 </div>
               </ng-template>
             </div>
+
           </div>
 
           <!-- CART -->

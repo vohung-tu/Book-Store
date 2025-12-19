@@ -156,6 +156,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
       });
   }
 
+  goToNotificationPage(event: Event) {
+    event.stopPropagation(); 
+    this.showNotiDropdown = false; 
+    this.router.navigate(['/user-info/notification']);
+  }
 
   signout(): void {
     this.authService.signout();

@@ -27,24 +27,30 @@ export class OrderController {
     return this.orderService.getOrderByCode(orderCode);
   }
 
-  @Patch(':orderId/confirm-payment')
-  async confirmPayment(@Param('orderId') orderId: string) {
-    const order = await this.orderService.findById(orderId);
-    if (!order) throw new NotFoundException('Đơn hàng không tồn tại!');
+  // @Patch(':orderId/confirm-payment')
+  // async confirmPayment(@Param('orderId') orderId: string) {
+  //   const order = await this.orderService.findById(orderId);
+  //   if (!order) throw new NotFoundException('Đơn hàng không tồn tại!');
 
-    // Cập nhật tồn kho
-    for (const item of order.products) {
-      const bookId =
-        typeof item.book === 'object' && (item.book as any)._id
-          ? (item.book as any)._id.toString()
-          : item.book.toString();
+  //   // Cập nhật tồn kho
+  //   for (const item of order.products) {
+  //     const bookId =
+  //       typeof item.book === 'object' && (item.book as any)._id
+  //         ? (item.book as any)._id.toString()
+  //         : item.book.toString();
 
-      await this.booksService.updateStock(bookId, item.quantity);
-    }
+  //     await this.booksService.updateStock(bookId, item.quantity);
+  //   }
 
-    await this.orderService.updateStatus(orderId, { status: 'processing' });
+  //   await this.orderService.updateStatus(orderId, { status: 'processing' });
 
-    return { message: 'Thanh toán thành công, đơn hàng chuyển sang chờ xử lý!' };
+  //   return { message: 'Thanh toán thành công, đơn hàng chuyển sang chờ xử lý!' };
+  // }
+  
+  @Post('payos/webhook')
+  async handlePayOSWebhook(@Body() payload: any) {
+    await this.orderService.handlePayOSWebhook(payload);
+    return { received: true };
   }
   
   @Patch(':id/status')

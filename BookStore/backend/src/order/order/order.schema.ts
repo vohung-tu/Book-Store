@@ -66,10 +66,16 @@ export class Order {
   total: number;
 
   @Prop({
-    enum: ['pending', 'processing', 'shipping', 'completed', 'cancelled', 'returned'],
-    default: 'pending',
+    enum: ['pending_payment', 'processing', 'payment_failed', 'shipping', 'completed', 'cancelled', 'returned'],
+    default: 'pending_payment',
   })
   status: string;
+
+  @Prop({
+    enum: ['unpaid', 'paid', 'failed'],
+    default: 'unpaid',
+  })
+  paymentStatus: string;
 
   @Prop({ default: false })
   loyaltyApplied: boolean;

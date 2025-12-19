@@ -79,13 +79,14 @@ export class PayOSService {
 
     // Chỉ khi thanh toán thành công
     if (data.status === "PAID") {
-      return await this.orderService.createOrderFromPayOS(data);
+      await this.orderService.markOrderPaidByPayOS(data);
+
     }
 
     // Trạng thái thất bại hoặc bị hủy
     if (["CANCELLED", "FAILED"].includes(data.status)) {
       console.log("PayOS Payment Failed:", data.status);
-      return { status: "FAILED" };
+      return await this.orderService.markOrderFailedByPayOS(data);
     }
 
     return { status: "IGNORED" };
