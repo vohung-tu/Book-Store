@@ -17,16 +17,34 @@
     </div>
     <div class="btn-header" style="display: flex; gap:10px">
       <button
-      *ngIf="selectedProducts?.length"
-      pButton
-      type="button"
-      label="Xóa đã chọn"
-      icon="pi pi-trash"
-      class="p-button-danger"
-      (click)="deleteSelectedProducts()"
-    ></button>
-    <button pButton class="btn-green" type="button" label="Thêm sản phẩm" icon="pi pi-plus" (click)="openAddProductDialog()"></button>
+        pButton
+        type="button"
+        label="Xuất Excel"
+        icon="pi pi-file-excel"
+        class="p-button-success"
+        (click)="exportProductsToExcel()"
+      ></button>
+
+      <button
+        *ngIf="selectedProducts?.length"
+        pButton
+        type="button"
+        label="Xóa đã chọn"
+        icon="pi pi-trash"
+        class="p-button-danger"
+        (click)="deleteSelectedProducts()"
+      ></button>
+
+      <button
+        pButton
+        class="btn-green"
+        type="button"
+        label="Thêm sản phẩm"
+        icon="pi pi-plus"
+        (click)="openAddProductDialog()"
+      ></button>
     </div>
+
   </div>
   <!-- <p-progressSpinner *ngIf="loading"></p-progressSpinner> -->
   <p-table
@@ -214,7 +232,7 @@
     <p>{{ getCategoryLabel(selectedProduct?.categoryName) }}</p>
 
     <h3>Nhà cung cấp:</h3>
-    <p>{{ selectedProduct?.supplierId?.name || 'Không có' }}</p>
+    <p>{{ selectedProduct?.supplierId?.name }}</p>
 
     <h3>Tồn kho theo chi nhánh:</h3>
     <p>

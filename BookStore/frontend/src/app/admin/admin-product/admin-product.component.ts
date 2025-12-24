@@ -23,6 +23,8 @@ import { forkJoin } from 'rxjs';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { BooksService } from '../../service/books.service';
 import { SidebarModule } from 'primeng/sidebar';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-admin-product',
@@ -197,15 +199,22 @@ export class AdminProductComponent {
     this.bookService.getAllDetailed().subscribe({
       next: (books) => {
         this.products = books.map((book: any) => {
+
           const authorObj =
             typeof book.author === 'object' && book.author?.name
               ? { _id: book.author._id, name: book.author.name }
               : { _id: book.author, name: 'Không rõ' };
 
+          const supplierObj =
+            typeof book.supplierId === 'object' && book.supplierId?.name
+              ? { _id: book.supplierId._id, name: book.supplierId.name }
+              : this.suppliers.find(s => s._id === book.supplierId) || null;
+
           return {
             ...book,
             id: book._id,
             author: authorObj,
+            supplierId: supplierObj,
             warehouseStocks: book.warehouseStocks || [],
             storeStocks: book.storeStocks || [],
           };
@@ -416,4 +425,46 @@ export class AdminProductComponent {
       });
     }
   }
+
+  exportProductsToExcel() {
+    const data = this.filteredProducts.map((p, index) => ({
+      'STT': index + 1,
+      'Mã sách': p.id,                       // MongoDB _id
+      'Tên sách': p.title,
+      'Tác giả': p.author?.name || '',
+      'Danh mục': this.getCategoryLabel(p.categoryName),
+      'Nhà cung cấp': p.supplierId?.name || '',
+      'Giá gốc': p.price,
+      'Giá giảm': p.flashsale_price,
+      'Giảm (%)': p.discount_percent,
+      'Số lượng': p.quantity,
+      'Đã bán': p.sold,
+      'Ngày phát hành': p.publishedDate
+        ? new Date(p.publishedDate).toLocaleDateString('vi-VN')
+        : ''
+    }));
+
+    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+    const workbook: XLSX.WorkBook = {
+      Sheets: { 'Sản phẩm': worksheet },
+      SheetNames: ['Sản phẩm']
+    };
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array'
+    });
+
+    this.saveExcelFile(excelBuffer, 'Danh_sach_san_pham');
+  }
+
+  saveExcelFile(buffer: any, fileName: string) {
+    const data: Blob = new Blob([buffer], {
+      type:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+    });
+
+    saveAs(data, `${fileName}_${new Date().getTime()}.xlsx`);
+  }
+
 }

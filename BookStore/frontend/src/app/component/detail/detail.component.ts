@@ -22,7 +22,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { TextareaModule } from 'primeng/textarea';
-import { User } from '../../model/users-details.model';
+import { Address, User } from '../../model/users-details.model';
 import { ReviewService } from '../../service/review.service';
 import { Review } from '../../model/review.model';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
@@ -114,13 +114,13 @@ export class DetailComponent implements OnInit {
   storeStocks: any[] = [];
 
   showAddressDialog = false;
-  selectedAddress: any = null;
   addresses: any[] = [];
   filteredAddresses: any[] = [];
   addressSearch = '';
   addingNew = false;
   newAddress = { full: '' };
-
+  userAddresses: Address[] = [];
+  selectedAddress!: Address;
   deliveryTime = '';
   shippingFee = 0;
   productId!: string;
@@ -157,7 +157,24 @@ export class DetailComponent implements OnInit {
       }
     });
     this.currentUserId = this.authService.getCurrentUser();
-    
+    const user = this.authService.getCurrentUser();
+
+      if (user?.address?.length) {
+        this.userAddresses = user.address;
+
+        // auto chọn địa chỉ mặc định
+        const defaultAddr = this.userAddresses.find(a => a.isDefault);
+        if (defaultAddr) {
+          this.onSelectAddress(defaultAddr);
+        }
+      }
+  }
+
+  onSelectAddress(address: Address) {
+    this.selectedAddress = address;
+
+    const region = this.detectRegion(address.value);
+    this.updateShippingInfo(region);
   }
 
   openSubImagesGallery(startIndex: number = 0) {

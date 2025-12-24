@@ -121,7 +121,7 @@
             <i class="pi pi-map"></i>
             <p style="margin-left: 8px;">
               <a href="javascript:void(0)">
-                {{ selectedAddress ? ('Giao đến: ' + selectedAddress.full) : 'Chọn địa chỉ nhận hàng để biết thời gian giao' }}
+               {{ selectedAddress ? ('Giao đến: ' + selectedAddress.value) : 'Chọn địa chỉ nhận hàng để biết thời gian giao' }}
               </a>
             </p>
           </div>
@@ -135,14 +135,27 @@
 
         <!-- 📍 Dialog chọn địa chỉ -->
         <p-dialog header="Chọn địa chỉ nhận hàng"
-                  [(visible)]="showAddressDialog"
-                  [modal]="true"
-                  [style]="{ width: '600px' }">
+          [(visible)]="showAddressDialog"
+          [modal]="true"
+          [style]="{ width: '600px' }">
 
           <div class="address-dialog">
-            <input pInputText type="text" placeholder="Nhập địa chỉ (Tỉnh, Quận, Phường...)" 
-                  [(ngModel)]="addressSearch" (input)="filterAddresses()"
-                  class="address-search"/>
+            <p-dropdown
+              [options]="userAddresses"
+              [(ngModel)]="selectedAddress"
+              optionLabel="value"
+              placeholder="Chọn địa chỉ giao hàng"
+              (onChange)="onSelectAddress($event.value)"
+              styleClass="w-full"
+            >
+              <ng-template let-address pTemplate="item">
+                <div class="address-option">
+                  <b>{{ address.fullName }}</b> - 0{{ address.phoneNumber }} <br />
+                  <small>{{ address.value }}</small>
+                  <span *ngIf="address.isDefault" class="default-badge">Mặc định</span>
+                </div>
+              </ng-template>
+            </p-dropdown>
 
             <p *ngIf="filteredAddresses.length === 0 && !addingNew">
               <i>Chưa có địa chỉ nào được lưu.</i>
@@ -327,9 +340,6 @@
         <p>{{ r.comment }}</p>
         <small>{{ r.createdAt | date:'short' }}</small>
         <hr />
-        <!-- <div *ngIf="r.image">
-          <img [src]="r.image" alt="Ảnh đánh giá" style="max-width: 200px;" />
-        </div> -->
       </div>
     </div>
 
