@@ -20,6 +20,9 @@ export class Supplier {
 
   @Prop()
   note: string;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export type SupplierDocument = HydratedDocument<Supplier>;

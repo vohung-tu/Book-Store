@@ -78,3 +78,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .p-drawer {
   width: 30rem !important;
 }
+
+.p-galleria .p-galleria-thumbnail-items .p-galleria-thumbnail-item {
+  flex: 0 0 auto !important;
+}

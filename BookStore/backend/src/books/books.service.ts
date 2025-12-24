@@ -538,6 +538,17 @@ export class BooksService {
       return sameCategory;
     }
 
+    async findById(id: string) {
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException('Book ID không hợp lệ');
+      }
+
+      return this.bookModel
+        .findById(id)
+        .populate('category', 'name slug parentId')
+        .lean();
+    }
+
   async generateEmbeddingsForAll() {
     const books = await this.bookModel.find({}, { title: 1, description: 1, embedding: 1 }).lean();
 

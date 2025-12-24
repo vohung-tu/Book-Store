@@ -35,7 +35,7 @@ export class AdminOrderComponent implements OnInit {
   searchText: string = '';
   filteredOrders: Order[] = [];
   statusOptions = [
-    { label: 'Chờ xử lý', value: 'pending' },
+    { label: 'Chờ xử lý', value: 'pending_payment' },
     { label: 'Đang xử lý', value: 'processing' },
     { label: 'Đang giao hàng', value: 'shipping' },
     { label: 'Hoàn thành', value: 'completed' },

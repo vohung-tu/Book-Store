@@ -11,6 +11,7 @@ import { BooksModule } from "src/books/books.module";
 import { LoyaltyModule } from "src/loyalty/loyalty.module";
 import { InventoryModule } from "src/inventory/inventory.module";
 import { NotificationModule } from "src/notification/notification.module";
+import { Book, BookSchema } from "src/books/book.schema";
 
 @Module({
     imports: [
@@ -18,7 +19,7 @@ import { NotificationModule } from "src/notification/notification.module";
       forwardRef(() => LoyaltyModule),
       InventoryModule,
       NotificationModule,
-      MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
+      MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }, { name: Book.name, schema: BookSchema },]),
     forwardRef(() => BooksModule)
     ],
     controllers: [OrderController, VnpayController],

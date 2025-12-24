@@ -37,13 +37,47 @@ export class SuppliersService {
 
   // 📤 Xuất Excel
   async exportExcel() {
-    const data = await this.supplierModel.find().lean();
-    const ws = XLSX.utils.json_to_sheet(data);
+    const suppliers = await this.supplierModel.find().lean();
+
+    const exportData = suppliers.map((s, index) => ({
+      '_id': s._id.toString(),             
+      'STT': index + 1,
+      'Mã NCC': s.code || '',
+      'Tên NCC': s.name || '',
+      'Địa chỉ': s.address || '',
+      'Email': s.email || '',
+      'SĐT': s.phone || '',
+      'Ghi chú': s.note || '',
+      'Ngày tạo': s.createdAt
+        ? new Date(s.createdAt).toLocaleDateString('vi-VN')
+        : '',
+      'Cập nhật lần cuối': s.updatedAt
+        ? new Date(s.updatedAt).toLocaleDateString('vi-VN')
+        : ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+
+    ws['!cols'] = [
+      { wch: 24 },
+      { wch: 5 },
+      { wch: 15 },
+      { wch: 30 },
+      { wch: 35 },
+      { wch: 25 },
+      { wch: 15 },
+      { wch: 30 },
+      { wch: 15 },
+      { wch: 20 }
+    ];
+
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Suppliers');
-    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
-    return buffer;
+    XLSX.utils.book_append_sheet(wb, ws, 'Danh sách NCC');
+
+    return XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
   }
+
+
 
   // 📥 Nhập Excel
   async importExcel(fileBuffer: Buffer) {
@@ -51,27 +85,58 @@ export class SuppliersService {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json<Record<string, any>>(sheet);
 
-    // 👇 thêm kiểu rõ ràng
-    const inserted: Supplier[] = [];
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
 
     for (const row of rows) {
-        const code = row['Mã NCC'] || row['Code'];
-        const name = row['Tên NCC'] || row['Name'];
-        if (!name) continue;
+      const id = row['_id'];                 // có trong file export
+      const name = row['Tên NCC'];           // ❗ đúng header
 
-        const supplier = {
-        code,
+      // ❌ Thiếu tên → bỏ qua
+      if (!name) {
+        skipped++;
+        continue;
+      }
+
+      const data = {
+        code: row['Mã NCC'] || '',
         name,
         address: row['Địa chỉ'] || '',
         email: row['Email'] || '',
         phone: row['SĐT'] || '',
         note: row['Ghi chú'] || ''
-        };
+      };
 
-        const created = await this.supplierModel.create(supplier);
-        inserted.push(created.toObject ? created.toObject() : created); // ✅ ép về object nếu cần
+      // 🔥 Có _id → thử update
+      if (id) {
+        const updatedDoc = await this.supplierModel.findByIdAndUpdate(
+          id,
+          data,
+          { new: true }
+        );
+
+        if (updatedDoc) {
+          updated++;
+        } else {
+          // ⚠ DB đã bị xoá → tạo mới
+          await this.supplierModel.create(data);
+          created++;
+        }
+      } 
+      // 🔥 Không có _id → tạo mới
+      else {
+        await this.supplierModel.create(data);
+        created++;
+      }
     }
 
-    return { count: inserted.length };
-    }
+    return {
+      message: 'Import Excel hoàn tất',
+      created,
+      updated,
+      skipped
+    };
+  }
+
 }

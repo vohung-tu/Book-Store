@@ -37,8 +37,9 @@
           <ng-container *ngIf="books?.images as imgs">
             <ng-container *ngIf="imgs.length > 4">
               <!-- Nội dung khi có hơn 4 ảnh -->
-              <div class="sub-image overlay" (click)="changeCover(books.images?.[3]!)"
-              [style.backgroundImage]="'url(' + books.images?.[3]! + ')'">
+              <div class="sub-image overlay"
+                (click)="openSubImagesGallery()"
+                [style.backgroundImage]="'url(' + books.images?.[3]! + ')'">
                 <img 
                     [src]="books.images?.[3]!" 
                     alt="Ảnh phụ sách" 
@@ -355,3 +356,31 @@
 <ng-template #loading>
   <p>Đang tải thông tin sách...</p>
 </ng-template>
+
+<p-dialog
+  [(visible)]="showSubImageDialog"
+  [modal]="true"
+  [dismissableMask]="true"
+  [style]="{ width: '70vw' }"
+  header="Hình ảnh sản phẩm"
+>
+  <p-galleria
+    [value]="subGalleryImages"
+    [containerStyle]="{ 'max-width': '68vw' }" 
+    [numVisible]="4"
+  >
+    <ng-template pTemplate="item" let-item>
+      <img
+        [src]="item"
+        style="width:100vh; height:60vh; object-fit:contain"
+      />
+    </ng-template>
+
+    <ng-template pTemplate="thumbnail" let-item>
+      <img
+        [src]="item"
+        style="width:100px; height:100px; object-fit:contain"
+      />
+    </ng-template>
+  </p-galleria>
+</p-dialog>

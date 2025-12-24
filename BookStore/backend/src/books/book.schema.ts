@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 import { Author } from 'src/authors/authors.schema';
 
 export type BookDocument = Book & Document;
@@ -35,6 +35,9 @@ export class Book {
 
   @Prop({ required: true, lowercase: true, trim: true })
   categoryName: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true })
+  category: mongoose.Types.ObjectId;
 
   @Prop({ required: true })
   quantity: number;

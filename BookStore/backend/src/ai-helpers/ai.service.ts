@@ -112,7 +112,7 @@ export class AiService {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage },
         ],
-        maxTokens: 300,
+        maxTokens: 120,
       });
 
       return res.choices[0]?.message?.content?.trim() ?? '';
@@ -139,7 +139,7 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message },
         ],
-        maxTokens: 150,
+        maxTokens: 80,
       });
 
       return JSON.parse(res.choices[0].message?.content || '{}');
@@ -167,7 +167,7 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
 
     const res = await this.safeChatCompletion({
       messages: [{ role: 'user', content: prompt }],
-      maxTokens: 300,
+      maxTokens: 120,
     });
 
     // ⚙️ Xử lý kết quả an toàn
@@ -195,7 +195,7 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
     try {
       const res = await this.safeChatCompletion({
         messages: [{ role: 'user', content: prompt }],
-        maxTokens: 250,
+        maxTokens: 120,
       });
 
       const content = res.choices?.[0]?.message?.content ?? '';

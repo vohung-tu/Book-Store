@@ -8,11 +8,13 @@ import { LoyaltyService } from 'src/loyalty/loyalty.service';
 import { InventoryService } from 'src/inventory/inventory.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { PayOSService } from 'src/payos/payos.service';
+import { Book, BookDocument } from 'src/books/book.schema';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    @InjectModel(Book.name) private bookModel: Model<BookDocument>,
     private readonly loyaltyService: LoyaltyService,
     private readonly booksService: BooksService,
     private readonly inventoryService: InventoryService,
@@ -54,10 +56,9 @@ export class OrderService {
     const paymentMethod =
       createOrderDto.paymentMethod ?? createOrderDto.payment;
 
-    const preparedProducts = createOrderDto.products.map(
-      (p: any, index: number) => {
+    const preparedProducts = await Promise.all(
+      createOrderDto.products.map(async (p: any, index: number) => {
 
-        // ✅ LẤY BOOK ID AN TOÀN
         const bookId =
           typeof p.book === 'object' && p.book?._id
             ? p.book._id
@@ -69,15 +70,28 @@ export class OrderService {
           );
         }
 
+        const book = await this.bookModel
+          .findById(bookId)
+          .populate('category', 'name slug parentId')
+          .lean();
+
+        if (!book) {
+          throw new BadRequestException(
+            `Sách không tồn tại hoặc đã bị xóa (bookId: ${bookId})`
+          );
+        }
+
         return {
           book: new Types.ObjectId(bookId),
-          title: p.title,
+          title: book.title,
           price: p.price,
-          flashsale_price: p.flashsale_price ?? p.price,
           quantity: p.quantity ?? 1,
-          coverImage: p.coverImage,
+
+          categoryId: (book as any).category?._id ?? null,
+          categoryName: (book as any).category?.name ?? 'Khác',
+          parentCategoryId: (book as any).category?.parentId ?? null,
         };
-      }
+      })
     );
 
     const code = 'DH' + Date.now();

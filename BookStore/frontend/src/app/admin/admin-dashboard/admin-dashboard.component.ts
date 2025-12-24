@@ -44,7 +44,7 @@ export class AdminDashboardComponent implements OnInit {
   /** Table data */
   topBooks: any[] = [];
   topCustomers: any[] = [];
-  categoryMap = new Map<string, string>();
+  categoryMap = new Map<string, Category>();
 
   constructor(
     private orderService: OrderService,
@@ -57,9 +57,9 @@ export class AdminDashboardComponent implements OnInit {
     this.loadUsers();
     this.loadReviews();
 
-    this.categoryService.getCategories().subscribe((cats: any[]) => {
-      this.categoryMap = new Map(cats.map(c => [c._id, c.name])); // Lưu map id → name
-      this.loadOrders(); // Chỉ load đơn khi đã có danh mục
+    this.categoryService.getCategories().subscribe((cats: Category[]) => {
+      this.categoryMap = new Map(cats.map(c => [c._id, c]));
+      this.loadOrders();
     });
 
     this.chartOptions = {
@@ -133,12 +133,17 @@ export class AdminDashboardComponent implements OnInit {
           const catRaw = (product as any)?.categoryId || (product as any)?.category;
           const catId = typeof catRaw === 'object' ? catRaw?._id?.toString() : catRaw?.toString?.();
 
-          let catName =
-            this.categoryMap.get(catId) ||
-            (product as any)?.category?.name ||
-            (product as any)?.categoryName ||
-            (product as any)?.category?.slug ||
+          const rawCategory =
+            this.categoryMap.get(catId) ??
+            (product as any)?.category?.name ??
+            (product as any)?.categoryName ??
+            (product as any)?.category?.slug ??
             'Khác';
+
+          const catName =
+            typeof rawCategory === 'string'
+              ? rawCategory
+              : rawCategory?.name || 'Khác';
 
           console.log('📦', product.title, '| catId:', catId, '| catName:', catName);
 
@@ -165,7 +170,7 @@ export class AdminDashboardComponent implements OnInit {
 
       /** === BIỂU ĐỒ TRẠNG THÁI ĐƠN HÀNG === */
       const statusLabels: Record<string, string> = {
-        pending: 'Chờ xử lý',
+        pending_payment: 'Chờ xử lý',
         processing: 'Đang xử lý',
         shipping: 'Đang giao hàng',
         completed: 'Hoàn thành',
@@ -193,7 +198,7 @@ export class AdminDashboardComponent implements OnInit {
         labels: Object.keys(categoryRevenue),
         datasets: [
           {
-            label: 'Doanh thu',
+            label: 'Doanh thu theo danh mục',
             data: Object.values(categoryRevenue),
             backgroundColor: ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#EC407A', '#26C6DA'],
             borderRadius: 6

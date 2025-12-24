@@ -33,6 +33,7 @@ import { HttpClient } from '@angular/common/http';
 import { catName, catSlug } from '../category/category.helpers';
 import { InventoryService } from '../../service/inventory.service';
 import {  DropdownModule } from 'primeng/dropdown';
+import { GalleriaModule } from 'primeng/galleria';
 
 @Component({
   selector: 'app-detail',
@@ -56,7 +57,8 @@ import {  DropdownModule } from 'primeng/dropdown';
     TextareaModule,
     ToggleButtonModule,
     DotSeparatorPipe,
-    DropdownModule
+    DropdownModule,
+    GalleriaModule
   ],
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.scss'],
@@ -82,6 +84,9 @@ export class DetailComponent implements OnInit {
   breadcrumbItems: any[] = [];
   isLoadingRelated = false;
   currentCoverImage: string | null = null;
+  showSubImageDialog = false;
+  subGalleryImages: string[] = [];
+  activeSubImageIndex = 0;
 
   review: Review = {
     productId: '', // gán từ input hoặc route
@@ -153,6 +158,16 @@ export class DetailComponent implements OnInit {
     });
     this.currentUserId = this.authService.getCurrentUser();
     
+  }
+
+  openSubImagesGallery(startIndex: number = 0) {
+    if (!this.books?.images?.length) return;
+
+    // Chỉ lấy ảnh phụ
+    this.subGalleryImages = [...this.books.images];
+    this.activeSubImageIndex = startIndex;
+
+    this.showSubImageDialog = true;
   }
 
   recordView(bookId: string) {
