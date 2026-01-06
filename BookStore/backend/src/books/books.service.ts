@@ -153,24 +153,18 @@ export class BooksService {
   }
 
   async getHalloweenBooks(): Promise<Book[]> {
-  // Tìm tất cả sách có từ "halloween" (hoặc "Halloween", "HALLOWEEN") trong database
     const regex = /halloween/i;
 
-    // Lọc theo các trường phổ biến: title, description, category, tags
-    const books = await this.bookModel
+    return this.bookModel
       .find({
         $or: [
           { title: { $regex: regex } },
           { description: { $regex: regex } },
-          { category: { $regex: regex } },
-          { tags: { $regex: regex } },
         ],
       })
-      .sort({ createdAt: -1 }) // ưu tiên sách mới
-      .limit(10) // tùy chỉnh số lượng muốn hiển thị
+      .sort({ createdAt: -1 })
+      .limit(10)
       .lean();
-
-    return books;
   }
 
   async getFeaturedBooks(limit = 10) {

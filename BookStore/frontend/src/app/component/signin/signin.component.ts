@@ -10,6 +10,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AuthService } from '../../service/auth.service';
 import { Observable } from 'rxjs';
 import { DialogModule } from 'primeng/dialog';
+import { CartService } from '../../service/cart.service';
 
 @Component({
   selector: 'app-signin',
@@ -38,6 +39,7 @@ export class SigninComponent implements OnInit{
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private cartService: CartService,
     private route: ActivatedRoute, // Inject ActivatedRoute
     private router: Router 
     ) {
@@ -57,30 +59,37 @@ export class SigninComponent implements OnInit{
 
   // Xử lý đăng nhập
   onSubmit() {
-    if (this.signinForm.valid) {
-      const { email, password } = this.signinForm.value;
+  if (this.signinForm.invalid) return;
 
-      this.authService.signin({ email, password }).subscribe(
-        (res) => {
-          const user = res.user;
-          const returnUrl = this.route.snapshot.queryParams['returnUrl']; //home
+  const { email, password } = this.signinForm.value;
 
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('user', JSON.stringify(user));
+  this.authService.signin({ email, password }).subscribe({
+    next: (res) => {
+      // 1 Lưu token & user
+      localStorage.setItem('token', res.token);
+      localStorage.setItem('user', JSON.stringify(res.user));
 
-          // Điều hướng: returnUrl > /home
-          this.router.navigateByUrl(returnUrl || '/home').then(() => {
-            window.location.reload();
-          });
+      // 2 MERGE guest cart → server cart
+      this.cartService.mergeGuestCart();
 
-          this.errorMessage = null;
-        },
-        (err) => {
-          console.error('Đăng nhập thất bại', err);
-          this.errorMessage = 'Nhập sai mật khẩu hoặc email, vui lòng thử lại.';
-        }
-      );
-    }
-  }
+      // 3 Reload cart từ server
+      this.cartService.loadCart();
+
+      // 4 Điều hướng
+      const returnUrl =
+        this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+
+      this.router.navigateByUrl(returnUrl);
+
+      this.errorMessage = null;
+    },
+    error: (err) => {
+      console.error('Đăng nhập thất bại', err);
+      this.errorMessage =
+        'Nhập sai email hoặc mật khẩu, vui lòng thử lại.';
+    },
+  });
+}
+
 
 }

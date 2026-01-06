@@ -57,7 +57,7 @@
               {{ (book.flashsale_price || book.price) * (book.quantity || 1) | dotSeparator }}đ
             </td>
             <td>
-              <button class="delete-btn" (click)="removeItem(book.cartItemId)">
+              <button class="delete-btn" (click)="removeItem(book)">
                 <i class="pi pi-trash"></i>
               </button>
             </td>
@@ -202,3 +202,28 @@
     </p>
   </div>
 </div>
+<p-dialog
+  header="Yêu cầu đăng nhập"
+  [(visible)]="loginRequiredDialog"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  [closable]="false"
+>
+  <p>Bạn cần đăng nhập để thanh toán.</p>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Hủy"
+      class="p-button-text"
+      (click)="loginRequiredDialog = false"
+    ></button>
+
+    <button
+      pButton
+      label="Đăng nhập"
+      class="p-button-primary"
+      (click)="goToLogin()"
+    ></button>
+  </ng-template>
+</p-dialog>

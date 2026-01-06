@@ -14,6 +14,7 @@ import { ReviewService } from '../../service/review.service';
 import { Review } from '../../model/review.model';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 import { AuthorService } from '../../service/author.service';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
   selector: 'app-product-item',
@@ -57,7 +58,8 @@ export class ProductItemComponent implements OnInit{
     private favoriteService: FavoritePageService,
     private cartService: CartService,
     private reviewService: ReviewService,
-    private authorService: AuthorService
+    private authorService: AuthorService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -116,6 +118,20 @@ export class ProductItemComponent implements OnInit{
   addToCart(): void {
     if (!this.book) return;
 
+    // ===== GUEST =====
+    if (!this.authService.isLoggedIn()) {
+      this.cartService.addToLocalCart(this.book);
+
+      this.showToast.emit({
+        severity: 'success',
+        summary: 'Thêm thành công',
+        detail: 'Đã thêm vào giỏ hàng!'
+      });
+
+      return;
+    }
+
+    // ===== USER =====
     this.cartService.addToCart(this.book).subscribe({
       next: () => {
         this.showToast.emit({
@@ -125,16 +141,16 @@ export class ProductItemComponent implements OnInit{
         });
       },
       error: (err) => {
+        console.error('Add to cart failed:', err);
+
         this.showToast.emit({
           severity: 'error',
-          summary: 'Thêm thất bại',
-          detail: err?.error?.message || 'Vui lòng đăng nhập hoặc thử lại.'
+          summary: 'Lỗi',
+          detail: err?.error?.message || 'Không thể thêm sản phẩm'
         });
-        // Nếu 401 → chuyển hướng đăng nhập
-        if (err.status === 401) {
-          // this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url }});
-        }
       }
     });
   }
+
+
 }

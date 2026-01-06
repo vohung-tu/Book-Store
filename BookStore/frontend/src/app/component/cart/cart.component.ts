@@ -69,6 +69,7 @@ export class CartComponent implements OnInit {
 
   isLoadingRecommended = true;
   recommendedBooks: any[] = [];
+  loginRequiredDialog = false;
 
   constructor(
     private cartService: CartService,
@@ -94,6 +95,13 @@ export class CartComponent implements OnInit {
     ];
     this.loadSavedCoupons();
     this.loadRecommendedBooks();
+
+    this.cart$ = this.cartService.getCart();
+
+    this.cart$.subscribe(cart => {
+      this.cartData = cart ?? [];
+      this.updateTotalWithCoupons();
+    });
   }
 
   /** 🔄 Load coupons đã lưu */
@@ -102,6 +110,8 @@ export class CartComponent implements OnInit {
     this.savedCoupons = saved ? JSON.parse(saved) : [];
     this.displayedCoupons = this.savedCoupons.slice(0, 2);
   }
+
+  
 
   loadRecommendedBooks() {
     this.isLoadingRecommended = true;
@@ -360,24 +370,43 @@ export class CartComponent implements OnInit {
   }
 
 
-  /** 🔼/🔽 Tăng giảm số lượng */
+  /** Tăng giảm số lượng */
   increaseQuantity(book: BookDetails): void {
-    this.cartService.updateQuantity(book.cartItemId, 1).subscribe();
+    if (this.authService.isLoggedIn()) {
+      this.cartService.updateQuantity(book.cartItemId, 1).subscribe();
+    } else {
+      this.cartService.updateLocalQuantity(book._id!, 1);
+    }
   }
+
   decreaseQuantity(book: BookDetails): void {
-    if ((book.quantity ?? 1) > 1) {
+    if ((book.quantity ?? 1) <= 1) return;
+
+    if (this.authService.isLoggedIn()) {
       this.cartService.updateQuantity(book.cartItemId, -1).subscribe();
+    } else {
+      this.cartService.updateLocalQuantity(book._id!, -1);
     }
   }
 
   /** 🗑 Xóa sản phẩm */
-  removeItem(cartItemId: string): void {
-    this.cartService.removeFromCart(cartItemId).subscribe();
+  removeItem(book: BookDetails): void {
+    if (this.authService.isLoggedIn()) {
+      if (!book.cartItemId) return;
+
+      this.cartService.removeFromCart(book.cartItemId).subscribe();
+    } else {
+      if (!book._id) return;
+
+      this.cartService.removeLocalItem(book._id);
+    }
   }
+
   removeAllSelected(): void {
-    this.selectedBooks.forEach(book => this.removeItem(book.cartItemId));
+    this.selectedBooks.forEach(book => this.removeItem(book));
     this.selectedBooks = [];
   }
+  
   deselectAll(): void {
     this.selectedBooks = [];
   }
@@ -397,12 +426,13 @@ export class CartComponent implements OnInit {
       return;
     }
 
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser) {
-      this.router.navigate(['/signin'], { queryParams: { returnUrl: '/checkout' } });
+    // CHƯA ĐĂNG NHẬP → mở dialog
+    if (!this.authService.isLoggedIn()) {
+      this.loginRequiredDialog = true;
       return;
     }
 
+    // ĐÃ LOGIN → tiếp tục như cũ
     localStorage.setItem('cart', JSON.stringify(this.selectedBooks));
     localStorage.setItem('appliedCoupons', JSON.stringify(this.appliedCoupons));
     localStorage.setItem('totalAmount', JSON.stringify(this.totalPrice));
@@ -410,4 +440,13 @@ export class CartComponent implements OnInit {
 
     this.router.navigate(['/checkout']);
   }
+
+  goToLogin() {
+    this.loginRequiredDialog = false;
+
+    this.router.navigate(['/signin'], {
+      queryParams: { returnUrl: '/cart' }
+    });
+  }
+
 }

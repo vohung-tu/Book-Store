@@ -18,11 +18,13 @@ export class CartService {
   ) {
     if (this.authService.isLoggedIn()) {
       this.loadCart();
+    } else {
+      this.cartSubject.next(this.getLocalCart());
     }
   }
 
   /** fetch từ server và next vào subject */
-  private loadCart(): void {
+  loadCart(): void {
     const token = this.authService.getToken();
     if (!token) return this.cartSubject.next([]);
 
@@ -80,5 +82,66 @@ export class CartService {
     }).pipe(
       tap(() => this.cartSubject.next([]))
     );
+  }
+
+  addToLocalCart(book: BookDetails) {
+    const cart: BookDetails[] =
+      JSON.parse(localStorage.getItem('guest_cart') || '[]');
+
+    const existing = cart.find(item => item._id === book._id);
+
+    if (existing) {
+      existing.quantity = (existing.quantity ?? 1) + 1;
+    } else {
+      cart.push({ ...book, quantity: 1 });
+    }
+
+    this.setLocalCart(cart);
+  }
+
+  getLocalCart(): BookDetails[] {
+    return JSON.parse(localStorage.getItem('guest_cart') || '[]');
+  }
+
+  private setLocalCart(cart: BookDetails[]) {
+    localStorage.setItem('guest_cart', JSON.stringify(cart));
+    this.cartSubject.next(cart);
+  }
+
+  mergeGuestCart(): void {
+    const guestCart: BookDetails[] =
+      JSON.parse(localStorage.getItem('guest_cart') || '[]');
+
+    if (guestCart.length === 0) return;
+
+    guestCart.forEach(item => {
+      // gọi API addToCart → backend tự cộng quantity nếu trùng
+      for (let i = 0; i < (item.quantity ?? 1); i++) {
+        this.addToCart(item).subscribe();
+      }
+    });
+
+    localStorage.removeItem('guest_cart');
+  }
+
+  updateLocalQuantity(bookId: string, change: number) {
+    const cart = this.getLocalCart();
+
+    const item = cart.find(i => i._id === bookId);
+    if (!item) return;
+
+    item.quantity = Math.max(1, (item.quantity ?? 1) + change);
+
+    this.setLocalCart(cart);
+  }
+
+  removeLocalItem(bookId: string): void {
+    const cart = JSON.parse(localStorage.getItem('guest_cart') || '[]');
+
+    const updated = cart.filter((item: any) => item._id !== bookId);
+
+    localStorage.setItem('guest_cart', JSON.stringify(updated));
+
+    this.cartSubject.next(updated);
   }
 }

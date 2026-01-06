@@ -98,6 +98,7 @@ const routes: Routes = [
   {
     path: 'checkout',
     component: CheckoutComponent,
+    canActivate: [AuthGuard],
     title: 'Thanh Toán'
   },
   {
