@@ -33,39 +33,6 @@
     </div>
   </div>
 
-  <!-- BẠN VỪA XEM  -->
-  <div class="recent-view-section" *ngIf="isLoadingRecentViews || recentViewedBooks?.length">
-    <div class="recent-title">
-      <h1><i class="pi pi-history"></i> Sản phẩm bạn vừa xem </h1>
-    </div>
-
-    <div class="recent-body">
-      <!-- Skeleton -->
-      <div *ngIf="isLoadingRecentViews" class="skeleton-container">
-        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
-      </div>
-
-      <!-- Carousel -->
-      <p-carousel 
-        *ngIf="!isLoadingRecentViews && recentViewedBooks.length > 0"
-        [value]="recentViewedBooks"
-        [numVisible]="5"
-        [numScroll]="5"
-        [circular]="false"
-        [responsiveOptions]="responsiveOptions">
-        <ng-template let-book pTemplate="item">
-          <app-product-item 
-            [book]="book"
-            (showToast)="handleToast($event)">
-          </app-product-item>
-        </ng-template>
-      </p-carousel>
-    </div>
-  </div>
-
-  <p-divider class="custom-divider"></p-divider>
-
-
   <!-- Sản phẩm bạn quan tâm  -->
 
   <div class="als-suggestion-section" *ngIf="isLoadingAls || alsSuggestions?.length">
@@ -237,7 +204,7 @@
         </ng-template>
       </p-carousel>
 
-      <!-- ✅ Trường hợp không có sách -->
+      <!-- Trường hợp không có sách -->
       <p *ngIf="!isLoadingIncoming && incommingReleaseBooks.length === 0">
         Hiện chưa có sách sắp phát hành.
       </p>
@@ -245,6 +212,39 @@
   </div>
   
   <p-divider class="custom-divider"></p-divider>
+
+    <!-- BẠN VỪA XEM  -->
+  <div class="recent-view-section" *ngIf="isLoadingRecentViews || recentViewedBooks?.length">
+    <div class="recent-title">
+      <h1><i class="pi pi-history"></i> Sản phẩm bạn vừa xem </h1>
+    </div>
+
+    <div class="recent-body">
+      <!-- Skeleton -->
+      <div *ngIf="isLoadingRecentViews" class="skeleton-container">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+
+      <!-- Carousel -->
+      <p-carousel 
+        *ngIf="!isLoadingRecentViews && recentViewedBooks.length > 0"
+        [value]="recentViewedBooks"
+        [numVisible]="5"
+        [numScroll]="5"
+        [circular]="false"
+        [responsiveOptions]="responsiveOptions">
+        <ng-template let-book pTemplate="item">
+          <app-product-item 
+            [book]="book"
+            (showToast)="handleToast($event)">
+          </app-product-item>
+        </ng-template>
+      </p-carousel>
+    </div>
+  </div>
+
+  <p-divider class="custom-divider"></p-divider>
+
 
   <!--  Có thể bạn sẽ thích -->
   <div class="ai-recommendation-books" #recommendTrigger>
@@ -281,7 +281,8 @@
 
   <p-divider class="custom-divider"></p-divider>
 
-  <div class="newest-col" #referenceTrigger>
+  <div class="newest-col">
+
     <p-tabs value="0">
       <p-tablist>
         <p-tab value="0">Sách Tham Khảo</p-tab>
@@ -289,34 +290,61 @@
       </p-tablist>
       <p-tabpanels>
 
+        <!-- Skeleton -->
         <div *ngIf="isLoadingReference" class="skeleton-container">
           <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
         </div>
 
+        <!-- TAB 1 -->
         <p-tabpanel value="0">
-          <p-carousel *ngIf="!isLoadingReference && sachThamKhao.length > 0"
-                      [value]="sachThamKhao" [numVisible]="5" [numScroll]="3"
-                      [circular]="false" [responsiveOptions]="responsiveOptions">
-            <ng-template let-book pTemplate="item">
-              <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
-            </ng-template>
-          </p-carousel>
+          <ng-container *ngIf="!isLoadingReference && referenceCarouselKey">
+
+            <p-carousel
+              [value]="sachThamKhao"
+              [numVisible]="5"
+              [numScroll]="3"
+              [circular]="false"
+              [responsiveOptions]="responsiveOptions">
+
+              <ng-template pTemplate="item" let-book>
+                <app-product-item
+                  [book]="book"
+                  (showToast)="handleToast($event)">
+                </app-product-item>
+              </ng-template>
+
+            </p-carousel>
+
+          </ng-container>
         </p-tabpanel>
 
+        <!-- TAB 2 -->
         <p-tabpanel value="1">
-          <p-carousel *ngIf="!isLoadingReference && sachTrongNuoc.length > 0"
-                      [value]="sachTrongNuoc" [numVisible]="5" [numScroll]="3"
-                      [circular]="false" [responsiveOptions]="responsiveOptions">
-            <ng-template let-book pTemplate="item">
-              <app-product-item [book]="book"></app-product-item>
-            </ng-template>
-          </p-carousel>
+          <ng-container *ngIf="!isLoadingReference && referenceCarouselKey">
+
+            <p-carousel
+              [value]="sachTrongNuoc"
+              [numVisible]="5"
+              [numScroll]="3"
+              [circular]="false"
+              [responsiveOptions]="responsiveOptions">
+
+              <ng-template pTemplate="item" let-book>
+                <app-product-item [book]="book"></app-product-item>
+              </ng-template>
+
+            </p-carousel>
+
+          </ng-container>
         </p-tabpanel>
 
       </p-tabpanels>
+
     </p-tabs>
+
   </div>
   <p-divider class="custom-divider"></p-divider>
+  
   <div class="introduce-bookstore">
     <div class="intro-1">
       <h1>Về chúng tôi Pam Tech</h1>

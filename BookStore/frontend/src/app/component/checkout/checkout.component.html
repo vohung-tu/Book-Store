@@ -117,25 +117,6 @@
       <h3>Thanh toán</h3>
       <div class="flex-1 flex-wrap gap-4">
 
-        <!-- Bank -->
-        <div class="flex items-center" style="display: flex;">
-          <p-radiobutton
-            name="payment"
-            value="bank"
-            [(ngModel)]="orderInfo.payment"
-            inputId="paymentBank"
-            (onClick)="onPaymentChange()"
-          />
-          <label for="paymentBank">Chuyển khoản qua ngân hàng</label>
-        </div>
-        <div *ngIf="orderInfo.payment === 'bank'" class="ml-6">
-          <p><strong>Thông tin chuyển khoản:</strong></p>
-          <p>Ngân hàng: NCB</p>
-          <p>Số tài khoản: 9704198526191432198</p>
-          <p>Chủ tài khoản: Nguyễn Văn A</p>
-          <p>Nội dung chuyển khoản: [Mã đơn hàng]</p>
-        </div>
-
         <!-- COD -->
         <div class="flex-1 items-center" style="display: flex;">
           <p-radiobutton
@@ -170,32 +151,6 @@
           </div>
         </div>
 
-        <!-- VNPAY -->
-        <div class="flex-1 items-center" style="display: flex;">
-          <p-radiobutton
-            name="payment"
-            value="vnpay"
-            [(ngModel)]="orderInfo.payment"
-            inputId="payment4"
-            (onClick)="onPaymentChange()"
-          />
-          <div class="vnpay-class" style="padding: 10px; display: flex;">
-            <img src="assets/images/vnpay.png" alt="" width="32px" height="32px">
-            <label for="payment4" style="padding-left: 10px;"> VNPAY</label>
-          </div>
-        </div>
-
-        <div *ngIf="orderInfo.payment === 'vnpay'" class="ml-6">
-          <p>Nhấn nút bên dưới để thanh toán ngay qua VNPAY:</p>
-          <button 
-            pButton 
-            type="button" 
-            label="Thanh toán VNPAY" 
-            icon="pi pi-credit-card" 
-            class="p-button-danger"
-            >
-          </button>
-        </div>
       </div>
      <!-- PHẦN HIỂN THỊ MÃ GIẢM GIÁ ĐÃ ÁP DỤNG -->
     <div class="applied-coupons" *ngIf="appliedCoupons.length">

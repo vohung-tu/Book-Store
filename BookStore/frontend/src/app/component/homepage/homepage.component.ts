@@ -70,6 +70,7 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   recentViewedIds: string[] = [];
   recentViewedBooks: BookDetails[] = [];
   isLoadingRecentViews = true;
+  referenceCarouselKey = 0;
 
   private observer?: IntersectionObserver;
   private timerSubscription?: Subscription;
@@ -358,19 +359,26 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private loadReferenceBooks() {
-    if (this.sachThamKhao.length > 0 || this.sachTrongNuoc.length > 0) return;
+  private loadReferenceBooks(): void {
+    if (this.referenceCarouselKey > 0) return;
+
     this.isLoadingReference = true;
 
-    this.bookService.getReferenceBooks().pipe(
-      timeout(3000),
-      catchError(() => of({ sachThamKhao: [], sachTrongNuoc: [] }))
-    ).subscribe((res) => {
-      this.sachThamKhao = res.sachThamKhao;
-      this.sachTrongNuoc = res.sachTrongNuoc;
-      this.isLoadingReference = false;
-      this.cdr.markForCheck();
-    });
+    this.bookService.getReferenceBooks()
+      .pipe(
+        timeout(5000),
+        catchError(() => of({ sachThamKhao: [], sachTrongNuoc: [] }))
+      )
+      .subscribe(res => {
+        this.sachThamKhao = [...res.sachThamKhao];
+        this.sachTrongNuoc = [...res.sachTrongNuoc];
+
+        this.isLoadingReference = false;
+
+        this.referenceCarouselKey++;
+
+        this.cdr.detectChanges();
+      });
   }
 
   setFavicon(iconUrl: string) {

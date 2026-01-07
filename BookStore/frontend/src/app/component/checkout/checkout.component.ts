@@ -462,8 +462,6 @@ export class CheckoutComponent implements OnInit {
     }
   }
 
-
-
    // Hàm xử lý thay đổi khi người dùng nhập địa chỉ
   onAddressInput() {
     if (this.orderInfo.address) {
