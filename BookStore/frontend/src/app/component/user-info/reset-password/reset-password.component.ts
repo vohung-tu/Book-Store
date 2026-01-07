@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabel } from 'primeng/floatlabel';
 import { AuthService } from '../../../service/auth.service';
@@ -30,11 +30,43 @@ export class ResetPasswordComponent {
     private authService: AuthService,
     private messageService: MessageService
   ) {
-    this.resetForm = this.fb.group({
-      currentPassword: ['', [Validators.required, Validators.minLength(6)]],
-      newPassword: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[A-Z])(?=.*\d).+$/)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validator: this.passwordsMatchValidator });
+    this.resetForm = this.fb.group(
+      {
+        currentPassword: ['', [Validators.required, Validators.minLength(6)]],
+
+        newPassword: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(6),
+            this.passwordStrengthValidator
+          ]
+        ],
+
+        confirmPassword: ['', Validators.required]
+      },
+      { validators: this.passwordsMatchValidator }
+    );
+  }
+
+  passwordStrengthValidator(control: AbstractControl) {
+    const value = control.value;
+    if (!value) return null;
+
+    const hasUpperCase = /[A-Z]/.test(value);
+    const hasLowerCase = /[a-z]/.test(value);
+    const hasNumber = /\d/.test(value);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+    const validLength = value.length >= 6;
+
+    const passwordValid =
+      hasUpperCase &&
+      hasLowerCase &&
+      hasNumber &&
+      hasSpecialChar &&
+      validLength;
+
+    return passwordValid ? null : { weakPassword: true };
   }
 
   passwordsMatchValidator(form: FormGroup) {
@@ -44,62 +76,31 @@ export class ResetPasswordComponent {
   }
 
   onSubmit() {
-    if (this.resetForm.valid) {
-      const { currentPassword, newPassword, confirmPassword } = this.resetForm.value;
-
-      if (newPassword !== confirmPassword) {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Cảnh báo',
-          detail: 'Mật khẩu mới và xác nhận mật khẩu không khớp!'
-        });
-        return;
-      }
-
-      const userId = this.authService.getCurrentUser()?._id;
-      console.log('UserID từ frontend:', userId);
-
-      if (!userId) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Lỗi',
-          detail: 'Không tìm thấy ID người dùng!'
-        });
-        return;
-      }
-
-      const payload = {
-        userId,
-        currentPassword,
-        newPassword
-      };
-
-      this.authService.updatePassword(payload).subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Thành công',
-            detail: 'Mật khẩu đã được cập nhật thành công!'
-          });
-          this.resetForm.reset();
-        },
-        error: (err) => {
-          console.error('Lỗi cập nhật mật khẩu:', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Lỗi',
-            detail: 'Có lỗi xảy ra, vui lòng thử lại!'
-          });
-        }
-      });
-    } else {
+    if (this.resetForm.invalid) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Cảnh báo',
         detail: 'Vui lòng nhập đầy đủ thông tin hợp lệ!'
       });
+      return;
     }
+
+    const { currentPassword, newPassword } = this.resetForm.value;
+
+    const userId = this.authService.getCurrentUser()?._id;
+    if (!userId) return;
+
+    this.authService.updatePassword({
+      userId,
+      currentPassword,
+      newPassword
+    }).subscribe(() => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Thành công',
+        detail: 'Mật khẩu đã được cập nhật!'
+      });
+      this.resetForm.reset();
+    });
   }
-
-
 }
