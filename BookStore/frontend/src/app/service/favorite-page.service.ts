@@ -1,32 +1,56 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, tap } from 'rxjs';
 import { BookDetails } from '../model/books-details.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class FavoritePageService {
-  private favorites: BookDetails[] = []; // Danh sách sản phẩm yêu thích
-  private favoriteSubject = new BehaviorSubject<BookDetails[]>([]);
+  private base = 'https://book-store-3-svnz.onrender.com/wishlist';
 
-  favorites$ = this.favoriteSubject.asObservable(); // Observable cho component lắng nghe
+  private favoritesSubject = new BehaviorSubject<BookDetails[]>([]);
+  favorites$ = this.favoritesSubject.asObservable();
 
-  constructor() { }
+  constructor(private http: HttpClient) {}
 
-  addToFavorites(book: BookDetails): void {
-    const existingBook = this.favorites.find(item => item._id === book._id);
-    if (!existingBook) {
-      this.favorites.push(book);
-      this.favoriteSubject.next([...this.favorites]);
-    }
+  /** Tạo header Authorization */
+  private getAuthHeaders(): HttpHeaders {
+    const token = sessionStorage.getItem('token'); // đúng với AuthService
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
   }
 
-  removeFromFavorites(bookId: string): void {
-    this.favorites = this.favorites.filter(book => book._id !== bookId);
-    this.favoriteSubject.next([...this.favorites]);
+  /** Load wishlist */
+  loadWishlist() {
+    return this.http.get<any>(this.base, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      tap(res => {
+        // ✅ LẤY ĐÚNG FIELD
+        this.favoritesSubject.next(res || []);
+      })
+    );
   }
 
-  getFavorites(): BookDetails[] {
-    return this.favorites;
+  /** Add */
+  addToFavorites(bookId: string) {
+    return this.http.post(
+      `${this.base}/${bookId}`,
+      {},
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  /** Remove */
+  removeFromFavorites(bookId: string) {
+    return this.http.delete(
+      `${this.base}/${bookId}`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  /** Clear when logout */
+  clearWishlist() {
+    this.favoritesSubject.next([]);
   }
 }

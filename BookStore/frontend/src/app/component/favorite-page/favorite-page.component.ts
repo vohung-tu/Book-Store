@@ -8,6 +8,7 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { RippleModule } from 'primeng/ripple';
 import { RouterModule } from '@angular/router';
+import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 
 @Component({
   selector: 'app-favorite-page',
@@ -17,7 +18,8 @@ import { RouterModule } from '@angular/router';
     ButtonModule,
     ToastModule,
     RippleModule,
-    RouterModule
+    RouterModule,
+    DotSeparatorPipe
   ],
   templateUrl: './favorite-page.component.html',
   styleUrls: ['./favorite-page.component.scss'],
@@ -35,24 +37,54 @@ export class FavoritePageComponent implements OnInit{
   ) {}
 
   ngOnInit(): void {
-    // favorites$: emit (phát ra ) dsach yêu thích mỗi khi có thay đổi
-    this.favoriteService.favorites$.subscribe(books => {
+    this.favoriteService.loadWishlist().subscribe();
+
+    this.favoriteService.favorites$.subscribe(books => 
+      {
       this.favoriteBooks = books;
     });
   }
 
   removeFromFavorites(bookId: string) {
-    this.favoriteService.removeFromFavorites(bookId);
+    this.favoriteService.removeFromFavorites(bookId).subscribe({
+    next: () => {
+      // Cập nhật mảng hiện tại
+      const updatedList = this.favoriteBooks.filter(b => b._id !== bookId);
+      
+      // QUAN TRỌNG: Đẩy dữ liệu mới vào Subject để tất cả các nơi đang subscribe đều nhận được bản mới
+      // Bạn cần tạo 1 phương thức trong service hoặc truy cập vào subject nếu nó public
+      // Cách đơn giản nhất ở đây là cập nhật local và thông báo Service (nếu cần)
+      this.favoriteBooks = updatedList;
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Thành công',
+        detail: 'Đã xóa sách khỏi danh sách yêu thích',
+        life: 3000
+      });
+    },
+      error: () => {
+        // toast thất bại
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Thất bại',
+          detail: 'Không thể xóa sách khỏi danh sách yêu thích',
+          life: 3000
+        });
+      }
+    });
   }
 
+
   addToCart(book: BookDetails): void { 
-    this.cartService.addToCart({ ...book, quantity: this.quantity});
-    this.messageService.add({ 
-      severity: 'success', 
-      summary: 'Thêm thành công', 
-      detail: 'Đã thêm vào giỏ hàng thành công!', 
-      key: 'tr', 
-      life: 3000 
+    this.cartService.addToCart(book).subscribe(() => {
+      this.messageService.add({ 
+        severity: 'success', 
+        summary: 'Thêm thành công', 
+        detail: 'Đã thêm vào giỏ hàng thành công!', 
+        key: 'tr', 
+        life: 3000 
+      });
     });
   }
   

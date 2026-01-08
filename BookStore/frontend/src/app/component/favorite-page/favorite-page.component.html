@@ -1,37 +1,49 @@
 <h1 style="text-align: center; color: black; align-items: center;">Sản phẩm yêu thích</h1>
 <div class="product-container" *ngIf="favoriteBooks.length > 0; else noFavorites">
   <div class="product-item" *ngFor="let book of favoriteBooks">
-    <!-- Hình ảnh sản phẩm -->
+
     <div class="product-image">
-      <img [src]="book.coverImage" [alt]="book.title" />
+      <img [src]="book.coverImage" alt="{{ book.title }}" />
     </div>
 
-    <!-- Thông tin sản phẩm -->
     <div class="product-details">
-      <a [routerLink]="['/details', book.id]" style="text-decoration: none;">
+      <a [routerLink]="['/details', book._id]" style="text-decoration: none;">
         <h3>{{ book.title }}</h3>
       </a>
-        <p>Tác giả: {{ book.author }}</p>
-        <h4 class="price">Giá: {{ book.flashsale_price }} đ</h4>
-        <div class="discount" >
-          <h5> {{ book.price }} đ </h5> 
-          <div class="discount-badge">-{{ book.discount_percent }}%</div>
+
+      <h4 class="price">
+        Giá: {{ book.flashsale_price || book.price | dotSeparator }} đ
+      </h4>
+
+      <div class="discount" *ngIf="book.discount_percent">
+        <h5>{{ book.price | dotSeparator }} đ</h5>
+        <div class="discount-badge">
+          -{{ book.discount_percent }}%
         </div>
+      </div>
     </div>
 
-    <!-- Hành động -->
     <div class="product-actions">
       <p-toast position="top-right" key="tr" />
-      <p-button pRipple [rounded]="true" [raised]="true" severity="success" (click)="addToCart(book)" icon="pi pi-shopping-cart"/>
       <p-button 
-        icon="pi pi-trash" 
-        class="p-button-text delete-btn" 
-        (click)="removeFromFavorites(book._id)"
+        pRipple 
         [rounded]="true" 
-        [text]="true" 
         [raised]="true" 
-        severity="success"></p-button>
+        severity="success" 
+        icon="pi pi-shopping-cart"
+        (click)="addToCart(book)"
+      />
+
+      <p-button 
+        icon="pi pi-trash"
+        [rounded]="true"
+        [text]="true"
+        [raised]="true"
+        severity="success"
+        (click)="removeFromFavorites(book._id)"
+      />
     </div>
+
   </div>
 </div>
 <!-- Thông báo khi không có sản phẩm yêu thích -->

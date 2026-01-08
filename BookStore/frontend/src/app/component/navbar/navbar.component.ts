@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../service/auth.service';
 import { CommonModule, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { debounceTime, interval, Observable, Subject, Subscription, switchMap } from 'rxjs';
+import { debounceTime, interval, Observable, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CartService } from '../../service/cart.service';
@@ -113,7 +113,21 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
 
     // 👤 Lấy thông tin user hiện tại
-    this.currentUser = this.authService.getCurrentUser();
+    this.authService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.currentUser = user;
+        this.userRole = user?.role || null;
+
+        this.resolveLocationDisplay(user);
+
+        // Nếu login → load address list (không ghi đè locationText)
+        if (user?._id) {
+          this.authService.getAddresses(user._id).subscribe(res => {
+            this.addressList = res.address || [];
+          });
+        }
+      });
     this.userRole = this.currentUser?.role || null;
     this.getCurrentUser();
 
@@ -122,24 +136,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.categories = cats;
     });
 
-    // 🗺️ Nếu user đã login → lấy địa chỉ từ DB
-    if (this.currentUser?._id) {
-      this.authService.getAddresses(this.currentUser._id).subscribe({
-        next: (res: any) => {
-          this.addressList = res.address || [];
-          const defaultAddr = this.addressList.find(a => a.isDefault) || this.addressList[0];
-          this.selectedAddress = defaultAddr;
-          this.locationText = defaultAddr?.value || 'Chưa có địa chỉ giao hàng';
-        },
-        error: (err) => {
-          console.error('Lỗi tải địa chỉ:', err);
-          this.locationText = 'Không thể tải địa chỉ';
-        }
-      });
-    } 
-    // ❌ Nếu chưa đăng nhập → hiển thị vị trí hiện tại
-    else {
-      console.log('🧭 Gọi getUserLocation() khi chưa login');
+    const savedAddress = sessionStorage.getItem('selectedAddress');
+
+    if (savedAddress) {
+      // Ưu tiên địa chỉ đã chọn
+      this.locationText = savedAddress;
+    } else {
+      // Chưa chọn → dùng GPS
       this.getUserLocation();
     }
 
@@ -164,6 +167,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   signout(): void {
     this.authService.signout();
+    this.notifications = [];
+    this.unreadCount = 0;
+    this.showNotiDropdown = false;
   }
 
   changeLanguage(lang: string) {
@@ -242,7 +248,28 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
   }
 
+  private resolveLocationDisplay(user: any) {
+    const savedAddress = sessionStorage.getItem('selectedAddress');
+
+    // Ưu tiên địa chỉ đã chọn
+    if (savedAddress) {
+      this.locationText = savedAddress;
+      return;
+    }
+
+    // Chưa login → dùng GPS
+    if (!user) {
+      this.getUserLocation();
+      return;
+    }
+
+    // Login nhưng chưa có địa chỉ → GPS
+    this.getUserLocation();
+  }
+
   confirmAddress() {
+    this.locationText = this.selectedAddress.value;
+    sessionStorage.setItem('selectedAddress', this.selectedAddress.value);
     if (!this.currentUser?._id || !this.selectedAddress) {
       this.messageService.add({ severity: 'warn', summary: 'Cảnh báo', detail: 'Vui lòng chọn địa chỉ!' });
       return;
@@ -313,7 +340,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.getUserLocation();
   }
 
   onInputChange() {
@@ -340,7 +366,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   hideSuggestions() {
-    // Trì hoãn để kịp chọn bằng chuột trước khi mất focus
+
     setTimeout(() => this.showSuggestions = false, 150);
   }
 
@@ -389,9 +415,25 @@ export class NavbarComponent implements OnInit, OnDestroy {
   toggleNotiDropdown(event: MouseEvent): void {
     event.stopPropagation();
     this.showNotiDropdown = !this.showNotiDropdown;
-    if (this.showNotiDropdown && this.notifications.length === 0) {
-      this.loadNotifications();
+
+    // CHỈ load notification khi đã login
+    if (this.showNotiDropdown && this.authService.isLoggedIn()) {
+      if (this.notifications.length === 0) {
+        this.loadNotifications();
+      }
     }
+  }
+
+  goToLogin(event: MouseEvent) {
+    event.stopPropagation();
+    this.showNotiDropdown = false;
+    this.router.navigate(['/signin']);
+  }
+
+  goToRegister(event: MouseEvent) {
+    event.stopPropagation();
+    this.showNotiDropdown = false;
+    this.router.navigate(['/signup']);
   }
 
   onClickNotification(n: UserNotification, event: MouseEvent): void {
@@ -405,11 +447,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
         },
       });
     }
-
-    // Nếu muốn: navigate đến trang chi tiết đơn:
-    // if (n.meta?.orderId) {
-    //   this.router.navigate(['/order', n.meta.orderId]);
-    // }
   }
 
   markAllAsRead(event: MouseEvent): void {

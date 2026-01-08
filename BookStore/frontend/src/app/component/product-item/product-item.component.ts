@@ -38,6 +38,7 @@ export class ProductItemComponent implements OnInit{
   @Input() book!: BookDetails; // "!"" được gán trước khi sử dụng để sau khi sử dụng đừng báo lỗi undefined 
   @Input() isUpcomingRelease: boolean = false;
   @Output() showToast = new EventEmitter<any>();
+  favoriteBooks: BookDetails[] = [];
   isFavorite = false;
   averageRating = 0;
   reviews: Review[] = [];
@@ -96,21 +97,49 @@ export class ProductItemComponent implements OnInit{
     }
   }
 
-  toggleFavorite() {
-    this.isFavorite = !this.isFavorite;
-    if (this.isFavorite) {
-      this.favoriteService.addToFavorites(this.book);
-      this.showToast.emit({
-        severity: 'success',
-        summary: 'Thành công',
-        detail: 'Đã thêm vào trang yêu thích'
-      });
-    } else {
-      this.favoriteService.removeFromFavorites(this.book._id);
+  toggleFavorite(book: BookDetails) {
+    if (!this.authService.isLoggedIn()) {
       this.showToast.emit({
         severity: 'warn',
-        summary: 'Thông báo',
-        detail: 'Đã xóa khỏi trang yêu thích'
+        summary: 'Chưa đăng nhập',
+        detail: 'Vui lòng đăng nhập để dùng wishlist'
+      });
+      return;
+    }
+
+    if (!this.isFavorite) {
+      this.favoriteService.addToFavorites(book._id).subscribe({
+        next: () => {
+          this.isFavorite = true;
+          this.favoriteService.loadWishlist().subscribe();
+
+          this.showToast.emit({
+            severity: 'success',
+            summary: 'Thành công',
+            detail: 'Đã thêm vào yêu thích'
+          });
+        },
+        error: (err) => {
+          console.error(err);
+          this.showToast.emit({
+            severity: 'error',
+            summary: 'Lỗi',
+            detail: 'Không thể thêm vào yêu thích'
+          });
+        }
+      });
+    } else {
+      this.favoriteService.removeFromFavorites(book._id).subscribe({
+        next: () => {
+          this.isFavorite = false;
+          this.favoriteService.loadWishlist().subscribe();
+
+          this.showToast.emit({
+            severity: 'warn',
+            summary: 'Đã xóa',
+            detail: 'Đã xóa khỏi yêu thích'
+          });
+        }
       });
     }
   }

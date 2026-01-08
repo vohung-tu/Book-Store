@@ -124,7 +124,6 @@
             value="cod"
             [(ngModel)]="orderInfo.payment"
             inputId="payment2"
-            (onClick)="onPaymentChange()"
           />
           <label for="payment2">Thanh toán khi nhận hàng (COD)</label>
         </div>
@@ -136,7 +135,6 @@
             value="payos"
             [(ngModel)]="orderInfo.payment"
             inputId="paymentPayOS"
-            (onClick)="onPaymentChange()"
           />
           <div style="padding: 10px; display: flex;">
             <img src="assets/images/vietqr.png" alt="payos" width="32" height="32" />

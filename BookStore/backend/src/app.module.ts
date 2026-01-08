@@ -26,6 +26,8 @@ import { ViewHistoryModule } from './view-history/view-history.module';
 import { NotificationModule } from './notification/notification.module';
 import { PayOSModule } from './payos/payos.module';
 
+import { WishlistModule } from './wishlist/wishlist.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -56,7 +58,8 @@ import { PayOSModule } from './payos/payos.module';
     StoreTransferModule,
     ViewHistoryModule,
     NotificationModule,
-    PayOSModule
+    PayOSModule,
+    WishlistModule
   ],
   controllers: [AppController],
   providers: [AppService],

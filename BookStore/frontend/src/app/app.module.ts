@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import Swiper from 'swiper';
-import { HTTP_INTERCEPTORS, provideHttpClient } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { BooksService } from './service/books.service';
 import { MessageService } from 'primeng/api';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -47,11 +47,11 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     ToastModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    HttpClientModule
   ],
   providers: [
     BooksService,
-    provideHttpClient(),
     MessageService,
     MatDatepickerModule,
     MatNativeDateModule,

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { Book } from 'src/books/book.schema';
 
 export type UserDocument = User & Document;
 
@@ -66,6 +67,12 @@ export class User {
     default: 'member',
   })
   level: string;
+
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: Book.name }],
+    default: []
+  })
+  wishlist: Types.ObjectId[];
 
 }
 

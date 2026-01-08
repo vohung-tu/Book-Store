@@ -157,6 +157,7 @@ export class CheckoutComponent implements OnInit {
 
       this.selectedAddress = this.addresses[0].value;
       this.orderInfo.address = this.selectedAddress;
+      this.onAddressChange({ value: this.selectedAddress });
 
       const savedBranch = localStorage.getItem('selectedBranch');
       if (savedBranch) {
@@ -241,20 +242,6 @@ export class CheckoutComponent implements OnInit {
 
     } catch (err) {
       console.error("generatePayOSQR Exception:", err);
-    }
-  }
-
-  generateVnpayQR() {
-    if (this.qrVnpayCanvas) {
-      QRCode.toCanvas(this.qrVnpayCanvas.nativeElement, this.vnpayValue, {
-        width: 250,
-      });
-    }
-  }
-
-  onPaymentChange() {
-    if (this.orderInfo.payment === 'vnpay') {
-      setTimeout(() => this.generateVnpayQR(), 0);
     }
   }
 

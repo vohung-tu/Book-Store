@@ -5,10 +5,38 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AiService {
   private client: OpenAI;
+  // ===============================
+  // AI GUARD CONFIG
+  // ===============================
+
+  // Các intent ĐƯỢC PHÉP trong hệ thống Bookstore
+  private readonly ALLOWED_INTENTS = [
+  'get_cheapest_books',
+  'search_books_by_title'
+  ];
+
+  // Câu trả lời từ chối CỐ ĐỊNH (không cho AI tự nghĩ)
+  private readonly OUT_OF_SCOPE_REPLY =
+    'Tôi chỉ hỗ trợ các câu hỏi liên quan đến hệ thống bán sách. Vui lòng đặt câu hỏi đúng phạm vi.';
+
+  private readonly BOOKSTORE_SYSTEM_PROMPT = `
+    Bạn là Trợ lý AI cho website bán sách online.
+
+    PHẠM VI ĐƯỢC PHÉP:
+    - Tìm kiếm sách theo tên
+    - Sách rẻ nhất
+    - Thông tin sách, giá sách
+
+    QUY TẮC BẮT BUỘC:
+    - CHỈ trả lời trong phạm vi hệ thống bán sách
+    - KHÔNG trả lời kiến thức chung ngoài hệ thống
+    - Nếu không có dữ liệu → nói không tìm thấy
+    `;
 
   constructor(private configService: ConfigService) {
+    
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    console.log('API Key loaded?', apiKey ? '✅ Có key' : '❌ Không có key');
+    console.log('API Key loaded?', apiKey ? '✅ Có key' : '  Không có key');
 
     this.client = new OpenAI({
       baseURL: 'https://openrouter.ai/api/v1',
@@ -40,7 +68,7 @@ export class AiService {
   private extractJsonArray(text: string): any[] {
     if (!text) return [];
 
-    // ❌ remove code block
+    //   remove code block
     const cleaned = text
       .replace(/```json/g, '')
       .replace(/```js/g, '')
@@ -56,11 +84,40 @@ export class AiService {
     try {
       return JSON.parse(match[0]);
     } catch (e) {
-      console.error('❌ JSON still invalid:', match[0]);
+      console.error(' JSON still invalid:', match[0]);
       return [];
     }
-}
+  }
 
+  private isOutOfScope(message: string): boolean {
+    const text = message.toLowerCase().trim();
+
+    // toán học / logic
+    const mathRegex = /^[\d\s+\-*/().=]+$/;
+
+    //  chào hỏi xã giao
+    const greetingRegex = /^(hi|hello|xin chào|chào bạn|hey)\b/;
+
+    // kiến thức chung
+    const generalKnowledge = [
+      'là gì',
+      'tại sao',
+      'ai là',
+      'định nghĩa',
+      'giải thích',
+      '1 + 1',
+    ];
+
+    if (mathRegex.test(text)) return true;
+    if (greetingRegex.test(text)) return true;
+    if (generalKnowledge.some(k => text.includes(k))) return true;
+
+    return false;
+  }
+
+  async chat(message: string): Promise<string> {
+    return this.guardedChat(this.BOOKSTORE_SYSTEM_PROMPT, message);
+  }
 
   async generateSummary(title: string, description = ''): Promise<string> {
     const prompt = `
@@ -87,7 +144,7 @@ export class AiService {
     try {
       const res = await this.safeChatCompletion({
         messages: [{ role: 'user', content: prompt }],
-        maxTokens: 120,
+        maxTokens: 400,
       });
 
       if (!res.choices || !res.choices[0]?.message?.content) {
@@ -122,7 +179,7 @@ export class AiService {
     }
   }
 
-   async detectIntent(message: string): Promise<{ intent: string; keywords: string[] }> {
+  async detectIntent(message: string): Promise<{ intent: string; keywords: string[] }> {
     const systemPrompt = `Bạn là bộ phân loại intent cho chatbot bán sách.
 Trả về JSON theo định dạng:
 {"intent": "get_cheapest_books|search_books_by_title|other", "keywords": ["..."]}
@@ -144,7 +201,7 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
 
       return JSON.parse(res.choices[0].message?.content || '{}');
     } catch (e) {
-      console.error('❌ Detect intent error:', e);
+      console.error('Detect intent error:', e);
       return { intent: 'other', keywords: [] };
     }
   }
@@ -153,7 +210,7 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
     const prompt = `
     Bạn là hệ thống gợi ý sách cho website bán sách online.
 
-    ⚠️ Hãy chỉ trả về JSON hợp lệ, KHÔNG viết thêm văn bản mô tả.
+    Hãy chỉ trả về JSON hợp lệ, KHÔNG viết thêm văn bản mô tả.
     Hãy gợi ý 5 cuốn sách nổi tiếng mà người dùng Việt Nam có thể quan tâm.
     Mỗi phần tử là 1 object có dạng:
     [
@@ -182,11 +239,11 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
       return Array.isArray(data) ? data : [];
     } catch (error: any) {
       if (error?.error?.code === 402) {
-        console.warn('⚠️ OpenRouter hết credit / token');
+        console.warn('OpenRouter hết credit / token');
         return [];
       }
 
-      console.error('❌ Lỗi parse JSON AI response:', error);
+      console.error('Lỗi parse JSON AI response:', error);
       return [];
     }
   }
@@ -202,11 +259,11 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
       return this.extractJsonArray(content);
     } catch (error: any) {
       if (error?.error?.code === 402) {
-        console.warn('⚠️ OpenRouter hết credit / token');
+        console.warn(' OpenRouter hết credit / token');
         return [];
       }
 
-      console.error('❌ Lỗi parse JSON AI response:', error);
+      console.error('  Lỗi parse JSON AI response:', error);
       return [];
     }
   }
@@ -223,7 +280,7 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
 
       return res.data[0].embedding;
     } catch (err) {
-      console.error("❌ Error creating embedding:", err);
+      console.error("  Error creating embedding:", err);
       throw new InternalServerErrorException("Embedding generation failed");
     }
   }
@@ -259,19 +316,19 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
   // hàm dựng prompt Ai để recommend nếu chưa có Embedding (fallback sang AI text machine)
 
   // hàm dựng prompt AI để recommend nếu chưa có Embedding
-  // ⚠️ chỉ dùng khi KHÔNG có embedding (fallback)
+  // chỉ dùng khi KHÔNG có embedding (fallback)
 
   async recommendByAI(
     title: string,
     description: string,
     allBooks: any[],
   ) {
-    // 🔥 1. GIỚI HẠN SỐ SÁCH ĐƯA CHO AI (RẤT QUAN TRỌNG)
+    // 1. GIỚI HẠN SỐ SÁCH ĐƯA CHO AI (RẤT QUAN TRỌNG)
     const limitedBooks = allBooks
       .filter(b => b.title && b._id) // an toàn
       .slice(0, 20); // ✅ chỉ lấy 20 sách
 
-    // 🔥 2. PROMPT NGẮN – RÕ – TRẢ JSON
+    // 2. PROMPT NGẮN – RÕ – TRẢ JSON
     const prompt = `
   Bạn là hệ thống gợi ý sách cho website bán sách.
 
@@ -289,7 +346,7 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
     )
     .join('\n')}
 
-  ⚠️ YÊU CẦU BẮT BUỘC:
+  YÊU CẦU BẮT BUỘC:
   - Chỉ trả về JSON hợp lệ
   - KHÔNG giải thích
   - KHÔNG thêm text ngoài JSON
@@ -301,10 +358,38 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
   Nếu trả về bất kỳ ký tự nào ngoài JSON → câu trả lời bị coi là SAI.
   KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ hoặc HTML.`;
 
-    // 🔥 3. GỌI AI VỚI MAX TOKENS NHỎ
+    // 3. GỌI AI VỚI MAX TOKENS NHỎ
     const results = await this.getJsonResponse(prompt);
 
     return Array.isArray(results) ? results : [];
+  }
+
+  // ===============================
+  // GUARDED CHAT
+  // ===============================
+  async guardedChat(
+    systemPrompt: string,
+    userMessage: string
+  ): Promise<string> {
+
+    // HARD BLOCK – KHÔNG QUA AI
+    if (this.isOutOfScope(userMessage)) {
+      console.warn('Hard blocked:', userMessage);
+      return this.OUT_OF_SCOPE_REPLY;
+    }
+
+    // Sau đó mới dùng AI detect intent (soft guard)
+    const intentResult = await this.detectIntent(userMessage);
+
+    console.log('Intent detected:', intentResult);
+
+    if (!this.ALLOWED_INTENTS.includes(intentResult.intent)) {
+      console.warn('Out-of-scope intent:', userMessage);
+      return this.OUT_OF_SCOPE_REPLY;
+    }
+
+    // 3 OK → cho chat
+    return this.chatWithAI(systemPrompt, userMessage);
   }
 
 }

@@ -633,26 +633,35 @@ export class DetailComponent implements OnInit {
   }
 
 
-  toggleFavorite() {
+  toggleFavorite(book: BookDetails) {
     this.isFavorite = !this.isFavorite;
+
     if (this.isFavorite) {
-      this.favoriteService.addToFavorites(this.book);
-      this.messageService.add({ 
-        severity: 'success', 
-        summary: 'Thành công', 
-        detail: 'Đã thêm vào trang yêu thích',
-        key: 'tr',
-        life: 2000
+      this.favoriteService.addToFavorites(book._id).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Thành công',
+            detail: 'Đã thêm vào trang yêu thích'
+          });
+        },
+        error: () => {
+          this.isFavorite = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Lỗi',
+            detail: 'Bạn cần đăng nhập để thêm vào yêu thích'
+          });
+        }
       });
     } else {
-      this.favoriteService.removeFromFavorites(this.book._id);
-      this.messageService.add({ 
-        severity: 'warn', 
-        summary: 'Thông báo', 
-        detail: 'Đã xóa khỏi trang yêu thích',
-        key: 'tr',
-        life: 2000
-       });
+      this.favoriteService.removeFromFavorites(book._id).subscribe(() => {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Thông báo',
+          detail: 'Đã xóa khỏi trang yêu thích'
+        });
+      });
     }
   }
 

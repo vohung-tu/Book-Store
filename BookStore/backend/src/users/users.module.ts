@@ -11,16 +11,19 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth/auth.service';
 import { MailService } from 'src/order/order/email.service';
 import { LoyaltyModule } from 'src/loyalty/loyalty.module';
+import { WishlistController } from 'src/wishlist/wishlist.controller';
+import { BooksModule } from 'src/books/books.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    BooksModule,
     JwtModule.register({ secret: 'secretKey', signOptions: { expiresIn: '1d' } }),
     PassportModule,
     forwardRef(() => LoyaltyModule),
 
   ],
-  controllers: [UsersController],
+  controllers: [UsersController, WishlistController],
   providers: [UsersService, JwtStrategy, JwtAuthGuard,
     RolesGuard, AuthService, MailService], 
   exports: [UsersService],

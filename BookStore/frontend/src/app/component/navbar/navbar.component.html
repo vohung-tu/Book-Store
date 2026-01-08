@@ -88,6 +88,9 @@
 
            <!-- DROPDOWN -->
             <div class="noti-dropdown" *ngIf="showNotiDropdown">
+
+            <ng-container *ngIf="currentUser; else notLoggedInTpl">
+              <!-- HEADER -->
               <div class="noti-header">
                 <span>Thông báo</span>
                 <button
@@ -100,6 +103,7 @@
                 </button>
               </div>
 
+              <!-- BODY -->
               <div class="noti-body" *ngIf="!isLoadingNoti; else loadingTpl">
                 <div *ngIf="notifications.length === 0" class="noti-empty">
                   Chưa có thông báo nào
@@ -119,23 +123,50 @@
                 </div>
               </div>
 
-              <!-- 🔽 FOOTER -->
+              <!-- FOOTER -->
               <div class="noti-footer">
                 <a
-                  style="color: #1368c2;"
+                  style="color: #1368c2"
                   class="view-all"
                   (click)="goToNotificationPage($event)"
                 >
                   Xem tất cả
                 </a>
               </div>
+            </ng-container>
 
-              <ng-template #loadingTpl>
-                <div class="noti-loading">
-                  Đang tải thông báo...
+            <!-- CHƯA LOGIN -->
+            <ng-template #notLoggedInTpl>
+              <div class="noti-empty noti-login-required">
+                <i class="pi pi-lock" style="font-size: 28px; margin-bottom: 8px;"></i>
+                <p>Vui lòng đăng nhập để xem thông báo</p>
+
+                <div class="noti-auth-actions">
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="goToLogin($event)"
+                  >
+                    Đăng nhập
+                  </button>
+
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    (click)="goToRegister($event)"
+                  >
+                    Đăng ký
+                  </button>
                 </div>
-              </ng-template>
-            </div>
+              </div>
+            </ng-template>
+
+            <ng-template #loadingTpl>
+              <div class="noti-loading">
+                Đang tải thông báo...
+              </div>
+            </ng-template>
+          </div>
 
           </div>
 
