@@ -277,30 +277,62 @@ export class UserOrderComponent implements OnInit, OnDestroy {
 
 
   rebuyOrder(products: any[]): void {
-    const fetches = products.map(product =>
-      this.bookService.getBookById(product.productId || product._id).pipe(
-        tap(book => {
-          const bookWithQuantity = { ...book, quantity: product.quantity || 1 };
-          this.cartService.addToCart(bookWithQuantity);
+    const fetches = products.map(product => {
+      // 1. Ưu tiên lấy trường 'book' vì JSON thực tế trả về 'book' chứa ID
+      const idToFetch = product.book || product.productId || product._id;
+
+      if (!idToFetch) {
+        console.error('Không tìm thấy ID cho sản phẩm:', product);
+        return of(null);
+      }
+
+      return this.bookService.getBookById(idToFetch).pipe(
+        map(book => {
+          if (!book) return null;
+          return {
+            _id: book._id,
+            productId: book._id, // Quan trọng: Để checkout có ID gửi về BE
+            title: book.title,
+            price: book.price,
+            flashsale_price: book.flashsale_price || 0,
+            coverImage: book.coverImage,
+            quantity: product.quantity || 1,
+          };
         }),
         catchError(err => {
+          console.error(`Lỗi khi lấy sách ${idToFetch}:`, err);
           this.messageService.add({
             severity: 'error',
             summary: 'Lỗi',
-            detail: `Không thể lấy thông tin sản phẩm ${product.title}`,
+            detail: `Không thể lấy thông tin sản phẩm: ${product.title}`,
           });
           return of(null);
         })
-      )
-    );
+      );
+    });
 
-    forkJoin(fetches).subscribe(() => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Đã thêm vào giỏ hàng',
-        detail: 'Bạn có thể kiểm tra lại trước khi thanh toán.',
-      });
-      this.router.navigate(['/cart']);
+    forkJoin(fetches).subscribe((results) => {
+      const validProducts = results.filter(p => p !== null);
+
+      if (validProducts.length > 0) {
+        localStorage.setItem('cart', JSON.stringify(validProducts));
+        localStorage.removeItem('totalDiscount');
+        localStorage.removeItem('appliedCoupons');
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sẵn sàng thanh toán',
+          detail: 'Đang chuyển hướng tới trang thanh toán...',
+        });
+
+        this.router.navigate(['/checkout']);
+      } else {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Thông báo',
+          detail: 'Không có sản phẩm nào hợp lệ để mua lại.',
+        });
+      }
     });
   }
   

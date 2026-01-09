@@ -177,39 +177,4 @@ export class UsersService {
     });
   }
 
-  async addToWishlist(userId: string, bookId: string) {
-    return this.userModel.findByIdAndUpdate(
-      userId,
-      { $addToSet: {
-        wishlist: new Types.ObjectId(bookId) 
-      } }, // không trùng
-      { new: true }
-    );
-  }
-
-  async removeFromWishlist(userId: string, bookId: string) {
-    return this.userModel.findByIdAndUpdate(
-      userId,
-      {
-        $pull: { wishlist: new Types.ObjectId(bookId) }
-      },
-      { new: true }
-    );
-  }
-
-  async getWishlist(userId: string) {
-    const user = await this.userModel
-      .findById(userId)
-      .populate({
-        path: 'wishlist',
-        model: 'Book', // ÉP RÕ MODEL
-        select: 'title price flashsale_price coverImage discount_percent',
-      })
-      .lean();
-
-    if (!user) throw new NotFoundException('User not found');
-
-    return user.wishlist; //  trả thẳng array
-  }
-
 }

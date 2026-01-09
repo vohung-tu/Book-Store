@@ -1,6 +1,6 @@
 import { CommonModule, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
@@ -45,7 +45,7 @@ export class SigninComponent implements OnInit{
     ) {
     this.signinForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]], // Email phải có định dạng hợp lệ
-      password: ['', [Validators.required, Validators.minLength(6)]], // Password ít nhất 6 ký tự
+      password: ['', [Validators.required, Validators.minLength(6),this.passwordStrengthValidator]],
       rememberMe: [false]
     });
   }
@@ -53,8 +53,24 @@ export class SigninComponent implements OnInit{
   ngOnInit(): void {
     // this.isLoading$ = this.authService.isLoading$; // Observable theo dõi trạng thái loading
   }
+
   togglePasswordVisibility() {
     this.hidePassword = !this.hidePassword;
+  }
+
+  passwordStrengthValidator(control: AbstractControl) {
+    const value = control.value;
+    if (!value) return null;
+
+    const hasUpperCase = /[A-Z]/.test(value);
+    const hasLowerCase = /[a-z]/.test(value);
+    const hasNumber = /\d/.test(value);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+    const validLength = value.length >= 6;
+
+    const passwordValid = hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar && validLength;
+
+    return passwordValid ? null : { weakPassword: true };
   }
 
   // Xử lý đăng nhập

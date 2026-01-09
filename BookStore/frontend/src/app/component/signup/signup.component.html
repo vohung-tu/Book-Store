@@ -37,7 +37,7 @@
             Mật khẩu phải có ít nhất 6 ký tự,
           </ng-container>
           <ng-container *ngIf="signupForm.get('password')?.hasError('weakPassword')">
-            1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt.
+            ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt.
           </ng-container>
         </mat-error>
 

@@ -68,11 +68,11 @@ export class User {
   })
   level: string;
 
-  @Prop({
-    type: [{ type: Types.ObjectId, ref: Book.name }],
-    default: []
-  })
-  wishlist: Types.ObjectId[];
+  // @Prop({
+  //   type: [{ type: Types.ObjectId, ref: Book.name }],
+  //   default: []
+  // })
+  // wishlist: Types.ObjectId[];
 
 }
 

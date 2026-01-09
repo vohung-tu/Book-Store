@@ -94,6 +94,13 @@ export class ProductItemComponent implements OnInit{
         const sum = this.reviews.reduce((acc, review) => acc + review.rating, 0);
         this.averageRating = total > 0 ? sum / total : 0;
       });
+
+      // yêu thích sp
+      this.favoriteService.favorites$.subscribe(favs => {
+        if (this.book && this.book._id) {
+          this.isFavorite = favs.some(f => f._id === this.book._id);
+        }
+      });
     }
   }
 
@@ -102,7 +109,7 @@ export class ProductItemComponent implements OnInit{
       this.showToast.emit({
         severity: 'warn',
         summary: 'Chưa đăng nhập',
-        detail: 'Vui lòng đăng nhập để dùng wishlist'
+        detail: 'Vui lòng đăng nhập để thêm vào trang yêu thích'
       });
       return;
     }

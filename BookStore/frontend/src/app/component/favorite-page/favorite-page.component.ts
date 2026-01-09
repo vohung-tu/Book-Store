@@ -37,44 +37,37 @@ export class FavoritePageComponent implements OnInit{
   ) {}
 
   ngOnInit(): void {
+    // Load dữ liệu từ server khi component khởi tạo
     this.favoriteService.loadWishlist().subscribe();
 
-    this.favoriteService.favorites$.subscribe(books => 
-      {
+    // Lắng nghe thay đổi từ Subject
+    this.favoriteService.favorites$.subscribe(books => {
       this.favoriteBooks = books;
     });
   }
 
-  removeFromFavorites(bookId: string) {
-    this.favoriteService.removeFromFavorites(bookId).subscribe({
-    next: () => {
-      // Cập nhật mảng hiện tại
-      const updatedList = this.favoriteBooks.filter(b => b._id !== bookId);
-      
-      // QUAN TRỌNG: Đẩy dữ liệu mới vào Subject để tất cả các nơi đang subscribe đều nhận được bản mới
-      // Bạn cần tạo 1 phương thức trong service hoặc truy cập vào subject nếu nó public
-      // Cách đơn giản nhất ở đây là cập nhật local và thông báo Service (nếu cần)
-      this.favoriteBooks = updatedList;
+  removeFromFavorites(bookId: string | undefined): void {
+    if (!bookId) return;
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Thành công',
-        detail: 'Đã xóa sách khỏi danh sách yêu thích',
-        life: 3000
-      });
-    },
-      error: () => {
-        // toast thất bại
+    this.favoriteService.removeFromFavorites(bookId).subscribe({
+      next: () => {
+        // Không cần filter thủ công ở đây nữa vì Service đã làm qua Subject
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: 'Đã xóa khỏi danh sách yêu thích'
+        });
+      },
+      error: (err) => {
+        console.error('Lỗi xóa:', err);
         this.messageService.add({
           severity: 'error',
-          summary: 'Thất bại',
-          detail: 'Không thể xóa sách khỏi danh sách yêu thích',
-          life: 3000
+          summary: 'Lỗi',
+          detail: 'Không thể xóa sản phẩm'
         });
       }
     });
   }
-
 
   addToCart(book: BookDetails): void { 
     this.cartService.addToCart(book).subscribe(() => {

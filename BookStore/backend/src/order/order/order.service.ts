@@ -86,7 +86,7 @@ export class OrderService {
           title: book.title,
           price: p.price,
           quantity: p.quantity ?? 1,
-
+          flashsale_price: book.flashsale_price || 0,
           categoryId: (book as any).category?._id ?? null,
           categoryName: (book as any).category?.name ?? 'Khác',
           parentCategoryId: (book as any).category?.parentId ?? null,

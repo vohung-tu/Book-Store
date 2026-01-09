@@ -40,7 +40,7 @@
         [text]="true"
         [raised]="true"
         severity="success"
-        (click)="removeFromFavorites(book._id)"
+        (click)="removeFromFavorites((book._id || book.id)!)"
       />
     </div>
 

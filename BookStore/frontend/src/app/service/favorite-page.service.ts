@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, of } from 'rxjs';
 import { BookDetails } from '../model/books-details.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
@@ -12,45 +12,61 @@ export class FavoritePageService {
 
   constructor(private http: HttpClient) {}
 
-  /** Tạo header Authorization */
   private getAuthHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem('token'); // đúng với AuthService
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token'); 
     return new HttpHeaders({
       Authorization: `Bearer ${token}`
     });
   }
 
-  /** Load wishlist */
-  loadWishlist() {
-    return this.http.get<any>(this.base, {
+  /** Load wishlist từ server */
+  loadWishlist(): Observable<BookDetails[]> {
+    return this.http.get<BookDetails[]>(this.base, {
       headers: this.getAuthHeaders()
     }).pipe(
-      tap(res => {
-        // ✅ LẤY ĐÚNG FIELD
-        this.favoritesSubject.next(res || []);
+      tap(books => {
+        this.favoritesSubject.next(books || []);
+      }),
+      catchError(err => {
+        console.error('Lỗi load wishlist:', err);
+        return of([]);
       })
     );
   }
 
-  /** Add */
+  /** Thêm vào yêu thích */
   addToFavorites(bookId: string) {
-    return this.http.post(
-      `${this.base}/${bookId}`,
-      {},
-      { headers: this.getAuthHeaders() }
+    return this.http.post(`${this.base}/${bookId}`, {}, { 
+      headers: this.getAuthHeaders() 
+    }).pipe(
+      // Sau khi thêm thành công, load lại danh sách để cập nhật UI
+      tap(() => this.loadWishlist().subscribe())
     );
   }
 
-  /** Remove */
+  /** Xóa khỏi yêu thích */
   removeFromFavorites(bookId: string) {
-    return this.http.delete(
-      `${this.base}/${bookId}`,
-      { headers: this.getAuthHeaders() }
+    return this.http.delete(`${this.base}/${bookId}`, { 
+      headers: this.getAuthHeaders() 
+    }).pipe(
+      tap(() => {
+        // Lấy danh sách hiện tại trong Subject
+        const currentFavs = this.favoritesSubject.value;
+        // Lọc bỏ item vừa xóa
+        const updatedFavs = currentFavs.filter(b => b._id !== bookId && b.id !== bookId);
+        // Đẩy danh sách mới vào Subject để tất cả Component (Navbar, Home, Wishlist) cùng cập nhật
+        this.favoritesSubject.next(updatedFavs);
+      })
     );
   }
 
-  /** Clear when logout */
+  /** Xóa sạch khi logout */
   clearWishlist() {
     this.favoritesSubject.next([]);
+  }
+
+  /** Kiểm tra nhanh xem sách có trong wishlist không */
+  isBookInWishlist(bookId: string): boolean {
+    return this.favoritesSubject.value.some(b => b._id === bookId);
   }
 }
