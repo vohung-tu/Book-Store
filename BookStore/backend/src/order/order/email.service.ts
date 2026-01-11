@@ -13,6 +13,8 @@ export class MailService {
       pass: 'dddn qrmy vxky zcxc'
     },
     connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
     debug: true,
     logger: true
   });
@@ -33,6 +35,13 @@ export class MailService {
       `
     };
 
-    await this.transporter.sendMail(mailOptions);
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('✅ Email gửi thành công:', info.messageId);
+      return info;
+    } catch (error) {
+      console.error('❌ Lỗi gửi email thực tế:', error);
+      throw error;
+    }
   }
 }
