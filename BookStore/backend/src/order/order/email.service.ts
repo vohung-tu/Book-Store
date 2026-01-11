@@ -6,6 +6,7 @@ import * as nodemailer from 'nodemailer';
 export class MailService {
   private transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
+    pool: true,
     port: 465,
     secure: true, // Bắt buộc dùng true cho cổng 465
     auth: {
