@@ -5,12 +5,16 @@ import * as nodemailer from 'nodemailer';
 @Injectable()
 export class MailService {
   private transporter = nodemailer.createTransport({
-    service: 'gmail', // hoặc 'hotmail', 'outlook', SMTP...
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Bắt buộc dùng true cho cổng 465
     auth: {
       user: 'pamtech.org@gmail.com',
       pass: 'dddn qrmy vxky zcxc'
     },
     connectionTimeout: 10000,
+    debug: true,
+    logger: true
   });
 
   async sendResetPasswordEmail(to: string, resetToken: string) {
