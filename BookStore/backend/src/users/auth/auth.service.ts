@@ -43,19 +43,19 @@ export class AuthService {
   async handleForgotPassword(email: string) {
     const user = await this.usersService.findByEmail(email) as UserDocument;
     if (!user) {
-      throw new NotFoundException('Email không tồn tại trong hệ thống');
+      throw new NotFoundException('Email không tồn tại');
     }
 
-    // Giả lập gửi email — thực tế bạn sẽ gửi mail hoặc in ra token reset
-    const resetToken = uuidv4(); // mã reset
-    const expireDate = new Date(Date.now() + 60 * 60 * 1000); // token sống 1h
-    console.log(`Token reset cho ${email}: ${resetToken}`);
-    // Cập nhật user
+    const resetToken = uuidv4();
+    const expireDate = new Date(Date.now() + 60 * 60 * 1000);
     await this.usersService.setResetToken(user.id, resetToken, expireDate);
-    // 👇 Gửi email reset password
-    await this.mailService.sendResetPasswordEmail(email, resetToken);
 
-    return { message: 'Đã gửi link khôi phục về email của bạn' };
+    // Không dùng 'await' ở đây để trả về response ngay lập tức
+    this.mailService.sendResetPasswordEmail(email, resetToken).catch(err => {
+      console.error('Gửi mail ngầm thất bại:', err);
+    });
+
+    return { message: 'Yêu cầu đã được tiếp nhận. Vui lòng kiểm tra email của bạn.' };
   }
 
   async findUserByResetToken(token: string): Promise<UserDocument | null> {
