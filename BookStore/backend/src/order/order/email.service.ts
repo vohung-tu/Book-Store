@@ -12,7 +12,11 @@ export class MailService {
       user: 'pamtech.org@gmail.com',
       pass: 'dddn qrmy vxky zcxc'
     },
-    connectionTimeout: 10000,
+    tls: {
+      // Không từ chối kết nối nếu chứng chỉ không khớp (giúp vượt qua một số rào cản firewall)
+      rejectUnauthorized: false 
+    },
+    connectionTimeout: 20000,
     greetingTimeout: 10000,
     socketTimeout: 20000,
     debug: true,
