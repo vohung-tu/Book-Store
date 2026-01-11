@@ -9,7 +9,8 @@ export class MailService {
     auth: {
       user: 'pamtech.org@gmail.com',
       pass: 'dddn qrmy vxky zcxc'
-    }
+    },
+    connectionTimeout: 10000,
   });
 
   async sendResetPasswordEmail(to: string, resetToken: string) {

@@ -15,8 +15,9 @@ async function bootstrap() {
       'http://localhost:4200',
       'https://book-store-v302.onrender.com',
     ],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    optionsSuccessStatus: 204,
   });
 
   app.use(
