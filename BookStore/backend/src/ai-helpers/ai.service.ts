@@ -60,8 +60,8 @@ export class AiService {
     return this.client.chat.completions.create({
       model: 'mistralai/mistral-7b-instruct', 
       messages: options.messages,
-      max_tokens: Math.min(options.maxTokens ?? 200, 400),
-      temperature: options.temperature ?? 0.3
+      max_tokens: Math.min(options.maxTokens ?? 200, 1000),
+      temperature: options.temperature ?? 0.5
     });
   }
 
@@ -121,30 +121,40 @@ export class AiService {
 
   async generateSummary(title: string, description = ''): Promise<string> {
     const prompt = `
-      Viết tóm tắt giới thiệu cho sách "${title}" theo phong cách bìa sau.
+      Bạn là HỆ THỐNG TẠO DỮ LIỆU JSON cho website bán sách.
+      KHÔNG phải người viết văn, KHÔNG phải marketing.
 
-      Yêu cầu:
-      - 1 đoạn mở đầu ngắn, hấp dẫn
-      - Nội dung chính (2–3 câu)
-      - 3 ý nổi bật
-      - Đối tượng độc giả phù hợp
+      NHIỆM VỤ:
+      Sinh dữ liệu tóm tắt sách theo cấu trúc JSON BẮT BUỘC.
 
-      Trả về JSON đúng format:
+      QUY TẮC TUYỆT ĐỐI:
+      - CHỈ trả về JSON hợp lệ
+      - KHÔNG thêm bất kỳ chữ nào ngoài JSON
+      - KHÔNG mở đầu, KHÔNG kết luận
+      - KHÔNG markdown
+      - KHÔNG ký hiệu đặc biệt
+      - KHÔNG xuống dòng ngoài JSON
+
+      FORMAT JSON (bắt buộc):
       {
-        "intro": "",
-        "content": "",
-        "highlights": ["", "", ""],
-        "audience": ""
+        "intro": "1 câu mở đầu ngắn, hấp dẫn",
+        "content": "2–3 câu mô tả nội dung chính",
+        "highlights": ["ý 1", "ý 2", "ý 3"],
+        "audience": "Đối tượng độc giả phù hợp",
+        "why_read": "vì sao bạn nên đọc",
+        "author": "tác giả của bộ truyện, nếu không cụ thể thì không cần hiển thị"
       }
 
-      Không markdown, không ký hiệu đặc biệt.
-      ${description ? `Mô tả thêm: ${description}` : ''}
+      DỮ LIỆU ĐẦU VÀO:
+      - Tên sách: "${title}"
+      ${description ? `- Mô tả thêm: ${description}` : ''}
       `;
 
     try {
       const res = await this.safeChatCompletion({
         messages: [{ role: 'user', content: prompt }],
-        maxTokens: 400,
+        maxTokens: 800,
+        temperature: 0.7,
       });
 
       if (!res.choices || !res.choices[0]?.message?.content) {
@@ -312,8 +322,6 @@ KHÔNG sử dụng markdown, KHÔNG gạch ngang, KHÔNG dùng ký hiệu ~~ ho�
       .slice(0, 5);
   }
 
-
-  // hàm dựng prompt Ai để recommend nếu chưa có Embedding (fallback sang AI text machine)
 
   // hàm dựng prompt AI để recommend nếu chưa có Embedding
   // chỉ dùng khi KHÔNG có embedding (fallback)

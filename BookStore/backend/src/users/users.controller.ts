@@ -101,7 +101,10 @@ export class UsersController {
 
   @Post('forgot-password')
   async forgotPassword(@Body('email') email: string) {
-    return this.authService.handleForgotPassword(email);
+    await this.authService.handleForgotPassword(email);
+    return {
+      message: 'Email đặt lại mật khẩu đã được gửi'
+    }
   }
 
   @Post('reset-password-link')

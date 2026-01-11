@@ -39,15 +39,31 @@ export class BooksService {
 
   private async attachAuthorName(books: any[]): Promise<any[]> {
     const authors = await this.authorModel.find({}, { name: 1 }).lean();
-    const authorMap = new Map(authors.map(a => [a._id.toString(), a.name]));
+    const authorMap = new Map(
+      authors.map(a => [a._id.toString(), a.name])
+    );
 
-    return books.map(book => ({
-      ...book,
-      authorName:
-        typeof book.author === "object" && book.author !== null && "name" in book.author
-          ? (book.author as any).name
-          : authorMap.get(book.author?.toString?.()) ?? "Không rõ"
-    }));
+    return books.map(book => {
+      let authorName: string | null = null;
+
+      // Trường hợp đã populate author
+      if (
+        typeof book.author === 'object' &&
+        book.author !== null &&
+        'name' in book.author
+      ) {
+        authorName = (book.author as any).name ?? null;
+      }
+      // Trường hợp author là ObjectId
+      else if (book.author) {
+        authorName = authorMap.get(book.author.toString()) ?? null;
+      }
+
+      return {
+        ...book,
+        authorName
+      };
+    });
   }
 
   async findAllBooks(page = 1, limit = 20) {
@@ -238,13 +254,20 @@ export class BooksService {
   }
 
   async findOne(id: string): Promise<Book | null> {
-    return this.bookModel
+    const book = await this.bookModel
       .findById(id)
-      .populate('author')
+      .populate('category')
       .populate('supplierId', 'name code email phone address')
-      .exec(); // ✅ Tự động lấy dữ liệu tác giả từ DB
-  }
+      .exec();
 
+    if (!book) return null;
+
+    if (book.author instanceof Types.ObjectId) {
+      await book.populate('author');
+    }
+
+    return book;
+  }
   
   async update(id: string, updateData: Partial<Book>): Promise<Book | null> {
       return this.bookModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
@@ -604,20 +627,18 @@ export class BooksService {
 
   //reference book
   async getReferenceBooks() {
-    // Hai slug cha cần hiển thị
     const parentSlugs = ['sach-tham-khao', 'sach-trong-nuoc'];
 
-    // Lấy category cha
-    const categories = await this.categoryModel.find({ slug: { $in: parentSlugs } }).lean();
+    const categories = await this.categoryModel
+      .find({ slug: { $in: parentSlugs } })
+      .lean();
 
-    // Lấy slug con riêng biệt cho từng category
     const childrenMap: Record<string, string[]> = {};
     for (const cat of categories) {
       const childSlugs = await this.getAllChildrenSlugs(cat._id.toString());
       childrenMap[cat.slug] = [cat.slug, ...childSlugs];
     }
 
-    // ✅ Lấy sách tham khảo
     const sachThamKhao = await this.bookModel.find(
       { categoryName: { $in: childrenMap['sach-tham-khao'] || [] } },
       {
@@ -631,7 +652,6 @@ export class BooksService {
       }
     ).lean();
 
-    // ✅ Lấy sách trong nước
     const sachTrongNuoc = await this.bookModel.find(
       { categoryName: { $in: childrenMap['sach-trong-nuoc'] || [] } },
       {
@@ -645,18 +665,24 @@ export class BooksService {
       }
     ).lean();
 
-    // ✅ Map tên tác giả (giống getFeaturedBooks)
     const authors = await this.authorModel.find({}, { name: 1 }).lean();
     const authorMap = new Map(authors.map(a => [a._id.toString(), a.name]));
 
     const attachAuthorName = (books: any[]) =>
-      books.map(b => ({
-        ...b,
-        authorName:
-          typeof b.author === "object" && b.author !== null && "name" in b.author
-            ? (b.author as any).name
-            : authorMap.get(b.author?.toString?.()) ?? "Không rõ"
-      }));
+      books.map(b => {
+        let authorName: string | null = null;
+
+        if (typeof b.author === 'object' && b.author !== null && 'name' in b.author) {
+          authorName = (b.author as any).name;
+        } else if (b.author) {
+          authorName = authorMap.get(b.author.toString()) ?? null;
+        }
+
+        return {
+          ...b,
+          authorName,
+        };
+      });
 
     return {
       sachThamKhao: attachAuthorName(sachThamKhao),
@@ -664,7 +690,9 @@ export class BooksService {
     };
   }
 
+
 }
+
 const idStr = (v: any) => (v == null ? undefined : String(v));
 const toObjectIds = (ids: (string | undefined)[]) =>
   ids.filter(Boolean)

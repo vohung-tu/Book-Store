@@ -359,9 +359,12 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private loadReferenceBooks(): void {
-    if (this.referenceCarouselKey > 0) return;
+  private referenceLoaded = false;
 
+  private loadReferenceBooks(): void {
+    if (this.referenceLoaded) return;
+
+    this.referenceLoaded = true;
     this.isLoadingReference = true;
 
     this.bookService.getReferenceBooks()
@@ -370,17 +373,11 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
         catchError(() => of({ sachThamKhao: [], sachTrongNuoc: [] }))
       )
       .subscribe(res => {
-        this.sachThamKhao = [...res.sachThamKhao];
-        this.sachTrongNuoc = [...res.sachTrongNuoc];
-
+        this.sachThamKhao = res.sachThamKhao ?? [];
+        this.sachTrongNuoc = res.sachTrongNuoc ?? [];
         this.isLoadingReference = false;
-
-        this.referenceCarouselKey++;
-
-        this.cdr.detectChanges();
       });
   }
-
   setFavicon(iconUrl: string) {
     const link: HTMLLinkElement | null = document.querySelector(
       "link[rel*='icon']"

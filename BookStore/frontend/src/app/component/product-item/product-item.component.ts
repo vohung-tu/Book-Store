@@ -42,7 +42,7 @@ export class ProductItemComponent implements OnInit{
   isFavorite = false;
   averageRating = 0;
   reviews: Review[] = [];
-  authorName: string = 'Không rõ';
+  authorName: string | null = null;
   authorId: string | null = null; 
 
   review: Review = {
@@ -64,45 +64,47 @@ export class ProductItemComponent implements OnInit{
   ) {}
 
   ngOnInit(): void {
-    if (this.book && this.book._id) {
-      // === Kiểm tra tác giả trước khi xử lý ===
-      if (!this.book.author) {
-        this.authorName = 'Không rõ';
-        this.authorId = null;
-      } else if (typeof this.book.author === 'object') {
-        // Đã populate
-        this.authorName = this.book.author.name || 'Không rõ';
-        this.authorId = this.book.author._id || null;
-      } else if (typeof this.book.author === 'string') {
-        // Chưa populate → gọi API
+    if (!this.book || !this.book._id) return;
+
+    // ===== TÁC GIẢ =====
+    this.authorName = null;
+    this.authorId = null;
+
+    if (this.book.author) {
+      // Đã populate
+      if (typeof this.book.author === 'object') {
+        this.authorName = this.book.author.name ?? null;
+        this.authorId = this.book.author._id ?? null;
+      }
+      // Chưa populate → gọi API
+      else if (typeof this.book.author === 'string') {
         this.authorService.getAuthorById(this.book.author).subscribe({
           next: (author) => {
-            this.authorName = author?.name || 'Không rõ';
-            this.authorId = author?._id || null;
+            this.authorName = author?.name ?? null;
+            this.authorId = author?._id ?? null;
           },
-          error: (err) => {
-            console.error('Không thể lấy thông tin tác giả', err);
-            this.authorName = 'Không rõ';
+          error: () => {
+            this.authorName = null;
+            this.authorId = null;
           }
         });
       }
-
-      // === Đánh giá ===
-      this.reviewService.getReviews(this.book._id).subscribe(data => {
-        this.reviews = data;
-        const total = this.reviews.length;
-        const sum = this.reviews.reduce((acc, review) => acc + review.rating, 0);
-        this.averageRating = total > 0 ? sum / total : 0;
-      });
-
-      // yêu thích sp
-      this.favoriteService.favorites$.subscribe(favs => {
-        if (this.book && this.book._id) {
-          this.isFavorite = favs.some(f => f._id === this.book._id);
-        }
-      });
     }
+
+    // ===== ĐÁNH GIÁ =====
+    this.reviewService.getReviews(this.book._id).subscribe(data => {
+      this.reviews = data;
+      const total = data.length;
+      const sum = data.reduce((acc, r) => acc + r.rating, 0);
+      this.averageRating = total ? sum / total : 0;
+    });
+
+    // ===== YÊU THÍCH =====
+    this.favoriteService.favorites$.subscribe(favs => {
+      this.isFavorite = favs.some(f => f._id === this.book._id);
+    });
   }
+
 
   toggleFavorite(book: BookDetails) {
     if (!this.authService.isLoggedIn()) {

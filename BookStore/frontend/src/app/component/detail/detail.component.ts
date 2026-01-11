@@ -69,7 +69,7 @@ export class DetailComponent implements OnInit {
   @Input() book!: BookDetails;
   @Input() author: Author | null = null;
   isFavorite = false; // Trạng thái yêu thích
-  books: BookDetails | undefined;
+  books: BookDetails | null = null;
   relatedBooks: BookDetails[] = [];
   quantity: number = 1;
   showDialog = false;
@@ -187,8 +187,33 @@ export class DetailComponent implements OnInit {
     this.showSubImageDialog = true;
   }
 
+  isSchoolSupply(): boolean {
+    return this.books?.categoryName?.slug === 'vpp-dung-cu-hoc-sinh';
+  }
+
+  get displayContributor() {
+  // Ưu tiên tác giả
+    if (this.books?.author) {
+      return {
+        label: 'Tác giả',
+        name: this.books.author.name,
+        link: ['/author', this.books.author._id]
+      };
+    }
+
+    // Không có tác giả → dùng nhà cung cấp
+    if (this.books?.supplierId) {
+      return {
+        label: 'Nhà cung cấp',
+        name: this.books.supplierId.name,
+        link: null
+      };
+    }
+
+    return null;
+  }
+
   recordView(bookId: string) {
-    console.log("Record view:", bookId);
     const user = JSON.parse(localStorage.getItem('user')!);
     if (!user?._id) return;
 
@@ -328,46 +353,101 @@ export class DetailComponent implements OnInit {
         this.loadingSummary = false;
       },
       error: () => {
-        this.summary = '⚠️ Có lỗi khi tạo tóm tắt, vui lòng thử lại.';
+        this.summary = 'Có lỗi khi tạo tóm tắt, vui lòng thử lại.';
         this.loadingSummary = false;
       }
     });
+  }
+
+  extractJson(text: string): any | null {
+    if (!text) return null;
+
+    try {
+      // Loại bỏ toàn bộ code block markdown
+      const cleaned = text
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
+
+      // Lấy JSON object đầu tiên
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if (!match) return null;
+
+      // Parse
+      return JSON.parse(match[0]);
+    } catch (e) {
+      console.error('❌ extractJson failed:', text);
+      return null;
+    }
   }
 
 
   formatSummary(summary: string): string {
     if (!summary) return '';
 
-    // Escape HTML nguy hiểm trước (chỉ escape < và >)
-    let formatted = summary.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const data = this.extractJson(summary);
 
-    // Chuyển **text** -> <strong>text</strong>
-    formatted = formatted.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    if (!data) {
+      // Không có JSON → coi là văn mô tả thường
+      return `<p>${summary}</p>`;
+    }
 
-    // Các tiêu đề section thành <h4>
-    formatted = formatted.replace(/Mở đầu:/gi, "<h4>Mở đầu</h4>");
-    formatted = formatted.replace(/Nội dung:/gi, "<h4>Nội dung</h4>");
-    formatted = formatted.replace(/Điểm nổi bật:/gi, "<h4>Điểm nổi bật</h4>");
-    formatted = formatted.replace(/Vì sao nên đọc:/gi, "<h4>Vì sao nên đọc</h4>");
-    formatted = formatted.replace(/Đối tượng độc giả:/gi, "<h4>Đối tượng độc giả</h4>");
-    formatted = formatted.replace(/Tác giả:/gi, "<h4>Tác giả</h4>");
+    const escape = (t: string) =>
+      t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-    // Bullet points
-    formatted = formatted.replace(/^- (.*)$/gm, "<li>$1</li>");
-    formatted = formatted.replace(/^• (.*)$/gm, "<li>$1</li>");
+    const mainText = [data.intro, data.content]
+      .filter(Boolean)
+      .map(escape)
+      .join(' ');
 
-    // Gom <li> thành <ul>
-    formatted = formatted.replace(/(<li>.*<\/li>\s*)+/g, match => {
-      return `<ul>${match}</ul>`;
-    });
+    let html = `<p>${mainText}</p>`;
 
-    // Giữ xuống dòng còn lại
-    formatted = formatted.replace(/\n/g, "<br>");
+    if (Array.isArray(data.highlights)) {
+      html += `
+        <div class="summary-highlights">
+          <h4>Điểm nổi bật</h4>
+          <ul>
+            ${data.highlights.map((h: string) => `<li>${escape(h)}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
 
-    return formatted;
+    // ===== VÌ SAO NÊN ĐỌC =====
+    if (data.why_read) {
+      html += `
+        <div class="summary-section">
+          <h4>Vì sao nên đọc</h4>
+          <p>${escape(data.why_read)}</p>
+        </div>
+      `;
+    }
+
+    // ===== ĐỐI TƯỢNG ĐỘC GIẢ =====
+    if (data.audience) {
+      html += `
+        <div class="summary-section">
+          <h4>Đối tượng độc giả</h4>
+          <p>${escape(data.audience)}</p>
+        </div>
+      `;
+    }
+
+    // ===== TÁC GIẢ =====
+    if (data.author) {
+      html += `
+        <div class="summary-section">
+          <h4>Tác giả</h4>
+          <p>${escape(data.author)}</p>
+        </div>
+      `;
+    }
+
+
+
+    return html;
   }
-
-  // 🖊️ Tải thông tin tác giả
+  // Tải thông tin tác giả
   private loadAuthorDetails(authorId: string): void {
 
     this.authorService.getAuthorById(authorId).subscribe({
@@ -385,29 +465,29 @@ export class DetailComponent implements OnInit {
 
       this.http.get<any>(`https://book-store-3-svnz.onrender.com/books/${productId}`)
         .subscribe(book => {
-          let authorObj = { name: 'Không rõ', _id: '' };
+          let authorObj = null;
 
+          // Trường hợp author là string (id)
           if (typeof book.author === 'string') {
             const found = authors.find(a => a._id === book.author);
             if (found) {
-              authorObj = {
-                _id: found._id ?? '',
-                name: found.name ?? 'Không rõ'
-              };
-            } else {
-              authorObj = { _id: book.author, name: 'Không rõ' };
+              authorObj = found;
             }
-          } else if (typeof book.author === 'object' && book.author?.name) {
+          }
+
+          // Trường hợp author đã là object
+          else if (typeof book.author === 'object' && book.author?._id) {
             authorObj = book.author;
           }
 
           this.product = {
             ...book,
-            author: authorObj
+            author: authorObj 
           };
         });
     });
   }
+
 
   stripHtmlTags(html: string): string {
     const div = document.createElement('div');

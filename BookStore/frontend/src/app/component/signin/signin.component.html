@@ -23,14 +23,26 @@
             <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
           
-          <mat-error *ngIf="signinForm.get('password')?.invalid && signinForm.get('password')?.touched">
-            <ng-container *ngIf="signinForm.get('password')?.hasError('minlength')">
-              Mật khẩu phải có ít nhất 6 ký tự
+          <mat-error
+            *ngIf="signinForm.get('password')?.invalid && signinForm.get('password')?.touched"
+          >
+            <!-- Chưa nhập mật khẩu -->
+            <ng-container *ngIf="signinForm.get('password')?.hasError('required'); else passwordRule">
+              Vui lòng nhập mật khẩu hợp lệ
             </ng-container>
-            <ng-container *ngIf="signinForm.get('password')?.hasError('weakPassword')">
-              và 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt.
-            </ng-container>
+
+            <!-- Đã nhập nhưng chưa đủ điều kiện -->
+            <ng-template #passwordRule>
+              Mật khẩu phải có ít nhất:
+              <span *ngIf="signinForm.get('password')?.hasError('minlength')"> 6 ký tự,</span>
+              <span *ngIf="signinForm.get('password')?.hasError('uppercase')"> 1 chữ hoa,</span>
+              <span *ngIf="signinForm.get('password')?.hasError('lowercase')"> 1 chữ thường,</span>
+              <span *ngIf="signinForm.get('password')?.hasError('number')"> 1 chữ số,</span>
+              <span *ngIf="signinForm.get('password')?.hasError('specialChar')"> 1 ký tự đặc biệt</span>
+            </ng-template>
           </mat-error>
+
+
         </mat-form-field>
       </div>
       <div class="forgot-password">

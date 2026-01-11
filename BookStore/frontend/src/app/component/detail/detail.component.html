@@ -63,25 +63,23 @@
             <h5>{{ books.price | dotSeparator }} đ</h5>
             <div class="discount-badge">-{{ books.discount_percent }}%</div>
           </div>
-          <td style="display: flex;">
-            <b>Tác giả: &nbsp;</b>
-            <a *ngIf="product?.author?._id" 
-              [routerLink]="['/author', product?.author?._id]"
-              class="author-href" style="text-decoration: none; color: #105191">
-              {{ product?.author?.name || 'Không rõ' }}
+          <td *ngIf="books.author?.name ">
+            <b>Tác giả:&nbsp;</b>
+            <a
+              [routerLink]="['/author', books.author._id]"
+              class="author-href"
+              style="text-decoration: none; color: #105191">
+              {{ books.author.name }}
             </a>
-            <span *ngIf="!product?.author?._id">
-              {{ product?.author?.name || 'Không rõ' }}
-            </span>
           </td>
+
           <p *ngIf="books.supplierId">
             <strong>Nhà cung cấp:</strong>
             <span style="margin-left: 4px;">
-              {{ books.supplierId.name || 'Không rõ' }}
+              {{ books.supplierId.name }}
 
             </span>
           </p>
-          <span *ngIf="!book.author?.name">Không rõ</span>
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>
 
           <!-- Hiển thị tồn kho -->
@@ -259,8 +257,11 @@
 
         <div *ngIf="showSummary" class="summary-box">
           <h3>Tóm tắt nội dung (AI)</h3>
-          <p *ngIf="loadingSummary">⏳ Đang tạo tóm tắt...</p>
-          <p *ngIf="!loadingSummary && summary" [innerHTML]="formatSummary(summary)"></p>
+          <div *ngIf="loadingSummary" class="loading-container">
+            <i class="pi pi-hourglass spinning-hourglass"></i>
+            <span>AI đang phân tích và tóm tắt...</span>
+          </div>
+          <p *ngIf="!loadingSummary && summary" [innerHTML]="formatSummary(summary)" class="p-summary"></p>
           <p *ngIf="!loadingSummary && !summary" class="empty">
             Chưa có tóm tắt, vui lòng bấm nút để tạo.
           </p>

@@ -200,20 +200,26 @@ export class AdminProductComponent {
       next: (books) => {
         this.products = books.map((book: any) => {
 
-          const authorObj =
-            typeof book.author === 'object' && book.author?.name
-              ? { _id: book.author._id, name: book.author.name }
-              : { _id: book.author, name: 'Không rõ' };
+          // ===== AUTHOR =====
+          let authorObj = null;
 
-          const supplierObj =
-            typeof book.supplierId === 'object' && book.supplierId?.name
-              ? { _id: book.supplierId._id, name: book.supplierId.name }
-              : this.suppliers.find(s => s._id === book.supplierId) || null;
+          if (typeof book.author === 'object' && book.author?._id) {
+            authorObj = book.author;
+          }
+
+          // ===== SUPPLIER =====
+          let supplierObj = null;
+
+          if (typeof book.supplierId === 'object' && book.supplierId?._id) {
+            supplierObj = book.supplierId;
+          } else {
+            supplierObj = this.suppliers.find(s => s._id === book.supplierId) || null;
+          }
 
           return {
             ...book,
             id: book._id,
-            author: authorObj,
+            author: authorObj,        
             supplierId: supplierObj,
             warehouseStocks: book.warehouseStocks || [],
             storeStocks: book.storeStocks || [],
@@ -224,11 +230,12 @@ export class AdminProductComponent {
         this.loading = false;
       },
       error: (err) => {
-        console.error('❌ Lỗi khi tải sản phẩm:', err);
+        console.error('Lỗi khi tải sản phẩm:', err);
         this.loading = false;
       },
     });
   }
+
 
   openDetails(product: any) {
     this.selectedProduct = product;
@@ -313,7 +320,7 @@ export class AdminProductComponent {
 
       this.editingProduct.coverImage = this.productForm.coverImage;
       this.editingProduct.images = additionalImages;
-      this.editingProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
+      this.editingProduct.author = selectedAuthor || { _id: '', name: '' };
       this.editingProduct.supplierId = this.productForm.supplierId;
 
       this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
@@ -334,7 +341,7 @@ export class AdminProductComponent {
     } else {
       this.newProduct.coverImage = this.productForm.coverImage;
       this.newProduct.images = additionalImages;
-      this.newProduct.author = selectedAuthor || { _id: '', name: 'Không rõ' };
+      this.newProduct.author = selectedAuthor || { _id: '', name: '' };
       this.newProduct.supplierId = this.productForm.supplierId;
 
       this.http.post(`https://book-store-3-svnz.onrender.com/books`, this.newProduct).subscribe({

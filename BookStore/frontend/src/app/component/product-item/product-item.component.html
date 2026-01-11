@@ -1,34 +1,37 @@
 <div class="book-item">
   <img [src]="book.coverImage" alt="{{ book.title }}" />
   <h3>{{ book.title }}</h3>
-  <p>
+
+  <p *ngIf="authorName">
     <b>Tác giả:</b>
-    <span *ngIf="authorId && authorName !== 'Không rõ'" class="author-href">
+    <span class="author-href">
       {{ authorName }}
     </span>
-    <span *ngIf="!authorId || authorName === 'Không rõ'">Không rõ</span>
   </p>
-  <h4>Giá: {{ book.flashsale_price | dotSeparator  }} đ</h4>
+
+  <h4>Giá: {{ book.flashsale_price | dotSeparator }} đ</h4>
+
   <div class="discount">
     <h5>{{ book.price | dotSeparator }} đ</h5>
     <div class="discount-badge">-{{ book.discount_percent }}%</div>
   </div>
-  
+
   <div class="product-meta">
     <div class="rating" *ngIf="reviews.length > 0">
-      <p-rating 
-        [readonly]="true" 
-        [stars]="5" 
+      <p-rating
+        [readonly]="true"
+        [stars]="5"
         [ngModel]="averageRating">
       </p-rating>
       <span class="rating-count">({{ reviews.length }})</span>
     </div>
 
     <div class="sold-info" *ngIf="book.sold">
-      <i class="pi pi-star-fill star-icon" ></i> Đã bán {{ book.sold }}
+      <i class="pi pi-star-fill star-icon"></i>
+      Đã bán {{ book.sold }}
     </div>
   </div>
-  
+
   <!-- Hover icons -->
   <div class="hover-icons">
     <p-button
@@ -41,22 +44,22 @@
       [text]="true"
       [raised]="true"
     />
-    <!-- Button Detail -->
-  <p-button
-    class="detail-btn"
-    [routerLink]="['/details', book._id || book.id]"
-    pButton
-    icon="pi pi-info-circle"
-    [text]="true"
-    [raised]="true"
-  ></p-button>
-  <p-button
-    [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
-    class="heart-btn"
-    (click)="toggleFavorite(book)"
-    [rounded]="true"
-    [text]="true"
-    [raised]="true"
-  />
+
+    <p-button
+      class="detail-btn"
+      [routerLink]="['/details', book._id || book.id]"
+      icon="pi pi-info-circle"
+      [text]="true"
+      [raised]="true"
+    ></p-button>
+
+    <p-button
+      [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
+      class="heart-btn"
+      (click)="toggleFavorite(book)"
+      [rounded]="true"
+      [text]="true"
+      [raised]="true"
+    />
   </div>
 </div>

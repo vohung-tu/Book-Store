@@ -29,7 +29,7 @@
               </ul>
             </div>
             <div class="mega-menu__content" *ngIf="activeCategory">
-              <h4>{{ activeCategory.name }}</h4>
+              <!-- <h4>{{ activeCategory.name }}</h4> -->
               <ng-container *ngIf="activeCategory.children?.length; else noChildren">
               <div class="submenu-column" *ngFor="let sub of activeCategory.children">
                 <h5 (click)="navigateToCategory(sub.slug)">{{ sub.name }}</h5>

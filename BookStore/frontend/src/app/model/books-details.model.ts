@@ -44,7 +44,7 @@ export interface BookDetails {
   cartItemId: string;
   sold?: number;
   summary_ai?: string;
-  supplierId: SupplierInfo;
+  supplierId: SupplierInfo | null;
   warehouseStocks?: BranchStock[];
   storeStocks?: BranchStock[]; 
 }

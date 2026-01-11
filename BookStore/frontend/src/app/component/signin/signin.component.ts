@@ -59,18 +59,32 @@ export class SigninComponent implements OnInit{
   }
 
   passwordStrengthValidator(control: AbstractControl) {
-    const value = control.value;
+    const value: string = control.value;
     if (!value) return null;
 
-    const hasUpperCase = /[A-Z]/.test(value);
-    const hasLowerCase = /[a-z]/.test(value);
-    const hasNumber = /\d/.test(value);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
-    const validLength = value.length >= 6;
+    const errors: any = {};
 
-    const passwordValid = hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar && validLength;
+    if (!/[A-Z]/.test(value)) {
+      errors.uppercase = true;
+    }
 
-    return passwordValid ? null : { weakPassword: true };
+    if (!/[a-z]/.test(value)) {
+      errors.lowercase = true;
+    }
+
+    if (!/\d/.test(value)) {
+      errors.number = true;
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+      errors.specialChar = true;
+    }
+
+    if (value.length < 6) {
+      errors.minlength = true;
+    }
+
+    return Object.keys(errors).length ? errors : null;
   }
 
   // Xử lý đăng nhập

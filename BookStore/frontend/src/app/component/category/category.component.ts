@@ -124,7 +124,11 @@ export class CategoryComponent implements OnInit {
         this.authors = Array.from(
           new Set(
             this.products
-              .map(p => typeof p.author === 'object' ? p.author.name : p.author)
+              .map(p =>
+                p.author && typeof p.author === 'object'
+                  ? p.author.name
+                  : p.author ?? ''
+              )
               .filter(a => !!a)
           )
         );
@@ -181,7 +185,12 @@ export class CategoryComponent implements OnInit {
         (this.selectedPrice === 'medium' && price >= 100000 && price <= 300000) ||
         (this.selectedPrice === 'high' && price > 300000);
 
-      const authorName = typeof product.author === 'object' ? product.author.name : product.author;
+      const authorName =
+        product.author !== null && typeof product.author === 'object'
+          ? product.author.name
+          : typeof product.author === 'string'
+            ? product.author
+            : '';
       const matchesAuthor = !this.selectedAuthor || authorName === this.selectedAuthor;
 
       return matchesPrice && matchesAuthor;
