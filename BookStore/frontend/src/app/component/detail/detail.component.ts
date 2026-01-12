@@ -192,8 +192,10 @@ export class DetailComponent implements OnInit {
   }
 
   get displayContributor() {
-  // Ưu tiên tác giả
-    if (this.books?.author) {
+    // Kiểm tra tác giả hợp lệ
+    if (this.books?.author?._id && 
+        this.books.author.name && 
+        this.books.author.name !== 'Không rõ') {
       return {
         label: 'Tác giả',
         name: this.books.author.name,
@@ -201,8 +203,8 @@ export class DetailComponent implements OnInit {
       };
     }
 
-    // Không có tác giả → dùng nhà cung cấp
-    if (this.books?.supplierId) {
+    // Nếu không có tác giả hợp lệ -> dùng nhà cung cấp
+    if (this.books?.supplierId?.name) {
       return {
         label: 'Nhà cung cấp',
         name: this.books.supplierId.name,

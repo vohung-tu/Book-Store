@@ -263,88 +263,100 @@
 <p-dialog [header]="isEditMode ? 'Sửa sản phẩm' : 'Thêm sản phẩm'" [(visible)]="displayAddDialog" [modal]="true" [closable]="true" [style]="{ width: '600px' }">
   <div class="p-fluid">
     <div class="p-field">
-      <label>Tên sách</label> 
-      <input pInputText type="text" [(ngModel)]="productForm.title" />
+      <label>Tên sách <span style="color: red">*</span></label> 
+      <input pInputText type="text" [(ngModel)]="productForm.title" 
+             [class.ng-invalid]="submitted && !productForm.title" />
+      <small class="p-error" *ngIf="submitted && !productForm.title">Tên sách là bắt buộc.</small>
     </div>
+
     <div class="p-field">
-      <label for="author">Tác giả</label>
-      <p-dropdown 
-        [options]="authors" 
-        optionLabel="name" 
-        optionValue="_id" 
-        [(ngModel)]="productForm.authorId"
-        placeholder="Chọn tác giả"
-        (onChange)="onAuthorSelect($event)">
+      <label>Tác giả <span style="color: red">*</span></label>
+      <p-dropdown [options]="authors" optionLabel="name" optionValue="_id" 
+                  [(ngModel)]="productForm.authorId" placeholder="Chọn tác giả"
+                  [class.ng-invalid]="submitted && !productForm.authorId">
       </p-dropdown>
+      <small class="p-error" *ngIf="submitted && !productForm.authorId">Vui lòng chọn tác giả.</small>
     </div>
+
     <div class="p-field">
       <label>Mô tả</label>
+      <p-editor [(ngModel)]="productForm.description" [style]="{ height: '200px' }"></p-editor>
+    </div>
 
-      <p-editor [(ngModel)]="productForm.description" [style]="{ height: '320px' }" />
+    <div class="p-grid">
+      <div class="p-col p-field">
+        <label>Giá gốc <span style="color: red">*</span></label>
+        <input pInputText type="number" [(ngModel)]="productForm.price" (ngModelChange)="calculateDiscount()"
+               [class.ng-invalid]="submitted && (productForm.price === null || productForm.price < 0)" />
+      </div>
+      <div class="p-col p-field">
+        <label>Giá giảm</label>
+        <input pInputText type="number" [(ngModel)]="productForm.flashsale_price" (ngModelChange)="calculateDiscount()"
+               [class.ng-invalid]="submitted && (productForm.flashsale_price > productForm.price)" />
+      </div>
     </div>
-    <div class="p-field">
-      <label>Giá gốc</label>
-      <input pInputText type="number" [(ngModel)]="productForm.price" />
-    </div>
-    <div class="p-field">
-      <label>Giá giảm</label>
-      <input pInputText type="number" [(ngModel)]="productForm.flashsale_price" />
-    </div>
+    <small class="p-error" *ngIf="submitted && (productForm.flashsale_price > productForm.price)" style="display: block; margin-top: -1rem; margin-bottom: 1rem;">
+      Giá giảm không được lớn hơn giá gốc.
+    </small>
+
     <div class="p-field">
       <label>Giảm (%)</label>
-      <input pInputText type="number" [(ngModel)]="productForm.discount_percent" />
+      <input pInputText type="number" [(ngModel)]="productForm.discount_percent" readonly style="background-color: #f8f9fa;" />
     </div>
+
     <div class="p-field">
-      <label>Ngày phát hành</label>
-      <input
-        pInputText
-        type="date"
-        [ngModel]="formattedPublishedDate"
-        (ngModelChange)="onDateChange($event)"
-      />
-    </div>
-    <div class="p-field">
-      <label for="category">Danh mục</label>
-      <p-dropdown 
-        [options]="categories" 
-        optionLabel="label" 
-        optionValue="value"
-        [(ngModel)]="productForm.categoryName"
-        placeholder="Chọn danh mục">
+      <label>Danh mục <span style="color: red">*</span></label>
+      <p-dropdown [options]="categories" optionLabel="label" optionValue="value"
+                  [(ngModel)]="productForm.categoryName" placeholder="Chọn danh mục"
+                  [class.ng-invalid]="submitted && !productForm.categoryName">
       </p-dropdown>
+      <small class="p-error" *ngIf="submitted && !productForm.categoryName">Vui lòng chọn danh mục.</small>
     </div>
+
     <div class="p-field">
-      <label>Nhà cung cấp</label>
+      <label>Nhà cung cấp <span style="color: red">*</span></label>
       <p-dropdown
         [options]="suppliers"
         optionLabel="name"
-        optionValue="_id"
+        optionValue="_id" 
         [(ngModel)]="productForm.supplierId"
-        placeholder="Chọn nhà cung cấp">
+        placeholder="Chọn nhà cung cấp"
+        [class.ng-invalid]="submitted && !productForm.supplierId">
       </p-dropdown>
+      <small class="p-error" *ngIf="submitted && !productForm.supplierId">Vui lòng chọn nhà cung cấp.</small>
     </div>
+
     <div class="p-field">
       <label>Số lượng</label>
-      <input pInputText type="text" [(ngModel)]="productForm.quantity" />
+      <input pInputText type="number" [(ngModel)]="productForm.quantity" />
     </div>
+
     <div class="p-field">
-      <label>Ảnh phụ</label>
-      <input type="file" multiple (change)="onAdditionalImagesSelected($event)" />
-      <div class="image-preview-container">
-        <img
-          *ngFor="let img of productForm.images"
-          [src]="img"
-          alt="preview"
-          width="100"
-          class="preview-img"
-        />
+      <label>Ảnh bìa <span style="color: red">*</span></label>
+      <input type="file" (change)="onImageSelected($event)" [class.ng-invalid]="submitted && !productForm.coverImage" />
+      <div *ngIf="productForm.coverImage" class="mt-2">
+        <img [src]="productForm.coverImage" alt="preview" width="100" class="preview-img" style="border-radius: 4px; border: 1px solid #ccc;" />
       </div>
-    </div>
-    <div class="p-field">
-      <label>Ảnh bìa</label>
-      <input type="file" (change)="onImageSelected($event)" />
-      <img *ngIf="productForm.coverImage" [src]="productForm.coverImage" alt="preview" width="100" class="preview-img" />
+      <small class="p-error" *ngIf="submitted && !productForm.coverImage">Ảnh bìa là bắt buộc.</small>
     </div>
   </div>
-  <button pButton label="Lưu" (click)="saveProduct()" icon="pi pi-check"></button>
+
+  <div class="p-field">
+    <label>Ảnh phụ</label>
+    <input type="file" multiple (change)="onAdditionalImagesSelected($event)" />
+    <div class="image-preview-container">
+      <img
+        *ngFor="let img of productForm.images"
+        [src]="img"
+        alt="preview"
+        width="100"
+        class="preview-img"
+      />
+    </div>
+  </div>
+
+  <div class="p-dialog-footer">
+    <button pButton label="Hủy" icon="pi pi-times" class="p-button-text" (click)="displayAddDialog=false"></button>
+    <button pButton label="Lưu sản phẩm" icon="pi pi-check" (click)="saveProduct()"></button>
+  </div>
 </p-dialog>

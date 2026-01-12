@@ -1,9 +1,10 @@
+<p-toast></p-toast>
 <div class="container">
   <h2>Kết quả tìm kiếm cho: "{{ keyword }}"</h2>
 
   <div class="grid">
     <div class="col-12 md:col-4" *ngFor="let product of filteredProducts">
-      <app-product-item [book]="product"></app-product-item>
+      <app-product-item [book]="product" (showToast)="handleToast($event)"></app-product-item>
     </div>
   </div>
 

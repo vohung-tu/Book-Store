@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormGroup, FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
@@ -64,6 +64,8 @@ export class AdminProductComponent {
   authors: Author[] = [];
   loading = false;
   suppliers: any[] = [];
+  submitted = false;
+  // productForm! = FormGroup;
 
   categories: { label: string; value: string }[] = [];
 
@@ -91,7 +93,6 @@ export class AdminProductComponent {
     private authorService: AuthorService, 
     private messageService: MessageService,
     private categoryService: CategoryService,
-    private inventoryService: InventoryService,
     private bookService: BooksService
   ) {}
 
@@ -243,6 +244,9 @@ export class AdminProductComponent {
   }
 
   openAddProductDialog() {
+    this.submitted = false;
+    this.isEditMode = false;
+    this.resetProductData();
     this.displayAddDialog = true;
   }
 
@@ -275,6 +279,30 @@ export class AdminProductComponent {
     }
   }
 
+  // Hàm validate trả về true/false và hiển thị toast lỗi
+  validateProduct(): boolean {
+    const p = this.productForm;
+    if (!p.title?.trim()) return false;
+    if (!p.authorId) return false;
+    if (p.price === null || p.price === undefined || p.price < 0) return false;
+    if (p.flashsale_price > p.price) {
+      this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Giá giảm không được lớn hơn giá gốc' });
+      return false;
+    }
+    if (!p.categoryName) return false;
+    if (!p.supplierId) return false;
+    if (!p.coverImage) return false;
+    return true;
+  }
+
+  // Hàm hỗ trợ hiển thị lỗi nhanh
+  showError(detail: string) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Lỗi dữ liệu',
+      detail: detail
+    });
+  }
   onImageSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -307,58 +335,49 @@ export class AdminProductComponent {
     }
   }
 
+  calculateDiscount() {
+    if (this.productForm.price > 0 && this.productForm.flashsale_price >= 0) {
+      const discount = ((this.productForm.price - this.productForm.flashsale_price) / this.productForm.price) * 100;
+      this.productForm.discount_percent = Math.round(discount);
+    }
+  }
+
   saveProduct() {
-    const additionalImages = this.productForm.images || [];
-    const selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
-    const wasEditMode = this.isEditMode; // ⬅️ Lưu trạng thái trước khi reset
+    this.submitted = true; // Kích hoạt tô đỏ trên HTML
+
+    if (!this.validateProduct()) {
+      this.messageService.add({ 
+        severity: 'warn', 
+        summary: 'Thông báo', 
+        detail: 'Vui lòng điền đầy đủ thông tin bắt buộc (ô có viền đỏ)' 
+      });
+      return;
+    }
+
+    const selectedAuthor = this.authors.find(a => a._id === this.productForm.authorId);
+    const payload = {
+      ...this.productForm,
+      author: selectedAuthor ? { _id: selectedAuthor._id, name: selectedAuthor.name } : {}
+    };
 
     if (this.isEditMode) {
-      if (!this.editingProduct?.id) {
-        console.error('Không có ID sản phẩm để cập nhật');
-        return;
-      }
-
-      this.editingProduct.coverImage = this.productForm.coverImage;
-      this.editingProduct.images = additionalImages;
-      this.editingProduct.author = selectedAuthor || { _id: '', name: '' };
-      this.editingProduct.supplierId = this.productForm.supplierId;
-
-      this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, this.editingProduct).subscribe({
-        next: () => {
-          this.fetchProducts();
-          this.resetDialog();
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Thành công',
-            detail: `Sản phẩm đã được ${wasEditMode ? 'cập nhật' : 'thêm mới'}.`,
-            life: 3000
-          });
-        },
-        error: (err) => console.error('Lỗi khi cập nhật sản phẩm', err)
+      this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, payload).subscribe({
+        next: () => this.handleSuccess('Cập nhật thành công'),
+        error: (err) => console.error('Lỗi cập nhật:', err)
       });
-
     } else {
-      this.newProduct.coverImage = this.productForm.coverImage;
-      this.newProduct.images = additionalImages;
-      this.newProduct.author = selectedAuthor || { _id: '', name: '' };
-      this.newProduct.supplierId = this.productForm.supplierId;
-
-      this.http.post(`https://book-store-3-svnz.onrender.com/books`, this.newProduct).subscribe({
-        next: () => {
-          this.fetchProducts();
-          this.resetDialog();
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Thành công',
-            detail: `Sản phẩm  đã được ${wasEditMode ? 'cập nhật' : 'thêm mới'}.`,
-            life: 3000
-          });
-        },
-        error: (err) => console.error('Lỗi khi thêm sản phẩm', err)
+      this.http.post(`https://book-store-3-svnz.onrender.com/books`, payload).subscribe({
+        next: () => this.handleSuccess('Thêm mới thành công'),
+        error: (err) => console.error('Lỗi thêm mới:', err)
       });
     }
+  }
+
+  handleSuccess(message: string) {
+    this.messageService.add({ severity: 'success', summary: 'Thành công', detail: message });
+    this.displayAddDialog = false;
+    this.fetchProducts();
+    this.submitted = false;
   }
 
   resetDialog() {
@@ -403,10 +422,15 @@ export class AdminProductComponent {
   }
 
   editProduct(product: any) {
+    this.submitted = false;
     this.isEditMode = true;
     this.editingProduct = { ...product };
     this.editingProduct.authorId = product.author?._id || '';
-    this.newProduct = { ...product };   
+    this.editingProduct.supplierId = (typeof product.supplierId === 'object') 
+                                    ? product.supplierId?._id 
+                                    : product.supplierId;
+    this.editingProduct.price = product.price || 0;
+    this.editingProduct.flashsale_price = product.flashsale_price || 0;
     this.displayAddDialog = true;
   }
   
@@ -431,6 +455,24 @@ export class AdminProductComponent {
         }
       });
     }
+  }
+
+  resetProductData() {
+    this.newProduct = {
+      title: '',
+      author: {},
+      authorId: '',
+      supplierId: '', 
+      description: '',
+      price: 0,
+      flashsale_price: 0,
+      discount_percent: 0,
+      publishedDate: '',
+      categoryName: '',
+      quantity: 0,
+      images: [],
+      coverImage: '',
+    };
   }
 
   exportProductsToExcel() {

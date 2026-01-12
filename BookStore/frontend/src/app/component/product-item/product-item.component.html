@@ -2,10 +2,10 @@
   <img [src]="book.coverImage" alt="{{ book.title }}" />
   <h3>{{ book.title }}</h3>
 
-  <p *ngIf="authorName">
-    <b>Tác giả:</b>
-    <span class="author-href">
-      {{ authorName }}
+  <p class="contributor-info" *ngIf="displayContributor">
+    <small><b>{{ displayContributor.label }}:</b></small>
+    <span class="author-name">
+      {{ displayContributor.name }}
     </span>
   </p>
 

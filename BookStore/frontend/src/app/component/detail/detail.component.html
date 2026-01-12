@@ -63,21 +63,15 @@
             <h5>{{ books.price | dotSeparator }} đ</h5>
             <div class="discount-badge">-{{ books.discount_percent }}%</div>
           </div>
-          <td *ngIf="books.author?.name ">
-            <b>Tác giả:&nbsp;</b>
-            <a
-              [routerLink]="['/author', books.author._id]"
-              class="author-href"
-              style="text-decoration: none; color: #105191">
-              {{ books.author.name }}
-            </a>
-          </td>
-
-          <p *ngIf="books.supplierId">
-            <strong>Nhà cung cấp:</strong>
+          <p *ngIf="displayContributor">
+            <strong>{{ displayContributor.label }}:</strong>
             <span style="margin-left: 4px;">
-              {{ books.supplierId.name }}
-
+              <a *ngIf="displayContributor.link" 
+                [routerLink]="displayContributor.link" 
+                style="text-decoration: none; color: #105191; font-weight: 500;">
+                {{ displayContributor.name }}
+              </a>
+              <span *ngIf="!displayContributor.link">{{ displayContributor.name }}</span>
             </span>
           </p>
           <p><strong>Năm xuất bản:</strong> {{ books.publishedDate | date:'dd/MM/yyyy' }}</p>

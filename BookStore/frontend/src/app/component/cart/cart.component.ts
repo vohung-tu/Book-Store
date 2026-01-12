@@ -372,6 +372,22 @@ export class CartComponent implements OnInit {
 
   /** Tăng giảm số lượng */
   increaseQuantity(book: BookDetails): void {
+    // Kiểm tra tồn kho trước khi cho phép tăng
+    // Lưu ý: Hãy thay 'count' bằng tên biến tồn kho thực tế của bạn (vd: stock, inventory...)
+    const currentInventory = (book as any).count || 0;
+    const currentQuantityInCart = book.quantity || 1;
+
+    if (currentQuantityInCart >= currentInventory) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Giới hạn tồn kho',
+        detail: `Sách "${book.title}" chỉ còn ${currentInventory} sản phẩm trong kho.`,
+        key: 'tr' // key này phải khớp với p-toast trong HTML nếu bạn có đặt key
+      });
+      return;
+    }
+
+    // Nếu kho còn đủ thì mới gọi service để tăng
     if (this.authService.isLoggedIn()) {
       this.cartService.updateQuantity(book.cartItemId, 1).subscribe();
     } else {
@@ -426,13 +442,32 @@ export class CartComponent implements OnInit {
       return;
     }
 
-    // CHƯA ĐĂNG NHẬP → mở dialog
+    // Kiểm tra danh sách các món bị vượt quá tồn kho
+    const invalidItems = this.selectedBooks.filter(book => {
+      const stock = (book as any).count || 0;
+      return (book.quantity || 1) > stock;
+    });
+
+    if (invalidItems.length > 0) {
+      // Tạo danh sách tên các sản phẩm bị lỗi để hiện lên Toast
+      const errorNames = invalidItems.map(i => `"${i.title}"`).join(', ');
+      
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Không đủ hàng',
+        detail: `Các sản phẩm: ${errorNames} đã vượt quá số lượng trong kho. Vui lòng kiểm tra lại.`,
+        sticky: true // Giữ thông báo cho đến khi người dùng tắt để họ kịp đọc tên sách
+      });
+      return;
+    }
+
+    // Logic đăng nhập
     if (!this.authService.isLoggedIn()) {
       this.loginRequiredDialog = true;
       return;
     }
 
-    // ĐÃ LOGIN → tiếp tục như cũ
+    // Nếu mọi thứ ổn, lưu vào kho tạm và chuyển trang
     localStorage.setItem('cart', JSON.stringify(this.selectedBooks));
     localStorage.setItem('appliedCoupons', JSON.stringify(this.appliedCoupons));
     localStorage.setItem('totalAmount', JSON.stringify(this.totalPrice));

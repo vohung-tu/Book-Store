@@ -4,14 +4,18 @@ import { BooksService } from '../../service/books.service';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProductItemComponent } from '../product-item/product-item.component';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-search',
   standalone: true,
   imports: [
     CommonModule,
-    ProductItemComponent
+    ProductItemComponent,
+    ToastModule
   ],
+  providers: [MessageService],
   templateUrl: './search-page.component.html',
   styleUrl: './search-page.component.scss'
 })
@@ -30,7 +34,8 @@ export class SearchPageComponent implements OnInit{
   }
   constructor(
     private route: ActivatedRoute,
-    private bookService: BooksService
+    private bookService: BooksService,
+    private messageService: MessageService
   ) {}
 
   ngOnInit() {
@@ -53,5 +58,13 @@ export class SearchPageComponent implements OnInit{
     this.filteredProducts = this.products.filter(product =>
       this.normalize(product.title).includes(normalizedKeyword)
     );
+  }
+  handleToast(event: any) {
+    this.messageService.add({
+      severity: event.severity || 'success',
+      summary: event.summary || 'Thành công',
+      detail: event.detail || 'Đã thêm sản phẩm vào giỏ hàng',
+      life: 3000
+    });
   }
 }

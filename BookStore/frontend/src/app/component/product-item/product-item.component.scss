@@ -183,3 +183,25 @@
     }
   }
 }
+.contributor-info {
+  margin: 4px 0;
+  font-size: 0.85rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; // Hiện dấu ... nếu tên quá dài
+  display: block;
+
+  .author-name {
+    margin-left: 4px;
+    color: #105191;
+  }
+}
+
+.book-item h3 {
+  height: 2.8em; // Giữ chiều cao cố định cho tiêu đề để các hàng thẳng nhau
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

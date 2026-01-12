@@ -270,3 +270,26 @@ td {
     box-shadow: 0 1px 3px rgba(34, 197, 94, 0.25);
   }
 }
+:host ::ng-deep {
+  .p-field {
+    margin-bottom: 1.5rem;
+  }
+
+  // Tô đỏ viền cho Input, Dropdown khi có class ng-invalid
+  .ng-invalid {
+    border-color: #f44336 !important;
+  }
+
+  // Nếu muốn tô đỏ cả viền Dropdown của PrimeNG
+  .p-dropdown.ng-invalid {
+    .p-inputtext {
+      border-color: transparent !important;
+    }
+    border: 1px solid #f44336 !important;
+  }
+
+  .p-error {
+    color: #f44336;
+    font-size: 0.875rem;
+  }
+}

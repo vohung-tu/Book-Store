@@ -15,6 +15,7 @@ import { Review } from '../../model/review.model';
 import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 import { AuthorService } from '../../service/author.service';
 import { AuthService } from '../../service/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-product-item',
@@ -44,6 +45,7 @@ export class ProductItemComponent implements OnInit{
   reviews: Review[] = [];
   authorName: string | null = null;
   authorId: string | null = null; 
+  supplierName: string | null = null;
 
   review: Review = {
     productId: '', // gán từ input hoặc route
@@ -60,7 +62,8 @@ export class ProductItemComponent implements OnInit{
     private cartService: CartService,
     private reviewService: ReviewService,
     private authorService: AuthorService,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -71,7 +74,6 @@ export class ProductItemComponent implements OnInit{
     this.authorId = null;
 
     if (this.book.author) {
-      // Đã populate
       if (typeof this.book.author === 'object') {
         this.authorName = this.book.author.name ?? null;
         this.authorId = this.book.author._id ?? null;
@@ -90,6 +92,21 @@ export class ProductItemComponent implements OnInit{
         });
       }
     }
+    
+    if (this.book.supplierId) {
+      if (typeof this.book.supplierId === 'string') {
+        // Gọi API để lấy thông tin NCC từ ID
+        this.http.get<any>(`https://book-store-3-svnz.onrender.com/suppliers/${this.book.supplierId}`)
+          .subscribe({
+            next: (res) => {
+              this.supplierName = res?.name || null;
+            },
+            error: () => this.supplierName = null
+          });
+      } else if (typeof this.book.supplierId === 'object') {
+        this.supplierName = (this.book.supplierId as any).name;
+      }
+    }
 
     // ===== ĐÁNH GIÁ =====
     this.reviewService.getReviews(this.book._id).subscribe(data => {
@@ -105,6 +122,19 @@ export class ProductItemComponent implements OnInit{
     });
   }
 
+  get displayContributor() {
+    // 1. Ưu tiên Tác giả
+    if (this.authorName && this.authorName.trim() !== '' && this.authorName !== 'Không rõ') {
+      return { label: 'Tác giả', name: this.authorName };
+    }
+
+    // 2. Nếu không có tác giả, dùng supplierName vừa lấy được
+    if (this.supplierName) {
+      return { label: 'NCC', name: this.supplierName };
+    }
+
+    return null;
+  }
 
   toggleFavorite(book: BookDetails) {
     if (!this.authService.isLoggedIn()) {
