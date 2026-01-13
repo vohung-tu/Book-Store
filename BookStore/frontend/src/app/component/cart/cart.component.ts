@@ -51,7 +51,7 @@ import { ProductItemComponent } from '../product-item/product-item.component';
   providers: [MessageService]
 })
 export class CartComponent implements OnInit {
-  cart$: Observable<BookDetails[]>;
+  cart$: Observable<BookDetails[]> = new Observable<BookDetails[]>();
   cartData: BookDetails[] = []; // dữ liệu giỏ hàng
   totalPrice: number = 0;       // tổng tiền sau giảm giá
   originalTotal: number = 0;    // tổng gốc chưa giảm
@@ -78,9 +78,12 @@ export class CartComponent implements OnInit {
     private bookService:BooksService,
     private messageService: MessageService
   ) {
-    this.cart$ = this.cartService.getCart();
     this.cart$.subscribe(cart => {
-      this.cartData = cart ?? [];
+      this.cartData = (cart ?? []).map(item => ({
+        ...item,
+        // Đảm bảo nếu có stockQuantity thì dùng, không thì dự phòng bằng count
+        stockQuantity: item.stockQuantity ?? (item as any).count ?? 0 
+      }));
       this.updateTotalWithCoupons();
     });
   }
@@ -373,21 +376,19 @@ export class CartComponent implements OnInit {
   /** Tăng giảm số lượng */
   increaseQuantity(book: BookDetails): void {
     // Kiểm tra tồn kho trước khi cho phép tăng
-    // Lưu ý: Hãy thay 'count' bằng tên biến tồn kho thực tế của bạn (vd: stock, inventory...)
-    const currentInventory = (book as any).count || 0;
+
+    const currentInventory = book.stockQuantity || 0; 
     const currentQuantityInCart = book.quantity || 1;
 
-    if (currentQuantityInCart >= currentInventory) {
+   if (currentQuantityInCart >= currentInventory) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Giới hạn tồn kho',
         detail: `Sách "${book.title}" chỉ còn ${currentInventory} sản phẩm trong kho.`,
-        key: 'tr' // key này phải khớp với p-toast trong HTML nếu bạn có đặt key
       });
       return;
     }
 
-    // Nếu kho còn đủ thì mới gọi service để tăng
     if (this.authService.isLoggedIn()) {
       this.cartService.updateQuantity(book.cartItemId, 1).subscribe();
     } else {
@@ -434,40 +435,30 @@ export class CartComponent implements OnInit {
   /** 🧾 Chuyển sang thanh toán */
   goToCheckout() {
     if (this.selectedBooks.length === 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Chú ý',
-        detail: 'Vui lòng chọn ít nhất một sản phẩm để thanh toán.',
-      });
+      this.messageService.add({ severity: 'warn', summary: 'Chú ý', detail: 'Vui lòng chọn sản phẩm.' });
       return;
     }
 
-    // Kiểm tra danh sách các món bị vượt quá tồn kho
     const invalidItems = this.selectedBooks.filter(book => {
-      const stock = (book as any).count || 0;
+      const stock = (book as any).stockQuantity || 0;
       return (book.quantity || 1) > stock;
     });
 
     if (invalidItems.length > 0) {
-      // Tạo danh sách tên các sản phẩm bị lỗi để hiện lên Toast
-      const errorNames = invalidItems.map(i => `"${i.title}"`).join(', ');
+      const errorDetails = invalidItems.map(i => {
+        const stock = (i as any).stockQuantity || 0;
+        return `"${i.title}" (Còn: ${stock})`;
+      }).join(', ');
       
       this.messageService.add({
         severity: 'error',
         summary: 'Không đủ hàng',
-        detail: `Các sản phẩm: ${errorNames} đã vượt quá số lượng trong kho. Vui lòng kiểm tra lại.`,
-        sticky: true // Giữ thông báo cho đến khi người dùng tắt để họ kịp đọc tên sách
+        detail: `Các sản phẩm: ${errorDetails} không đủ tồn kho.`,
+        sticky: true 
       });
       return;
     }
 
-    // Logic đăng nhập
-    if (!this.authService.isLoggedIn()) {
-      this.loginRequiredDialog = true;
-      return;
-    }
-
-    // Nếu mọi thứ ổn, lưu vào kho tạm và chuyển trang
     localStorage.setItem('cart', JSON.stringify(this.selectedBooks));
     localStorage.setItem('appliedCoupons', JSON.stringify(this.appliedCoupons));
     localStorage.setItem('totalAmount', JSON.stringify(this.totalPrice));
@@ -475,7 +466,6 @@ export class CartComponent implements OnInit {
 
     this.router.navigate(['/checkout']);
   }
-
   goToLogin() {
     this.loginRequiredDialog = false;
 

@@ -13,7 +13,7 @@ export class CartService {
             .find({ user: userId })
             .populate({
             path: 'product',
-            select: 'title price flashsale_price coverImage categoryName',
+            select: 'title price flashsale_price stockQuantity coverImage categoryName',
             })
             .lean();
 
@@ -26,6 +26,7 @@ export class CartService {
             coverImage: it.product?.coverImage,
             categoryName: it.product?.categoryName,
             quantity: it.quantity,
+            stockQuantity: it.product?.stockQuantity ?? 0
         }));
     }
 

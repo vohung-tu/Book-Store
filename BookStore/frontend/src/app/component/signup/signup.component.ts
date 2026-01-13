@@ -52,7 +52,7 @@ export class SignupComponent {
         password: ['', [Validators.required, Validators.minLength(6),this.passwordStrengthValidator]],
         re_password: ['', Validators.required],
         birth: [''],        // Ngày sinh
-        address: ['', Validators.required],                        // Địa chỉ
+        address: [''],                        // Địa chỉ
         email: ['', [Validators.required, Validators.email], [this.emailTakenValidator()]],
         phone_number: ['', Validators.required],
       }, {
@@ -100,39 +100,46 @@ export class SignupComponent {
   onSubmit(): void {
     if (this.signupForm.valid) {
       const formValue = this.signupForm.value;
-  
+
+      // 1. Khởi tạo mảng địa chỉ rỗng
+      let userAddress: { value: string; isDefault: boolean; fullName?: string; phoneNumber?: any }[] = [];
+
+      // 2. Chỉ thêm vào mảng nếu người dùng thực sự nhập gì đó vào ô địa chỉ
+      if (formValue.address && formValue.address.trim() !== '') {
+        userAddress = [
+          {
+            value: formValue.address.trim(),
+            isDefault: true,
+            fullName: formValue.full_name, // Nên lưu kèm tên để tiện giao hàng
+            phoneNumber: formValue.phone_number
+          }
+        ];
+      }
+
+      // 3. Tạo object data để gửi đi
       const userData = {
         ...formValue,
         role: 'user',
-        address: [
-          {
-            value: formValue.address || '',
-            isDefault: true
-          }
-        ]
+        address: userAddress // Sẽ là [] nếu không nhập địa chỉ
       };
-  
-      this.authService.signup(userData).subscribe(
-        () => {
+
+      this.authService.signup(userData).subscribe({
+        next: () => {
           this.messageService.add({
             severity: 'success',
             summary: 'Thành công',
             detail: 'Đăng ký thành công'
           });
-
-          // 👇 Chuyển sang trang đăng nhập sau 1-2 giây
-          setTimeout(() => {
-            this.router.navigate(['/signin']);
-          }, 1500);
+          setTimeout(() => this.router.navigate(['/signin']), 1500);
         },
-        () => {
+        error: (err) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Lỗi',
-            detail: 'Đăng ký thất bại'
+            detail: err.error?.message || 'Đăng ký thất bại'
           });
         }
-      );
+      });
     }
   }
 

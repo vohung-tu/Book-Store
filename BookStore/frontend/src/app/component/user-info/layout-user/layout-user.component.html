@@ -47,8 +47,7 @@
 
         <div class="form-group">
           <label><i class="pi pi-map-marker"></i> Địa chỉ:</label>
-          <input type="text" pInputText [value]="getDefaultAddress()" disabled />
-          <!-- Địa chỉ mặc định, nếu muốn cho chỉnh sửa thì xóa disabled -->
+          <input type="text" pInputText [(ngModel)]="displayAddress" placeholder="Chưa có địa chỉ, vui lòng nhập..." />
         </div>
       </div>      
   

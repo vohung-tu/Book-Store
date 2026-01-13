@@ -45,6 +45,7 @@ export interface BookDetails {
   sold?: number;
   summary_ai?: string;
   supplierId: SupplierInfo | null;
+  stockQuantity?: number;
   warehouseStocks?: BranchStock[];
   storeStocks?: BranchStock[]; 
 }

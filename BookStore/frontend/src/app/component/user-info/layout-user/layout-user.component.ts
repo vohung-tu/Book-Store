@@ -27,6 +27,7 @@ import { ToastModule } from 'primeng/toast';
 export class LayoutUserComponent implements OnInit {
   currentUser: User | null = null;
   birthDate!: string;
+  displayAddress: string = '';
   today: string = new Date().toISOString().split('T')[0];
   
   constructor(private authService: AuthService,
@@ -51,6 +52,8 @@ export class LayoutUserComponent implements OnInit {
       next: (user) => {
         if (user) {
           this.currentUser = user;
+
+          this.displayAddress = this.getDefaultAddress();
 
           // ✅ Di chuyển xử lý birthDate vào đây
           if (this.currentUser.birth) {
@@ -82,24 +85,41 @@ export class LayoutUserComponent implements OnInit {
   onSaveChanges(): void {
     if (!this.currentUser) return;
 
+    // Nếu người dùng nhập địa chỉ vào ô input
+    if (this.displayAddress && this.displayAddress.trim() !== '') {
+      // Nếu user đã có mảng address, cập nhật cái mặc định. Nếu chưa, tạo mới.
+      if (!this.currentUser.address || this.currentUser.address.length === 0) {
+        this.currentUser.address = [{
+          value: this.displayAddress,
+          isDefault: true,
+          fullName: this.currentUser.full_name,
+          phoneNumber: Number(this.currentUser.phone_number)
+        }];
+      } else {
+        // Tìm địa chỉ mặc định để cập nhật giá trị mới từ input
+        const defaultIdx = this.currentUser.address.findIndex((addr: any) => addr.isDefault);
+        if (defaultIdx !== -1) {
+          this.currentUser.address[defaultIdx].value = this.displayAddress;
+        } else {
+          this.currentUser.address[0].value = this.displayAddress;
+        }
+      }
+    }
+
+    // Cập nhật ngày sinh từ biến tạm birthDate vào object trước khi gửi
+    if (this.birthDate) {
+      this.currentUser.birth = new Date(this.birthDate);
+    }
+
     this.authService.updateUser(this.currentUser).subscribe({
       next: (updatedUser) => {
-        this.currentUser = updatedUser as User;
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-
         this.messageService.add({
           severity: 'success',
-          summary: 'Cập nhật thành công',
+          summary: 'Thành công',
           detail: 'Thông tin của bạn đã được lưu.'
         });
       },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Cập nhật thất bại',
-          detail: 'Đã xảy ra lỗi khi lưu thông tin.'
-        });
-      }
+      error: (err) => { /* Xử lý lỗi */ }
     });
   }
 

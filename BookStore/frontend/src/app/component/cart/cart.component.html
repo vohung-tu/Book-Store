@@ -54,14 +54,15 @@
                 
                 <button mat-button 
                         (click)="increaseQuantity(book)"
-                        [disabled]="(book.quantity || 1) >= (book.count || 0)"
-                        [title]="(book.quantity || 1) >= (book.count || 0) ? 'Đã đạt giới hạn tồn kho' : ''">
+                        [disabled]="(book.quantity || 1) >= (book.stockQuantity || 0)"
+                        [title]="(book.quantity || 1) >= (book.stockQuantity || 0) ? 'Đã đạt giới hạn tồn kho' : ''">
                   +
                 </button>
               </div>
 
-              <div *ngIf="book.count <= 10 && book.count > 0" style="color: #e24c4c; font-size: 11px; margin-top: 4px;">
-                Chỉ còn {{ book.count }} sản phẩm
+              <div *ngIf="book.stockQuantity <= 5 && book.stockQuantity > 0" 
+                  style="color: #e24c4c; font-size: 11px; margin-top: 4px;">
+                Chỉ còn {{ book.stockQuantity }} sản phẩm trong kho
               </div>
             </td>
             <td class="total-price">

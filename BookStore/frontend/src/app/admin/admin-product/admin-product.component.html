@@ -78,7 +78,7 @@
         </th>
 
         <th>Tác giả</th>
-        <th>Mô tả</th>
+        <!-- <th>Mô tả</th> -->
         <th>Giá gốc</th>
         <th>Giá giảm</th>
         <th>Số lượng</th>
@@ -105,7 +105,7 @@
           {{ product.author?.name }}
         </td>
 
-        <td>
+        <!-- <td>
           <span
             [innerHTML]="product.description"
             [ngStyle]="{
@@ -123,7 +123,7 @@
           <a class="expanded" (click)="toggleExpand(i)">
             <strong>{{ expandedRows[i] ? 'Thu gọn' : 'Xem thêm' }}</strong>
           </a>
-        </td>
+        </td> -->
 
         <td>{{ product.price | dotSeparator }}</td>
 
