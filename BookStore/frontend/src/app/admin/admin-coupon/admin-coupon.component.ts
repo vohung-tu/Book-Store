@@ -86,15 +86,32 @@ export class CouponsComponent implements OnInit {
   }
 
   editCoupon(c: Coupon) {
-    this.selectedCoupon = { ...c };
+    this.selectedCoupon = {
+      ...c,
+      startDate: c.startDate ? new Date(c.startDate) : undefined,
+      endDate: c.endDate ? new Date(c.endDate) : undefined
+    };
+
     this.isEdit = true;
     this.displayDialog = true;
   }
 
   saveCoupon() {
+    const payload: Coupon = {
+      ...this.selectedCoupon,
+      startDate:
+        this.selectedCoupon.startDate instanceof Date
+          ? this.selectedCoupon.startDate.toISOString()
+          : this.selectedCoupon.startDate,
+      endDate:
+        this.selectedCoupon.endDate instanceof Date
+          ? this.selectedCoupon.endDate.toISOString()
+          : this.selectedCoupon.endDate
+    };
+
     const op = this.isEdit
-      ? this.couponService.updateCoupon(this.selectedCoupon._id!, this.selectedCoupon)
-      : this.couponService.createCoupon(this.selectedCoupon);
+      ? this.couponService.updateCoupon(payload._id!, payload)
+      : this.couponService.createCoupon(payload);
 
     op.subscribe(() => {
       this.loadCoupons();

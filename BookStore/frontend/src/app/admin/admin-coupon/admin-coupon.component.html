@@ -59,8 +59,10 @@
         </td>
         <td><p-tag [value]="c.status" [severity]="c.status==='active'?'success':'danger'"></p-tag></td>
         <td class="actions">
-          <button pButton text icon="pi pi-pencil" (click)="editCoupon(c)"></button>
+          <div class="btn-table" style="gap: 10px;">
+            <button pButton text icon="pi pi-pencil" (click)="editCoupon(c)"></button>
           <button pButton text icon="pi pi-trash" severity="danger" (click)="deleteCoupon(c._id!)"></button>
+          </div>
         </td>
       </tr>
     </ng-template>
@@ -128,7 +130,7 @@
           <textarea pInputTextarea rows="3" [(ngModel)]="selectedCoupon.condition" name="condition"></textarea>
         </div>
 
-        <!-- ✅ Thêm dropdown chọn cấp độ yêu cầu -->
+        <!-- Thêm dropdown chọn cấp độ yêu cầu -->
         <div class="p-field">
           <label>Cấp độ yêu cầu</label>
           <p-multiSelect 

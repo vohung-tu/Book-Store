@@ -112,11 +112,8 @@
         </td>
         <td>{{ author.dateUpdate | date: 'dd/MM/yyyy HH:mm' }}</td>
         <td>
-          <button pButton icon="pi pi-pencil" 
-            (click)="openEditDialog(author)" 
-            class="p-button-rounded p-button-warning p-button-sm">
-          </button>
-          <button pButton icon="pi pi-trash" (click)="onDelete(author._id!)" class="p-button-rounded p-button-danger p-button-sm"></button>
+          <button pButton text icon="pi pi-pencil" (click)="openEditDialog(author)"></button>
+          <button pButton text icon="pi pi-trash" severity="danger" (click)="onDelete(author._id!)" ></button>
         </td>
       </tr>
     </ng-template>

@@ -19,7 +19,7 @@ import { MessageService } from 'primeng/api';
 import { CategoryService } from '../../service/category.service';
 import { Category } from '../../model/books-details.model';
 import { InventoryService } from '../../service/inventory.service';
-import { forkJoin } from 'rxjs';
+import { debounceTime, forkJoin, Subject } from 'rxjs';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { BooksService } from '../../service/books.service';
 import { SidebarModule } from 'primeng/sidebar';
@@ -57,6 +57,7 @@ export class AdminProductComponent {
   editingProduct: any = null;
   isEditMode = false;
   searchText: string = '';
+  
   filteredProducts: any[] = [];
   selectedProducts: any[] = [];
   text: string | undefined;
@@ -65,7 +66,8 @@ export class AdminProductComponent {
   loading = false;
   suppliers: any[] = [];
   submitted = false;
-  // productForm! = FormGroup;
+  supplierMap = new Map<string, any>();
+  authorMap = new Map<string, any>();
 
   categories: { label: string; value: string }[] = [];
 
@@ -87,6 +89,7 @@ export class AdminProductComponent {
   selectedAuthor = this.authors.find(author => author._id === this.productForm.authorId);
   displaySidebar: boolean = false;
   selectedProduct: any = null;
+  private search$ = new Subject<string>();
 
   constructor(
     private http: HttpClient, 
@@ -98,7 +101,9 @@ export class AdminProductComponent {
 
   ngOnInit(): void {
     this.loading = true;
-    this.filteredProducts = this.products;
+    this.search$
+      .pipe(debounceTime(300))
+      .subscribe(() => this.filterProducts());
 
     // 🔁 Chạy song song 3 API: authors, categories, suppliers
     forkJoin({
@@ -107,9 +112,15 @@ export class AdminProductComponent {
       suppliers: this.http.get<any[]>('https://book-store-3-svnz.onrender.com/suppliers')
     }).subscribe({
       next: ({ authors, categories, suppliers }) => {
-        // ✅ Gán dữ liệu trả về
         this.authors = authors;
         this.suppliers = suppliers;
+
+        this.authorMap.clear();
+        this.supplierMap.clear();
+        
+        this.authors.forEach(a => this.authorMap.set(a._id, a));
+        this.suppliers.forEach(s => this.supplierMap.set(s._id, s));
+
         this.categories = categories.map((c: Category) => ({
           label: c.name,
           value: c.slug
@@ -205,7 +216,7 @@ export class AdminProductComponent {
           let authorObj = null;
 
           if (typeof book.author === 'object' && book.author?._id) {
-            authorObj = book.author;
+            authorObj = this.authorMap.get(book.author?._id || book.author) || null;
           }
 
           // ===== SUPPLIER =====
@@ -214,7 +225,7 @@ export class AdminProductComponent {
           if (typeof book.supplierId === 'object' && book.supplierId?._id) {
             supplierObj = book.supplierId;
           } else {
-            supplierObj = this.suppliers.find(s => s._id === book.supplierId) || null;
+            supplierObj = this.supplierMap.get(book.supplierId) || null;
           }
 
           return {

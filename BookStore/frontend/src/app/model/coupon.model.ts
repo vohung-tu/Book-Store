@@ -9,8 +9,8 @@ export interface Coupon {
   minOrder?: number;
   applicableProductIds?: string[];
   categories?: string[];
-  startDate?: string;
-  endDate?: string;
+  startDate?: Date | string;
+  endDate?: Date | string;
 
   requiredLevel?: string[];
 

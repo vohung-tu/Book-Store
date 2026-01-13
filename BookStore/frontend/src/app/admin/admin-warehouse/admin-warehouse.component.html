@@ -17,7 +17,7 @@
         <th>Tên quản lý</th>
         <th>Email quản lý</th>
         <th style="width:130px">SĐT quản lý</th>
-        <th style="width:120px"></th>
+        <th style="width:160px">Thao tác</th>
       </tr>
     </ng-template>
 
@@ -40,11 +40,11 @@
           <button 
             pButton 
             icon="pi pi-eye" 
-            class="p-button-rounded p-button-info"
+            class="p-button-text p-button-info"
             (click)="viewStock(row)">
           </button>
-          <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-warning" (click)="openEdit(row)"></button>
-          <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="remove(row)"></button>
+          <button pButton icon="pi pi-pencil" class="p-button-text" (click)="openEdit(row)"></button>
+          <button pButton icon="pi pi-trash" class="p-button-text p-button-danger" (click)="remove(row)"></button>
         </td>
       </tr>
     </ng-template>

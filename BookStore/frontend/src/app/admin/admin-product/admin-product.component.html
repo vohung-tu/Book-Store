@@ -49,6 +49,7 @@
   <!-- <p-progressSpinner *ngIf="loading"></p-progressSpinner> -->
   <p-table
     #table
+    *ngIf="!loading"
     [value]="filteredProducts"
     [(selection)]="selectedProducts"
     [paginator]="true"
@@ -78,19 +79,17 @@
         </th>
 
         <th>Tác giả</th>
-        <!-- <th>Mô tả</th> -->
         <th>Giá gốc</th>
         <th>Giá giảm</th>
         <th>Số lượng</th>
         <th>Đã bán</th>
-        <th>Ảnh phụ</th>
         <th>Thao tác</th>
       </tr>
     </ng-template>
 
     <!-- BODY -->
     <ng-template pTemplate="body" let-product let-i="index">
-      <tr [pSelectableRow]="product">
+      <tr [pSelectableRow]="product" >
         <td>
           <p-tableCheckbox [value]="product"></p-tableCheckbox>
         </td>
@@ -105,26 +104,6 @@
           {{ product.author?.name }}
         </td>
 
-        <!-- <td>
-          <span
-            [innerHTML]="product.description"
-            [ngStyle]="{
-              'max-height': expandedRows[i] ? '100%' : '82px',
-              'overflow': expandedRows[i] ? 'visible' : 'hidden'
-            }"
-            style="
-              white-space: normal;
-              max-width: 300px;
-              word-wrap: break-word;
-              display: block;
-            "
-          ></span>
-
-          <a class="expanded" (click)="toggleExpand(i)">
-            <strong>{{ expandedRows[i] ? 'Thu gọn' : 'Xem thêm' }}</strong>
-          </a>
-        </td> -->
-
         <td>{{ product.price | dotSeparator }}</td>
 
         <td>{{ product.flashsale_price | dotSeparator }}</td>
@@ -134,50 +113,18 @@
         <td>{{ product.sold }}</td>
 
         <td>
-          <ng-container *ngIf="product.images?.length > 0; else noImages">
-            <img
-              *ngFor="let img of product.images"
-              [src]="img"
-              alt="Ảnh phụ"
-              width="40"
-              height="40"
-              style="
-                margin-right: 4px;
-                object-fit: cover;
-                border-radius: 4px;
-                border: 1px solid #ccc;
-              "
-            />
-          </ng-container>
-
-          <ng-template #noImages>
-            <span style="color: gray; font-style: italic;">Không có ảnh</span>
-          </ng-template>
-        </td>
-
-        <td>
           <div class="btn-table" style="gap: 10px;">
             <button
               pButton
-              type="button"
-              icon="pi pi-pencil"
-              class="p-button-text p-button-sm"
-              (click)="editProduct(product)"
-            ></button>
-
-            <button
-              pButton
-              type="button"
-              icon="pi pi-trash"
-              (click)="deleteProduct(product)"
-            ></button>
-
-            <button
-              pButton
+              text
               icon="pi pi-eye"
+              severity="info"
               class="p-button-text"
               (click)="openDetails(product)"
             ></button>
+
+            <button pButton text icon="pi pi-pencil" (click)="editProduct(product)"></button>
+            <button pButton text icon="pi pi-trash" severity="danger" (click)="deleteProduct(product)"></button>
           </div>
         </td>
       </tr>

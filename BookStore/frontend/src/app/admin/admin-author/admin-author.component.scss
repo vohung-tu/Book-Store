@@ -90,18 +90,6 @@
     }
   }
 
-  button {
-    max-height: 50px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: #e4ebf8;
-    color: #000;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background-color: #d0d8f0;
-    }
-  }
 }
 .expanded {
   font-weight: bold;
