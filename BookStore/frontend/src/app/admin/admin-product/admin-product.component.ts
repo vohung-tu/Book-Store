@@ -104,7 +104,7 @@ export class AdminProductComponent {
     forkJoin({
       authors: this.authorService.getAuthors(),
       categories: this.categoryService.getCategories(),
-      suppliers: this.http.get<any[]>('http://localhost:3000/suppliers')
+      suppliers: this.http.get<any[]>('https://book-store-3-svnz.onrender.com/suppliers')
     }).subscribe({
       next: ({ authors, categories, suppliers }) => {
         // ✅ Gán dữ liệu trả về
@@ -162,7 +162,7 @@ export class AdminProductComponent {
   }
 
   fetchSuppliers() {
-    this.http.get<any[]>('http://localhost:3000/suppliers').subscribe({
+    this.http.get<any[]>('https://book-store-3-svnz.onrender.com/suppliers').subscribe({
       next: data => this.suppliers = data,
       error: err => console.error('❌ Lỗi tải NCC:', err)
     });
@@ -361,12 +361,12 @@ export class AdminProductComponent {
     };
 
     if (this.isEditMode) {
-      this.http.put(`http://localhost:3000/books/${this.editingProduct.id}`, payload).subscribe({
+      this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, payload).subscribe({
         next: () => this.handleSuccess('Cập nhật thành công'),
         error: (err) => console.error('Lỗi cập nhật:', err)
       });
     } else {
-      this.http.post(`http://localhost:3000/books`, payload).subscribe({
+      this.http.post(`https://book-store-3-svnz.onrender.com/books`, payload).subscribe({
         next: () => this.handleSuccess('Thêm mới thành công'),
         error: (err) => console.error('Lỗi thêm mới:', err)
       });
@@ -436,7 +436,7 @@ export class AdminProductComponent {
   
   deleteProduct(product: any) {
     if (confirm(`Bạn có chắc muốn xoá sản phẩm "${product.title}"?`)) {
-      this.http.delete(`http://localhost:3000/books/${product.id}`).subscribe({
+      this.http.delete(`https://book-store-3-svnz.onrender.com/books/${product.id}`).subscribe({
         next: () => {
           this.products = this.products.filter(p => p.id !== product.id);
           this.messageService.add({

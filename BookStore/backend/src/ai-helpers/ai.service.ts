@@ -58,7 +58,7 @@ export class AiService {
     temperature?: number;
   }) {
     return this.client.chat.completions.create({
-      model: 'mistralai/mistral-7b-instruct', 
+      model: 'openai/gpt-4o-mini',
       messages: options.messages,
       max_tokens: Math.min(options.maxTokens ?? 200, 1000),
       temperature: options.temperature ?? 0.5

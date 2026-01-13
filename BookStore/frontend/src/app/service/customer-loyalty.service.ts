@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class CustomerLoyaltyService {
-  private baseUrl = 'http://localhost:3000/admin/loyalty';
+  private baseUrl = 'https://book-store-3-svnz.onrender.com/admin/loyalty';
 
   constructor(private http: HttpClient) {}
 

@@ -18,7 +18,7 @@ export interface PayOSCreatePaymentApiResponse {
 
 @Injectable({ providedIn: 'root' })
 export class PayOSPaymentService {
-  private base = 'http://localhost:3000';
+  private base = 'https://book-store-3-svnz.onrender.com';
 
   constructor(private http: HttpClient) {}
 

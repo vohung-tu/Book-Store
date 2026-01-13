@@ -17,7 +17,7 @@ export interface StoreBranch {
 
 @Injectable({ providedIn: 'root' })
 export class StoreBranchService {
-  private base = `http://localhost:3000/store-branches`;
+  private base = `https://book-store-3-svnz.onrender.com/store-branches`;
 
   constructor(private http: HttpClient) {}
 

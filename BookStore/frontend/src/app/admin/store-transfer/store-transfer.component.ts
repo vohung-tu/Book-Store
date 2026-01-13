@@ -89,7 +89,7 @@ export class StoreTransferComponent implements OnInit {
   }
 
   loadWarehouses() {
-    this.http.get<any[]>('http://localhost:3000/inventory/branches').subscribe({
+    this.http.get<any[]>('https://book-store-3-svnz.onrender.com/inventory/branches').subscribe({
       next: (res) => (this.warehouses = res || []),
       error: () => this.toastError('Không tải được danh sách kho')
     });

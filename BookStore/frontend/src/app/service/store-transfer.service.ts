@@ -16,7 +16,7 @@ export interface StoreTransferPayload {
 
 @Injectable({ providedIn: 'root' })
 export class StoreTransferService {
-  private base = 'http://localhost:3000/inventory/store-transfer';
+  private base = 'https://book-store-3-svnz.onrender.com/inventory/store-transfer';
 
   constructor(private http: HttpClient) {}
 

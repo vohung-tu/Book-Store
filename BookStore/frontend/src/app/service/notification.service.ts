@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class NotificationService {
-  private readonly baseUrl = `http://localhost:3000/notifications`;
+  private readonly baseUrl = `https://book-store-3-svnz.onrender.com/notifications`;
 
   constructor(private http: HttpClient) {}
 

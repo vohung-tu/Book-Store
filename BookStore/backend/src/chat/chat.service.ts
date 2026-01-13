@@ -128,8 +128,19 @@ export class ChatService {
     const topBooks = await this.bookModel.find().sort({ sold: -1 }).limit(5).lean();
     const context = topBooks.map((b) => `- ${b.title} (${this.formatVND(b.price)})`).join('\n');
     const aiReply = await this.aiService.chatWithAI(
-      'Bạn là tư vấn viên bán sách.',
-      `Người dùng yêu cầu tư vấn sách: "${message}". Đây là top sách bán chạy:\n${context}\nHãy gợi ý phù hợp.`
+      'Bạn là tư vấn viên bán sách cho website.',
+      `
+    Người dùng yêu cầu tư vấn sách: "${message}"
+
+    DANH SÁCH SÁCH DUY NHẤT ĐƯỢC PHÉP SỬ DỤNG:
+    ${context}
+
+    QUY TẮC BẮT BUỘC:
+    - CHỈ được gợi ý sách có trong danh sách trên
+    - TUYỆT ĐỐI KHÔNG bịa thêm sách ngoài danh sách
+    - Nếu không có sách phù hợp, hãy nói rõ "Hiện chưa có sách phù hợp"
+    - Trả lời tự nhiên, thân thiện
+    `
     );
     return this.replyAndSave(userId, aiReply, topBooks);
   }

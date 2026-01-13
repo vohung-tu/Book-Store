@@ -219,7 +219,7 @@ export class DetailComponent implements OnInit {
     const user = JSON.parse(localStorage.getItem('user')!);
     if (!user?._id) return;
 
-    this.http.post('http://localhost:3000/view-history/record', {
+    this.http.post('https://book-store-3-svnz.onrender.com/view-history/record', {
       userId: user._id,
       bookId: bookId
     }).subscribe();
@@ -465,7 +465,7 @@ export class DetailComponent implements OnInit {
     this.authorService.getAuthors().subscribe(authors => {
       this.authors = authors;
 
-      this.http.get<any>(`http://localhost:3000/books/${productId}`)
+      this.http.get<any>(`https://book-store-3-svnz.onrender.com/books/${productId}`)
         .subscribe(book => {
           let authorObj = null;
 
