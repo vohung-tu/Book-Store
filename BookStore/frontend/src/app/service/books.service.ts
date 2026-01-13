@@ -24,6 +24,10 @@ export class BooksService {
     );
   }
 
+  deleteMany(ids: string[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/delete-many`, { ids });
+  }
+
 // Lấy chi tiết sách theo ID từ backend và ánh xạ _id -> id
   getBookById(id: string): Observable<BookDetails> {
     return this.http.get<BookDetails>(`${this.apiUrl}/${id}`).pipe(
@@ -118,4 +122,7 @@ export class BooksService {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/recommend-user/${userId}`);
   }
 
+  createBook(payload: any): Observable<BookDetails> {
+    return this.http.post<BookDetails>(this.apiUrl, payload);
+  }
 }   

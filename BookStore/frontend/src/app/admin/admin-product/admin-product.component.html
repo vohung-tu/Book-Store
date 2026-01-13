@@ -292,11 +292,14 @@
     </div>
 
     <div class="p-field">
-      <label>Danh mục <span style="color: red">*</span></label>
-      <p-dropdown [options]="categories" optionLabel="label" optionValue="value"
-                  [(ngModel)]="productForm.categoryName" placeholder="Chọn danh mục"
-                  [class.ng-invalid]="submitted && !productForm.categoryName">
-      </p-dropdown>
+      <label for="category">Danh mục <span style="color: red">*</span></label>
+      <p-dropdown
+        [options]="categories"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="productForm.categoryId"
+        placeholder="Chọn danh mục"
+      ></p-dropdown>
       <small class="p-error" *ngIf="submitted && !productForm.categoryName">Vui lòng chọn danh mục.</small>
     </div>
 

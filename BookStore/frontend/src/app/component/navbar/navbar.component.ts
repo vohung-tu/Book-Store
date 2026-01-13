@@ -99,22 +99,20 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isLoggedIn$ = this.authService.isLoggedIn$;
 
-    // 🛒 Đếm số lượng sản phẩm trong giỏ
-    if (this.authService.isLoggedIn()) {
-      this.cartService.getCart().subscribe({
+    this.cartService.getCart()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
         next: (cart) => {
-          this.cartItemCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+          this.cartItemCount = cart.reduce(
+            (sum, item) => sum + (item.quantity || 1),
+            0
+          );
         },
-        error: (err) => {
-          console.error('Error loading cart:', err);
+        error: () => {
           this.cartItemCount = 0;
         }
       });
-    } else {
-      this.cartItemCount = 0;
-    }
 
-    // 👤 Lấy thông tin user hiện tại
     this.authService.user$
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
@@ -123,41 +121,36 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
         this.resolveLocationDisplay(user);
 
-        // Nếu login → load address list (không ghi đè locationText)
         if (user?._id) {
           this.authService.getAddresses(user._id).subscribe(res => {
             this.addressList = res.address || [];
           });
         }
       });
-    this.userRole = this.currentUser?.role || null;
+
     this.getCurrentUser();
 
-    // 📚 Lấy cây danh mục
     this.categoryService.getTree().subscribe(cats => {
       this.categories = cats;
     });
 
     const savedAddress = sessionStorage.getItem('selectedAddress');
-
     if (savedAddress) {
-      // Ưu tiên địa chỉ đã chọn
       this.locationText = savedAddress;
     } else {
-      // Chưa chọn → dùng GPS
       this.getUserLocation();
     }
 
     this.loadNotifications();
 
-    // Polling mỗi 30s để đơn giản (sau này thích thì đổi sang socket)
     this.pollingSub = interval(30000)
-      .pipe(switchMap(() => this.notificationService.getMyNotifications(20)))
-      .subscribe({
-        next: (data) => {
-          this.notifications = data as any;
-          this.updateUnreadCount();
-        },
+      .pipe(
+        switchMap(() => this.notificationService.getMyNotifications(20)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(data => {
+        this.notifications = data as any;
+        this.updateUnreadCount();
       });
   }
 

@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../service/auth.service';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabel } from 'primeng/floatlabel';
-import { Toast } from 'primeng/toast';
+import { Toast, ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-reset-password-link',
@@ -16,7 +16,8 @@ import { Toast } from 'primeng/toast';
     FormsModule,
     ReactiveFormsModule,
     InputTextModule, 
-    Toast
+    FloatLabel,
+    ToastModule
   ],
   templateUrl: './reset-password-link.component.html',
   styleUrls: ['./reset-password-link.component.scss'],
@@ -42,14 +43,35 @@ export class ResetPasswordLinkComponent {
     }
 
     this.form = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[A-Z])(?=.*\d).+$/)]],
+      newPassword: ['', [Validators.required, Validators.minLength(6),this.passwordStrengthValidator]],
       confirmPassword: ['', Validators.required]
-    }, { validators: this.matchPasswords });
+    }, { validators: this.passwordsMatchValidator });
   }
 
-  matchPasswords(group: FormGroup) {
-    return group.get('newPassword')?.value === group.get('confirmPassword')?.value
-      ? null : { passwordMismatch: true };
+  passwordStrengthValidator(control: AbstractControl) {
+    const value = control.value;
+    if (!value) return null;
+
+    const hasUpperCase = /[A-Z]/.test(value);
+    const hasLowerCase = /[a-z]/.test(value);
+    const hasNumber = /\d/.test(value);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+    const validLength = value.length >= 6;
+
+    const passwordValid =
+      hasUpperCase &&
+      hasLowerCase &&
+      hasNumber &&
+      hasSpecialChar &&
+      validLength;
+
+    return passwordValid ? null : { weakPassword: true };
+  }
+
+  passwordsMatchValidator(form: FormGroup) {
+    const newPassword = form.get('newPassword')?.value;
+    const confirmPassword = form.get('confirmPassword')?.value;
+    return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
   onSubmit(): void {

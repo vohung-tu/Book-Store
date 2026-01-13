@@ -172,13 +172,6 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     return order._id;
   }
 
-  // Khi chọn tab, cập nhật selectedTab (sử dụng lowercase để so sánh)
-  // selectTab(tabValue: string): void {
-  //   this.selectedTab = tabValue.toLowerCase();
-  //   console.log('Selected Tab:', this.selectedTab);
-  //   this.filterOrdersByTab();
-  // }
-
   openCancelDialog(orderId: string) {
     this.selectedOrderIdToCancel = orderId;
     this.cancelDialogVisible = true;
@@ -213,24 +206,24 @@ export class UserOrderComponent implements OnInit, OnDestroy {
   }
 
   calculateDiscount(order: Order): number {
-    // Tổng giảm giá = tổng (giá gốc - giá thực trả) * số lượng
     return order.products.reduce((acc, product) => {
       const originalPrice = product.price;
-      const effectivePrice = product.flashsale_price > 0 
-        ? product.flashsale_price 
-        : (product.discount_percent > 0 
-            ? product.price * (1 - product.discount_percent / 100) 
-            : product.price);
+      let effectivePrice = product.price;
+
+      if (product.flashsale_price && product.flashsale_price > 0) {
+        effectivePrice = product.flashsale_price;
+      } else if (product.discount_percent && product.discount_percent > 0) {
+        effectivePrice = product.price * (1 - product.discount_percent / 100);
+      }
 
       const diff = originalPrice - effectivePrice;
+      // Đảm bảo chỉ cộng dồn chênh lệch giá sản phẩm * số lượng
       return acc + (diff > 0 ? diff * product.quantity : 0);
     }, 0);
   }
 
-    getFinalTotal(order: Order): number {
-    const shipping = this.getShippingFee(order);
-
-    return Math.max(order.total + shipping, 0);
+  getFinalTotal(order: Order): number {
+    return Math.max(order.total, 0);
   }
   
   // Tính số đơn theo trạng thái (sử dụng lowercase để so sánh)
@@ -360,17 +353,17 @@ export class UserOrderComponent implements OnInit, OnDestroy {
   }
 
   getShippingFee(order: Order): number {
-    if (!order || !order.address || !order.storeBranch?.region) return 25000;
+    if (!order || !order.address || !order.storeBranch?.region) return 20000;
 
     const userRegion = this.getRegionFromAddress(order.address);
     const branchRegion = order.storeBranch.region;
 
-    if (!userRegion) return 25000;
+    if (!userRegion) return 20000;
 
     // Cùng miền → freeship
     if (userRegion === branchRegion) return 0;
 
-    return 25000;
+    return 20000;
   }
 
 }

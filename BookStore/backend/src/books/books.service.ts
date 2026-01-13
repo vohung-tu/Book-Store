@@ -252,6 +252,11 @@ export class BooksService {
       throw new InternalServerErrorException('Không thể cập nhật summary_ai cho sách');
     }
   }
+  async deleteMany(ids: string[]) {
+    return this.bookModel.deleteMany({
+      _id: { $in: ids }
+    });
+  }
 
   async findOne(id: string): Promise<Book | null> {
     const book = await this.bookModel
