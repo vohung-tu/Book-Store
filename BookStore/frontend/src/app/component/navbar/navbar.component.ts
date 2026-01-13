@@ -24,6 +24,7 @@ import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { NotificationService } from '../../service/notification.service';
 import { UserNotification } from '../../model/notification.model';
+import { ClickOutsideDirective } from '../../shared/directives/click-outside.directive';
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
@@ -44,7 +45,8 @@ import { UserNotification } from '../../model/notification.model';
     FormsModule,
     MegaMenuModule,
     DialogModule,
-    ToastModule
+    ToastModule,
+    ClickOutsideDirective
   ],
   styleUrls: ['./navbar.component.scss'],
   providers: [MessageService]
@@ -366,8 +368,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   hideSuggestions() {
-
-    setTimeout(() => this.showSuggestions = false, 150);
+    this.suggestions = [];
   }
 
   onSearch() {

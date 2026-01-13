@@ -23,6 +23,9 @@ export class SearchPageComponent implements OnInit{
   keyword: string = '';
   products: BookDetails[] = [];
   filteredProducts: BookDetails[] = [];
+  isLoading = false;
+  loadTime = 0;
+  private startTime = 0;
 
   normalize(value: string): string {
     return value
@@ -39,26 +42,35 @@ export class SearchPageComponent implements OnInit{
   ) {}
 
   ngOnInit() {
-  this.route.queryParams.subscribe(params => {
-    this.keyword = params['keyword'] || '';
+    this.route.queryParams.subscribe(params => {
+      this.keyword = params['keyword'] || '';
 
-    if (this.keyword) {
-      // this.isLoading = true;
+      this.isLoading = true;
+      this.startTime = performance.now();
 
-      this.bookService.searchBooks(this.keyword)
-        .subscribe(res => {
-          this.filteredProducts = res;
-          // this.isLoading = false;
-        });
-    }
-  });
-}
+      this.bookService.getBooks().subscribe({
+        next: (res) => {
+          this.products = res;
+          this.applyFilter();
+        },
+        error: () => {
+          this.isLoading = false;
+        },
+        complete: () => {
+          this.loadTime = Math.round(performance.now() - this.startTime);
+          this.isLoading = false;
+        }
+      });
+    });
+  }
+
   applyFilter() {
     const normalizedKeyword = this.normalize(this.keyword);
     this.filteredProducts = this.products.filter(product =>
       this.normalize(product.title).includes(normalizedKeyword)
     );
   }
+
   handleToast(event: any) {
     this.messageService.add({
       severity: event.severity || 'success',

@@ -23,6 +23,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { ToastModule } from 'primeng/toast';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { ClickOutsideDirective } from './shared/directives/click-outside.directive';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     HomepageComponent,
     NavbarComponent,
     SignupComponent,
-    SigninComponent
+    SigninComponent,
+    ClickOutsideDirective
   ],
   imports: [
     CommonModule,
@@ -61,5 +63,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
       multi: true,
     },
   ],
+  exports: [
+    ClickOutsideDirective
+  ]
 })
 export class AppModule { }

@@ -15,6 +15,7 @@
         (input)="filterProducts()"
       />
     </div>
+    
     <div class="btn-header" style="display: flex; gap:10px">
       <button
         pButton
@@ -24,7 +25,6 @@
         class="p-button-success"
         (click)="exportProductsToExcel()"
       ></button>
-
       <button
         *ngIf="selectedProducts?.length"
         pButton
@@ -46,7 +46,10 @@
     </div>
 
   </div>
-  <!-- <p-progressSpinner *ngIf="loading"></p-progressSpinner> -->
+  <div *ngIf="loading" class="table-loading">
+    <i class="pi pi-spin pi-spinner"></i>&nbsp;
+    <span>Đang tải danh sách sản phẩm...</span>
+  </div>
   <p-table
     #table
     *ngIf="!loading"
@@ -81,6 +84,8 @@
         <th>Tác giả</th>
         <th>Giá gốc</th>
         <th>Giá giảm</th>
+        <th>Nhà cung cấp</th>
+        <th>Danh mục</th>
         <th>Số lượng</th>
         <th>Đã bán</th>
         <th>Thao tác</th>
@@ -107,6 +112,10 @@
         <td>{{ product.price | dotSeparator }}</td>
 
         <td>{{ product.flashsale_price | dotSeparator }}</td>
+
+        <td>{{ product.supplierId?.name }}</td>
+
+        <td>{{ getCategoryLabel(product.categoryName) }}</td>
 
         <td>{{ product.quantity }}</td>
 
@@ -233,13 +242,39 @@
     <div class="p-grid">
       <div class="p-col p-field">
         <label>Giá gốc <span style="color: red">*</span></label>
-        <input pInputText type="number" [(ngModel)]="productForm.price" (ngModelChange)="calculateDiscount()"
-               [class.ng-invalid]="submitted && (productForm.price === null || productForm.price < 0)" />
+        <input
+          pInputText
+          type="number"
+          [(ngModel)]="productForm.price"
+          (ngModelChange)="calculateFlashSalePrice()"
+          min="0"
+        />
       </div>
+      
+      <div class="p-col p-field">
+        <label>Giảm (%)</label>
+        <input
+          pInputText
+          type="number"
+          [(ngModel)]="productForm.discount_percent"
+          (ngModelChange)="calculateFlashSalePrice()"
+          min="0"
+          max="100"
+        />
+        <small class="p-error" *ngIf="productForm.discount_percent > 100">
+          Phần trăm giảm không được vượt quá 100%.
+        </small>
+      </div>
+      
       <div class="p-col p-field">
         <label>Giá giảm</label>
-        <input pInputText type="number" [(ngModel)]="productForm.flashsale_price" (ngModelChange)="calculateDiscount()"
-               [class.ng-invalid]="submitted && (productForm.flashsale_price > productForm.price)" />
+        <input
+          pInputText
+          type="number"
+          [(ngModel)]="productForm.flashsale_price"
+          readonly
+          style="background-color: #f8f9fa;"
+        />
       </div>
     </div>
     <small class="p-error" *ngIf="submitted && (productForm.flashsale_price > productForm.price)" style="display: block; margin-top: -1rem; margin-bottom: 1rem;">
@@ -247,8 +282,13 @@
     </small>
 
     <div class="p-field">
-      <label>Giảm (%)</label>
-      <input pInputText type="number" [(ngModel)]="productForm.discount_percent" readonly style="background-color: #f8f9fa;" />
+      <label>Ngày phát hành</label>
+      <input
+        pInputText
+        type="date"
+        [ngModel]="formattedPublishedDate"
+        (ngModelChange)="onDateChange($event)"
+      />
     </div>
 
     <div class="p-field">

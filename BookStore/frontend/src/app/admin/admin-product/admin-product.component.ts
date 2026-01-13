@@ -346,12 +346,24 @@ export class AdminProductComponent {
     }
   }
 
-  calculateDiscount() {
-    if (this.productForm.price > 0 && this.productForm.flashsale_price >= 0) {
-      const discount = ((this.productForm.price - this.productForm.flashsale_price) / this.productForm.price) * 100;
-      this.productForm.discount_percent = Math.round(discount);
+  calculateFlashSalePrice() {
+    const price = this.productForm.price;
+    const discount = this.productForm.discount_percent;
+
+    if (
+      price != null &&
+      price >= 0 &&
+      discount != null &&
+      discount >= 0 &&
+      discount <= 100
+    ) {
+      this.productForm.flashsale_price =
+        Math.round(price * (1 - discount / 100));
+    } else {
+      this.productForm.flashsale_price = price;
     }
   }
+
 
   saveProduct() {
     this.submitted = true; // Kích hoạt tô đỏ trên HTML

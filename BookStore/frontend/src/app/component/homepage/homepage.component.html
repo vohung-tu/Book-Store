@@ -214,18 +214,16 @@
   <p-divider class="custom-divider"></p-divider>
 
     <!-- BẠN VỪA XEM  -->
-  <div class="recent-view-section" *ngIf="isLoadingRecentViews || recentViewedBooks?.length">
+  <!-- <div class="recent-view-section" *ngIf="isLoadingRecentViews || recentViewedBooks?.length">
     <div class="recent-title">
       <h1><i class="pi pi-history"></i> Sản phẩm bạn vừa xem </h1>
     </div>
 
     <div class="recent-body">
-      <!-- Skeleton -->
       <div *ngIf="isLoadingRecentViews" class="skeleton-container">
         <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
       </div>
 
-      <!-- Carousel -->
       <p-carousel 
         *ngIf="!isLoadingRecentViews && recentViewedBooks.length > 0"
         [value]="recentViewedBooks"
@@ -241,9 +239,9 @@
         </ng-template>
       </p-carousel>
     </div>
-  </div>
+  </div> -->
 
-  <p-divider class="custom-divider"></p-divider>
+  <!-- <p-divider class="custom-divider"></p-divider> -->
 
 
   <!--  Có thể bạn sẽ thích -->
