@@ -5,7 +5,7 @@ import { CreateExportDto, CreateImportDto, InventoryReceipt, Paginated } from ".
 
 @Injectable({ providedIn: 'root' })
 export class InventoryService {
-  private base = 'https://book-store-3-svnz.onrender.com/inventory';
+  private base = 'http://localhost:3000/inventory';
 
 
   constructor(private http: HttpClient) {}
@@ -35,7 +35,7 @@ export class InventoryService {
   }
 
   getReceiptById(id: string) {
-    return this.http.get<any>(`https://book-store-3-svnz.onrender.com/inventory/receipts/${id}`);
+    return this.http.get<any>(`http://localhost:3000/inventory/receipts/${id}`);
   }
 
   getBranchStock(bookId: string) {
@@ -46,7 +46,7 @@ export class InventoryService {
 
   getBranchStockByBook(bookId: string): Observable<{ branchName: string; quantity: number }[]> {
     return this.http.get<{ branchName: string; quantity: number }[]>(
-      `https://book-store-3-svnz.onrender.com/inventory/book/${bookId}/branches`
+      `http://localhost:3000/inventory/book/${bookId}/branches`
     );
   }
 

@@ -181,7 +181,7 @@ export class AdminWarehouseComponent implements OnInit {
     this.loadingStock = true;
 
     this.http
-      .get<any[]>(`https://book-store-3-svnz.onrender.com/inventory/branch-stock/${branch._id}`)
+      .get<any[]>(`http://localhost:3000/inventory/branch-stock/${branch._id}`)
       .subscribe({
         next: (data) => {
           console.log('📦 Dữ liệu tồn kho nhận được:', data);

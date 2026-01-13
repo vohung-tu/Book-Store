@@ -5,7 +5,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class FavoritePageService {
-  private base = 'https://book-store-3-svnz.onrender.com/wishlist';
+  private base = 'http://localhost:3000/wishlist';
 
   private favoritesSubject = new BehaviorSubject<BookDetails[]>([]);
   favorites$ = this.favoritesSubject.asObservable();

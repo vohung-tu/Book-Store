@@ -7,7 +7,7 @@ import { Order } from '../model/order.model';
   providedIn: 'root'
 })
 export class OrderService {
-  private apiUrl = 'https://book-store-3-svnz.onrender.com/orders'; // Thay bằng API thực tế
+  private apiUrl = 'http://localhost:3000/orders'; // Thay bằng API thực tế
 
   constructor(private http: HttpClient
   ) {}

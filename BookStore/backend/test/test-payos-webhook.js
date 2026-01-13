@@ -42,7 +42,7 @@ function generateSignature(data, checksum) {
   console.log("🟣 CLIENT SIGNATURE:", signature);
 
   const res = await axios.post(
-    "https://book-store-3-svnz.onrender.com/payos/webhook",
+    "http://localhost:3000/payos/webhook",
     { data, signature },
     { headers: { "Content-Type": "application/json" } }
   );

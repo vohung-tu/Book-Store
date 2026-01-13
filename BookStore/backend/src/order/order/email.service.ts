@@ -1,34 +1,21 @@
-// mail.service.ts
-import { Injectable } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import * as sgMail from '@sendgrid/mail';
 
 @Injectable()
 export class MailService {
-  private transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    pool: true,
-    port: 465,
-    secure: true, // Bắt buộc dùng true cho cổng 465
-    auth: {
-      user: 'pamtech.org@gmail.com',
-      pass: 'dddn qrmy vxky zcxc'
-    },
-    tls: {
-      // Không từ chối kết nối nếu chứng chỉ không khớp (giúp vượt qua một số rào cản firewall)
-      rejectUnauthorized: false 
-    },
-    connectionTimeout: 20000,
-    greetingTimeout: 10000,
-    socketTimeout: 20000,
-    debug: true,
-    logger: true
-  });
+  constructor() {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+  }
 
   async sendResetPasswordEmail(to: string, resetToken: string) {
     const resetLink = `https://book-store-v302.onrender.com/reset-password-link?token=${resetToken}`;
-    const mailOptions = {
-      from: '"Hệ thống" <your_email@gmail.com>',
+
+    const msg = {
       to,
+      from: {
+        email: 'pamtech.org@gmail.com', // email đã verify trên SendGrid
+        name: 'Hệ thống Book Store',
+      },
       subject: 'Yêu cầu khôi phục mật khẩu',
       html: `
         <p>Chào bạn,</p>
@@ -37,16 +24,15 @@ export class MailService {
         <a href="${resetLink}">${resetLink}</a>
         <p>Link có hiệu lực trong 1 giờ.</p>
         <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
-      `
+      `,
     };
 
     try {
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('✅ Email gửi thành công:', info.messageId);
-      return info;
-    } catch (error) {
-      console.error('❌ Lỗi gửi email thực tế:', error);
-      throw error;
+      await sgMail.send(msg);
+      console.log('✅ Email gửi thành công qua SendGrid');
+    } catch (error: any) {
+      console.error('❌ Lỗi gửi email SendGrid:', error?.response?.body || error);
+      throw new InternalServerErrorException('Không thể gửi email');
     }
   }
 }
