@@ -694,21 +694,6 @@ export class DetailComponent implements OnInit {
   addToCart(): void {
     if (!this.book) return;
 
-    // ===== GUEST =====
-    if (!this.authService.isLoggedIn()) {
-      this.cartService.addToLocalCart(this.book);
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Thêm thành công',
-        detail: 'Đã thêm vào giỏ hàng!',
-        key: 'tr'
-      });
-
-      return;
-    }
-
-    // ===== USER =====
     this.cartService.addToCart(this.book).subscribe({
       next: () => {
         this.messageService.add({

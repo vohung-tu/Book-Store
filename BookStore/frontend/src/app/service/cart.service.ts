@@ -11,8 +11,6 @@ export class CartService {
   private API_URL = 'https://book-store-3-svnz.onrender.com/cart';
   private cartSubject = new BehaviorSubject<BookDetails[]>([]);
   cart$ = this.cartSubject.asObservable();
-  private cartCountSubject = new BehaviorSubject<number>(0);
-  cartCount$ = this.cartCountSubject.asObservable();
 
   constructor(
     private authService: AuthService,
@@ -107,11 +105,7 @@ export class CartService {
 
   private setLocalCart(cart: BookDetails[]) {
     localStorage.setItem('guest_cart', JSON.stringify(cart));
-    const total = cart.reduce(
-      (sum, item) => sum + (item.quantity ?? 0),
-      0
-    );
-    this.cartCountSubject.next(total);
+    this.cartSubject.next(cart);
   }
 
   mergeGuestCart(): void {

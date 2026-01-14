@@ -42,16 +42,7 @@
                     <td>{{ product.title }}</td>
                     <td>{{ product.quantity }}</td>
                     <td>{{ product.price | dotSeparator }}</td>
-                    <td>
-                      {{
-                        (product.flashsale_price && product.flashsale_price > 0
-                          ? product.flashsale_price
-                          : product.discount_percent > 0
-                            ? (product.price * (1 - product.discount_percent / 100))
-                            : product.price)
-                        | dotSeparator
-                      }}
-                    </td>
+                    <td>{{ product.flashsale_price | dotSeparator }}</td>
                   </tr>
                 </ng-template>
               </p-table>

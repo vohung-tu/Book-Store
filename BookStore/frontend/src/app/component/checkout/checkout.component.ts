@@ -123,7 +123,7 @@ export class CheckoutComponent implements OnInit {
     selected: 'other_provinces',  // This will hold the selected shipping method
   };
   selectedCountryCode: string = "+84"; // Mặc định Việt Nam
-  shippingFee = 20000;
+  shippingFee = 25000;
   countries: any;
 
   constructor(

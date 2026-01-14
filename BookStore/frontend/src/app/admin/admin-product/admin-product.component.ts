@@ -70,13 +70,11 @@ export class AdminProductComponent {
   authorMap = new Map<string, any>();
 
   categories: { label: string; value: string }[] = [];
-  categoriesRaw: Category[] = [];
 
   newProduct = {
     title: '',
     author: {},
     authorId: '',
-    categoryId: '',
     supplierId: '', 
     description: '',
     price: 0,
@@ -117,8 +115,6 @@ export class AdminProductComponent {
         this.authors = authors;
         this.suppliers = suppliers;
 
-        this.categoriesRaw = categories; 
-
         this.authorMap.clear();
         this.supplierMap.clear();
         
@@ -127,7 +123,7 @@ export class AdminProductComponent {
 
         this.categories = categories.map((c: Category) => ({
           label: c.name,
-          value: c._id
+          value: c.slug
         }));
 
         // Sau khi đã có dữ liệu nền → mới fetch sách chi tiết
@@ -267,52 +263,31 @@ export class AdminProductComponent {
 
   filterProducts() {
     const query = this.searchText.toLowerCase();
-
     this.filteredProducts = this.products.filter(p =>
-      p.title?.toLowerCase().includes(query) ||
-      p.author?.name?.toLowerCase().includes(query) ||
-      p.categoryName?.toLowerCase().includes(query)
+      p.title.toLowerCase().includes(query) ||
+      p.author.name.toLowerCase().includes(query) ||
+      p.categoryName.toLowerCase().includes(query)
     );
   }
+
   deleteSelectedProducts() {
-    if (!this.selectedProducts.length) {
+    if (this.selectedProducts && this.selectedProducts.length) {
+      this.filteredProducts = this.filteredProducts.filter(p => !this.selectedProducts.includes(p));
+      const count = this.selectedProducts.length;
+      this.selectedProducts = [];
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Đã xoá sản phẩm',
+        detail: `${count} sản phẩm đã được xoá khỏi danh sách.`,
+      });
+    } else {
       this.messageService.add({
         severity: 'warn',
         summary: 'Chưa chọn sản phẩm',
         detail: 'Vui lòng chọn sản phẩm để xoá.',
       });
-      return;
     }
-
-    if (!confirm(`Bạn có chắc muốn xoá ${this.selectedProducts.length} sản phẩm?`)) {
-      return;
-    }
-
-    const ids = this.selectedProducts.map(p => p.id);
-
-    this.bookService.deleteMany(ids).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Đã xoá sản phẩm',
-          detail: `Đã xoá ${ids.length} sản phẩm.`,
-        });
-
-        this.selectedProducts = [];
-        this.filteredProducts = [];
-        this.products = [];
-
-        this.fetchProducts();
-      },
-      error: err => {
-        console.error(err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Lỗi',
-          detail: 'Không thể xoá sản phẩm.',
-        });
-      }
-    });
   }
 
   // Hàm validate trả về true/false và hiển thị toast lỗi
@@ -325,10 +300,7 @@ export class AdminProductComponent {
       this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Giá giảm không được lớn hơn giá gốc' });
       return false;
     }
-    if (!p.categoryId) {
-      this.showError('Vui lòng chọn danh mục');
-      return false;
-    }
+    if (!p.categoryName) return false;
     if (!p.supplierId) return false;
     if (!p.coverImage) return false;
     return true;
@@ -394,33 +366,34 @@ export class AdminProductComponent {
 
 
   saveProduct() {
-    const selectedCategory = this.categoriesRaw.find(
-      c => c._id === this.productForm.categoryId
-    );
+    this.submitted = true; // Kích hoạt tô đỏ trên HTML
 
-    if (!selectedCategory) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Lỗi',
-        detail: 'Vui lòng chọn danh mục'
+    if (!this.validateProduct()) {
+      this.messageService.add({ 
+        severity: 'warn', 
+        summary: 'Thông báo', 
+        detail: 'Vui lòng điền đầy đủ thông tin bắt buộc (ô có viền đỏ)' 
       });
       return;
     }
 
+    const selectedAuthor = this.authors.find(a => a._id === this.productForm.authorId);
     const payload = {
       ...this.productForm,
-
-      // ✅ BẮT BUỘC cho mongoose
-      category: selectedCategory._id,
-      categoryName: selectedCategory.name,
+      author: selectedAuthor ? { _id: selectedAuthor._id, name: selectedAuthor.name } : {}
     };
 
-    console.log('PAYLOAD SEND:', payload);
-
-    this.bookService.createBook(payload).subscribe({
-      next: () => this.handleSuccess('Thêm sản phẩm thành công'),
-      error: err => console.error(err)
-    });
+    if (this.isEditMode) {
+      this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, payload).subscribe({
+        next: () => this.handleSuccess('Cập nhật thành công'),
+        error: (err) => console.error('Lỗi cập nhật:', err)
+      });
+    } else {
+      this.http.post(`https://book-store-3-svnz.onrender.com/books`, payload).subscribe({
+        next: () => this.handleSuccess('Thêm mới thành công'),
+        error: (err) => console.error('Lỗi thêm mới:', err)
+      });
+    }
   }
 
   handleSuccess(message: string) {
@@ -440,7 +413,6 @@ export class AdminProductComponent {
       authorId: '',
       supplierId: '', 
       description: '',
-      categoryId: '',
       price: 0,
       flashsale_price: 0,
       discount_percent: 0,
@@ -515,7 +487,6 @@ export class AdminProductComponent {
       authorId: '',
       supplierId: '', 
       description: '',
-      categoryId: '',
       price: 0,
       flashsale_price: 0,
       discount_percent: 0,

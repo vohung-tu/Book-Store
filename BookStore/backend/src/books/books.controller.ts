@@ -137,9 +137,5 @@ export class BooksController {
     if (!book) throw new NotFoundException('Book not found');
     return { summary_ai: book.summary_ai || 'Chưa có tóm tắt' };
   }
-  @Post('delete-many')
-  async deleteMany(@Body('ids') ids: string[]) {
-    return this.booksService.deleteMany(ids);
-  }
 
 }
