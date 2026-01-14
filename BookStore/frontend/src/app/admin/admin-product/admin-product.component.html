@@ -115,7 +115,7 @@
 
         <td>{{ product.supplierId?.name }}</td>
 
-        <td>{{ getCategoryLabel(product.categoryName) }}</td>
+       <td>{{ getCategoryNameFromRaw(product.categoryName) }}</td>
 
         <td>{{ product.quantity }}</td>
 
@@ -185,7 +185,7 @@
     <p>{{ selectedProduct?.publishedDate | date: 'dd/MM/yyyy' }}</p>
 
     <h3>Danh mục:</h3>
-    <p>{{ getCategoryLabel(selectedProduct?.categoryName) }}</p>
+    <p>{{ getCategoryLabel(selectedProduct?.categoryName) }} </p>
 
     <h3>Nhà cung cấp:</h3>
     <p>{{ selectedProduct?.supplierId?.name }}</p>
@@ -298,9 +298,12 @@
         optionLabel="label"
         optionValue="value"
         [(ngModel)]="productForm.categoryId"
+        (ngModelChange)="onCategoryChange($event)"
         placeholder="Chọn danh mục"
       ></p-dropdown>
-      <small class="p-error" *ngIf="submitted && !productForm.categoryName">Vui lòng chọn danh mục.</small>
+      <small class="p-error" *ngIf="submitted && !productForm.categoryId">
+    Vui lòng chọn danh mục.
+  </small>
     </div>
 
     <div class="p-field">

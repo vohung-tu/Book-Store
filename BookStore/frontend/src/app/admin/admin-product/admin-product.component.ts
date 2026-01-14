@@ -71,6 +71,7 @@ export class AdminProductComponent {
 
   categories: { label: string; value: string }[] = [];
   categoriesRaw: Category[] = [];
+  categoryMap = new Map<string, any>();
 
   newProduct = {
     title: '',
@@ -172,9 +173,30 @@ export class AdminProductComponent {
   }
 
   getCategoryLabel(value: string): string {
-    const hit = this.categories.find(c => c.value === value);
-    return hit ? hit.label : value;
+    if (!value) return '';
+
+    // 1️⃣ Tìm theo ID
+    const byId = this.categories.find(c => c.value === value);
+    if (byId) return byId.label;
+
+    // 2️⃣ Tìm theo name
+    const byName = this.categoriesRaw.find(c => c.name === value);
+    if (byName) return byName.name;
+
+    // 3️⃣ Tìm theo slug
+    const bySlug = this.categoriesRaw.find(c => c.slug === value);
+    if (bySlug) return bySlug.name;
+
+    return value;
   }
+
+  getCategoryNameFromRaw(value: string): string {
+    const hit = this.categoriesRaw.find(
+      c => c._id === value || c.slug === value || c.name === value
+    );
+    return hit ? hit.name : value;
+  }
+
 
   fetchSuppliers() {
     this.http.get<any[]>('https://book-store-3-svnz.onrender.com/suppliers').subscribe({
@@ -218,25 +240,43 @@ export class AdminProductComponent {
 
           // ===== AUTHOR =====
           let authorObj = null;
-
           if (typeof book.author === 'object' && book.author?._id) {
-            authorObj = this.authorMap.get(book.author?._id || book.author) || null;
+            authorObj = this.authorMap.get(book.author._id) || book.author;
+          } else if (book.author) {
+            authorObj = this.authorMap.get(book.author) || null;
           }
 
           // ===== SUPPLIER =====
           let supplierObj = null;
-
           if (typeof book.supplierId === 'object' && book.supplierId?._id) {
             supplierObj = book.supplierId;
-          } else {
+          } else if (book.supplierId) {
             supplierObj = this.supplierMap.get(book.supplierId) || null;
+          }
+
+          // ===== CATEGORY (FIX CHUẨN) =====
+          let categoryId = '';
+          let categoryName = '';
+
+          if (typeof book.category === 'object') {
+            categoryId = book.category._id;
+            categoryName = book.category.name;
+          } else if (book.category) {
+            categoryId = book.category;
+            const cat = this.categoriesRaw.find(c => c._id === book.category);
+            categoryName = cat?.name || '';
           }
 
           return {
             ...book,
             id: book._id,
-            author: authorObj,        
+
+            author: authorObj,
             supplierId: supplierObj,
+
+            categoryId,      // ✅ BẮT BUỘC
+            categoryName,    // hiển thị
+
             warehouseStocks: book.warehouseStocks || [],
             storeStocks: book.storeStocks || [],
           };
@@ -245,12 +285,10 @@ export class AdminProductComponent {
         this.filteredProducts = [...this.products];
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Lỗi khi tải sản phẩm:', err);
-        this.loading = false;
-      },
+      error: () => (this.loading = false),
     });
   }
+
 
 
   openDetails(product: any) {
@@ -407,20 +445,30 @@ export class AdminProductComponent {
       return;
     }
 
-    const payload = {
-      ...this.productForm,
+    const { _id, ...formData } = this.productForm;
 
-      // ✅ BẮT BUỘC cho mongoose
+    const payload = {
+      ...formData,
       category: selectedCategory._id,
       categoryName: selectedCategory.name,
     };
 
     console.log('PAYLOAD SEND:', payload);
 
-    this.bookService.createBook(payload).subscribe({
-      next: () => this.handleSuccess('Thêm sản phẩm thành công'),
-      error: err => console.error(err)
-    });
+    // ================= UPDATE =================
+    if (this.isEditMode && _id) {
+      this.bookService.updateBook(_id, payload).subscribe({
+        next: () => this.handleSuccess('Cập nhật sản phẩm thành công'),
+        error: err => console.error(err)
+      });
+
+    // ================= CREATE =================
+    } else {
+      this.bookService.createBook(payload).subscribe({
+        next: () => this.handleSuccess('Thêm sản phẩm thành công'),
+        error: err => console.error(err)
+      });
+    }
   }
 
   handleSuccess(message: string) {
@@ -472,19 +520,35 @@ export class AdminProductComponent {
     this.productForm.publishedDate = value;
   }
 
+  onCategoryChange(categoryId: string) {
+    const cat = this.categoriesRaw.find(c => c._id === categoryId);
+    if (cat) {
+      this.productForm.categoryName = cat.name;
+    }
+  }
+
   editProduct(product: any) {
     this.submitted = false;
     this.isEditMode = true;
-    this.editingProduct = { ...product };
-    this.editingProduct.authorId = product.author?._id || '';
-    this.editingProduct.supplierId = (typeof product.supplierId === 'object') 
-                                    ? product.supplierId?._id 
-                                    : product.supplierId;
-    this.editingProduct.price = product.price || 0;
-    this.editingProduct.flashsale_price = product.flashsale_price || 0;
+
+    this.editingProduct = {
+      ...product,
+
+      authorId: product.author?._id || '',
+      supplierId:
+        typeof product.supplierId === 'object'
+          ? product.supplierId._id
+          : product.supplierId,
+
+      categoryId: product.categoryId || '', // ✅ MATCH dropdown
+
+      price: product.price || 0,
+      flashsale_price: product.flashsale_price || 0
+    };
+
     this.displayAddDialog = true;
   }
-  
+
   deleteProduct(product: any) {
     if (confirm(`Bạn có chắc muốn xoá sản phẩm "${product.title}"?`)) {
       this.http.delete(`https://book-store-3-svnz.onrender.com/books/${product.id}`).subscribe({
