@@ -28,4 +28,9 @@ export interface Order {
   status: string;
   orderDate: string;
   createdAt: string;
+
+  _shippingFee?: number;
+  _discount?: number;
+  _finalTotal?: number;
+  _statusLabel?: string;
 }

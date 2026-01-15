@@ -83,6 +83,19 @@ export class Order {
 
   @Prop()
   orderDate?: Date;
+
+  @Prop({
+  type: {
+    fee: { type: Number },
+    region: { type: String },
+    deliveryTime: { type: String },
+    },
+  })
+  shipping?: {
+    fee: number;
+    region?: string;
+    deliveryTime?: string;
+  };
 }
 
 export type OrderDocument = Order & Document;

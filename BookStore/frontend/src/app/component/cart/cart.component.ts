@@ -162,15 +162,20 @@ export class CartComponent implements OnInit {
   }
 
   canApplyCoupon(coupon: Coupon): boolean {
+    
     if (this.selectedBooks.length === 0) return false;
 
     const couponCategories = this.getCouponCategorySlugs(coupon);
+    console.log('Coupon categories:', couponCategories);
+    console.log('Selected books:', this.selectedBooks.map(b => ({
+      title: b.title,
+      category: this.getItemCategorySlug(b)
+    })));
 
     const applicableTotal = this.selectedBooks
-      .filter(item => {
-        if (couponCategories.length === 0) return true;
-        return couponCategories.includes(this.getItemCategorySlug(item));
-      })
+      .filter(item =>
+        this.isCouponApplicableToItem(item, couponCategories)
+      )
       .reduce(
         (sum, item) =>
           sum + (item.flashsale_price || item.price) * (item.quantity || 1),
@@ -181,6 +186,17 @@ export class CartComponent implements OnInit {
 
     return applicableTotal > 0;
   }
+
+  private isCouponApplicableToItem(item: any, couponCategories: string[]): boolean {
+    if (!couponCategories || couponCategories.length === 0) return true;
+
+    const itemCat = this.getItemCategorySlug(item);
+
+    return couponCategories.some(c =>
+      itemCat.includes(c) || c.includes(itemCat)
+    );
+  }
+
 
 
   goShopping() {

@@ -95,10 +95,8 @@ export class UserOrderComponent implements OnInit, OnDestroy {
   constructor(
     private orderService: OrderService,
     private authService: AuthService,
-    private cartService: CartService,
     private messageService: MessageService,
     private router: Router,
-    private bookService: BooksService
   ) {
     // Sản phẩm của đơn hàng nếu cần sử dụng riêng
     this.product$ = this.orderService.getOrders().pipe(
@@ -110,26 +108,16 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     this.selectedTab = this.tabs[0].value; // 'all' ✅
     this.filterOrdersByTab();
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('storage', this.storageEventListener);
-    }
-
     this.loadUserOrders();
   }
 
   ngOnDestroy(): void {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('storage', this.storageEventListener);
-    }
+
     
     this.totalAmount = this.selectedBooks.reduce(
       (sum, item) => sum + (item.flashsale_price || item.price) * (item.quantity || 1),
       0
     );
-  }
-
-  ngDoCheck(): void {
-    this.filterOrdersByTab();
   }
 
   // Hàm reload (có thể được gọi qua sự kiện storage) sẽ bỏ qua kiểm tra isOrdersLoaded
@@ -140,7 +128,8 @@ export class UserOrderComponent implements OnInit, OnDestroy {
       const currentUserId = currentUser._id;
       this.orderService.getOrders().subscribe((orders) => {
         console.log('Orders fetched (reload):', orders.length);
-        this.orders = orders.filter(order => order.userId === currentUserId);
+        const userOrders = orders.filter(o => o.userId === currentUserId);
+        this.orders = this.prepareOrders(userOrders);
         this.filterOrdersByTab();
       });
     }
@@ -158,8 +147,10 @@ export class UserOrderComponent implements OnInit, OnDestroy {
       const currentUserId = currentUser._id;
       this.orderService.getOrders().subscribe((orders) => {
         console.log('Orders fetched:', orders.length);
-        this.orders = orders.filter(order => order.userId === currentUserId);
+        
         this.isOrdersLoaded = true;
+        const userOrders = orders.filter(o => o.userId === currentUserId);
+        this.orders = this.prepareOrders(userOrders);
         this.filterOrdersByTab();
       });
     } else {
@@ -212,27 +203,19 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     }
   }
 
-  calculateDiscount(order: Order): number {
-    // Tổng giảm giá = tổng (giá gốc - giá thực trả) * số lượng
-    return order.products.reduce((acc, product) => {
-      const originalPrice = product.price;
-      const effectivePrice = product.flashsale_price > 0 
-        ? product.flashsale_price 
-        : (product.discount_percent > 0 
-            ? product.price * (1 - product.discount_percent / 100) 
-            : product.price);
+  private prepareOrders(rawOrders: any[]): Order[] {
+    return rawOrders.map(order => ({
+      ...order,
 
-      const diff = originalPrice - effectivePrice;
-      return acc + (diff > 0 ? diff * product.quantity : 0);
-    }, 0);
+      // 🎯 DỮ LIỆU GỐC TỪ CHECKOUT
+      _shippingFee: order.shipping?.fee ?? 0,
+
+      _finalTotal: order.total ?? 0,
+      _discount: order.discount ?? 0,
+    }));
   }
 
-    getFinalTotal(order: Order): number {
-    const shipping = this.getShippingFee(order);
-
-    return Math.max(order.total + shipping, 0);
-  }
-  
+    
   // Tính số đơn theo trạng thái (sử dụng lowercase để so sánh)
   getOrderCountByStatus(status: string): number {
     if (!status || status === 'all') {
@@ -251,10 +234,13 @@ export class UserOrderComponent implements OnInit, OnDestroy {
         this.cancelDialogVisible = false;
         this.selectedCancelReason = '';
 
-        // 🔥 Cập nhật lại status trong FE (không cần load lại toàn trang)
         this.orders = this.orders.map(o =>
           o._id === this.selectedOrderIdToCancel
-            ? { ...o, status: 'cancelled' }
+            ? {
+                ...o,
+                status: 'cancelled',
+                _statusLabel: this.getStatusLabel('cancelled')
+              }
             : o
         );
 
@@ -277,64 +263,29 @@ export class UserOrderComponent implements OnInit, OnDestroy {
 
 
   rebuyOrder(products: any[]): void {
-    const fetches = products.map(product => {
-      // 1. Ưu tiên lấy trường 'book' vì JSON thực tế trả về 'book' chứa ID
-      const idToFetch = product.book || product.productId || product._id;
+    const cartItems = products.map(p => ({
+      _id: p.book || p.productId || p._id,
+      productId: p.book || p.productId || p._id,
+      title: p.title,
+      price: p.price,
+      flashsale_price: p.flashsale_price || 0,
+      coverImage: p.coverImage,
+      quantity: p.quantity || 1,
+    }));
 
-      if (!idToFetch) {
-        console.error('Không tìm thấy ID cho sản phẩm:', product);
-        return of(null);
-      }
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+    localStorage.removeItem('totalDiscount');
+    localStorage.removeItem('appliedCoupons');
 
-      return this.bookService.getBookById(idToFetch).pipe(
-        map(book => {
-          if (!book) return null;
-          return {
-            _id: book._id,
-            productId: book._id, // Quan trọng: Để checkout có ID gửi về BE
-            title: book.title,
-            price: book.price,
-            flashsale_price: book.flashsale_price || 0,
-            coverImage: book.coverImage,
-            quantity: product.quantity || 1,
-          };
-        }),
-        catchError(err => {
-          console.error(`Lỗi khi lấy sách ${idToFetch}:`, err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Lỗi',
-            detail: `Không thể lấy thông tin sản phẩm: ${product.title}`,
-          });
-          return of(null);
-        })
-      );
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Sẵn sàng thanh toán',
+      detail: 'Đang chuyển hướng tới trang thanh toán...',
     });
 
-    forkJoin(fetches).subscribe((results) => {
-      const validProducts = results.filter(p => p !== null);
-
-      if (validProducts.length > 0) {
-        localStorage.setItem('cart', JSON.stringify(validProducts));
-        localStorage.removeItem('totalDiscount');
-        localStorage.removeItem('appliedCoupons');
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sẵn sàng thanh toán',
-          detail: 'Đang chuyển hướng tới trang thanh toán...',
-        });
-
-        this.router.navigate(['/checkout']);
-      } else {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Thông báo',
-          detail: 'Không có sản phẩm nào hợp lệ để mua lại.',
-        });
-      }
-    });
+    this.router.navigate(['/checkout']);
   }
+
   
   getStatusLabel(status: string): string {
     switch (status) {
@@ -357,20 +308,6 @@ export class UserOrderComponent implements OnInit, OnDestroy {
     if (lower.includes('đà nẵng') || lower.includes('miền trung')) return 'Miền Trung';
 
     return '';
-  }
-
-  getShippingFee(order: Order): number {
-    if (!order || !order.address || !order.storeBranch?.region) return 25000;
-
-    const userRegion = this.getRegionFromAddress(order.address);
-    const branchRegion = order.storeBranch.region;
-
-    if (!userRegion) return 25000;
-
-    // Cùng miền → freeship
-    if (userRegion === branchRegion) return 0;
-
-    return 25000;
   }
 
 }

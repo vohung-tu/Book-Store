@@ -427,18 +427,20 @@ export class CheckoutComponent implements OnInit {
   updateShippingInfo(address: string) {
     const region = this.detectRegion(address);
 
-    // === PHÍ SHIP ===
+    let fee = 0;
+
     if (this.isHCMInnerCity(address)) {
-      this.shippingFee = 0;
+      fee = 0;
     } else if (region === 'Miền Nam') {
-      this.shippingFee = 10000;
+      fee = 10000;
     } else if (region === 'Miền Trung') {
-      this.shippingFee = 20000;
+      fee = 20000;
     } else {
-      this.shippingFee = 30000; // Miền Bắc
+      fee = 30000;
     }
 
-    // === THỜI GIAN GIAO ===
+    this.shippingFee = fee;
+
     const deliveryDaysMap = {
       'Miền Nam': 1,
       'Miền Trung': 2,
@@ -449,18 +451,25 @@ export class CheckoutComponent implements OnInit {
     const deliveryDate = new Date(today);
     deliveryDate.setDate(today.getDate() + deliveryDaysMap[region]);
 
-    const weekdays = [
-      'Chủ nhật', 'Thứ hai', 'Thứ ba',
-      'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'
-    ];
-
-    const weekday = weekdays[deliveryDate.getDay()];
     const dateStr = deliveryDate.toLocaleDateString('vi-VN', {
       day: '2-digit',
       month: '2-digit'
     });
 
-    this.deliveryTime = `Giao từ 18h - 20h, ngày ${dateStr} (${weekday})`;
+    const deliveryTime = `Giao từ 18h - 20h, ngày ${dateStr}`;
+
+    this.deliveryTime = deliveryTime;
+
+    // ✅🔥 FIX QUAN TRỌNG
+    this.shippingInfo = {
+      fee,
+      address,
+      region,
+      deliveryTime
+    };
+
+    // (optional) debug
+    console.log('🚚 shippingInfo set:', this.shippingInfo);
   }
 
   payWithPayOS() {

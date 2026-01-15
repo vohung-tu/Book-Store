@@ -47,20 +47,9 @@
                 </ng-template>
               </p-table>
 
-              <!-- Phí vận chuyển -->
-              <h4 style="text-align: right; margin-top: 10px;">
-                Phí ship: {{ getShippingFee(order) | dotSeparator }} đ
-              </h4>
-
-              <!-- Giảm giá nếu có -->
-              <div *ngIf="calculateDiscount(order) > 0" 
-                  style="text-align: right; margin-top: 5px; color: #d32f2f;">
-                Số tiền được giảm: {{ calculateDiscount(order) | dotSeparator }} đ
-              </div>
-
               <!-- Tổng tiền cuối cùng -->
               <h3 style="text-align: right; margin-top: 10px;">
-                Tổng tiền: {{ getFinalTotal(order) | dotSeparator }} VNĐ
+                <p>Tổng tiền: {{ order?._finalTotal | dotSeparator }} VNĐ</p>
               </h3>
 
               <div class="rebuy">
