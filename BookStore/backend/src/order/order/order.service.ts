@@ -158,7 +158,12 @@ export class OrderService {
       ...createOrderDto,
       products: preparedProducts,
       code,
-      status: paymentMethod === 'payos' ? 'pending_payment' : 'processing',
+      status: paymentMethod === 'payos'
+        ? 'pending_payment'
+        : 'processing',
+      paymentStatus: paymentMethod === 'payos'
+        ? 'unpaid'
+        : 'unpaid',
     });
 
     const saved = await newOrder.save();
@@ -308,44 +313,6 @@ export class OrderService {
     return this.orderModel.findByIdAndUpdate(order._id, { status }, { new: true });
   }
 
-  // async createOrderFromPayOS(payosData: any) {
-  //   const orderCode = payosData.orderCode;
-
-  //   // Tránh tạo trùng đơn
-  //   const existed = await this.orderModel.findOne({ payosOrderCode: orderCode });
-  //   if (existed) {
-  //     console.log("⚠ Đã tồn tại đơn PayOS:", orderCode);
-  //     return existed;
-  //   }
-
-  //   const newOrder = new this.orderModel({
-  //     userId: payosData.extraData?.userId ?? null,
-  //     products: payosData.items.map((item) => ({
-  //       book: item.productId,
-  //       title: item.name,
-  //       quantity: item.quantity,
-  //       price: item.price,
-  //     })),
-  //     total: payosData.amount,
-  //     paymentMethod: "payos",
-  //     paymentStatus: "paid",
-  //     status: "processing",
-  //     payosOrderCode: orderCode,
-  //   });
-
-  //   const saved = await newOrder.save();
-
-  //   await this.notificationService.create({
-  //     userId: saved.userId.toString(),
-  //     type: 'order_created',
-  //     title: 'Thanh toán thành công',
-  //     message: `Đơn hàng ${saved.code ?? saved._id} đã thanh toán thành công.`,
-  //   });
-
-  //   console.log("Đã tạo đơn hàng PayOS:", saved._id);
-  //   return saved;
-  // }
-
   async markOrderPaidByPayOS(data: any) {
     const order = await this.orderModel.findOne({
       payosOrderCode: data.orderCode,
@@ -417,7 +384,7 @@ export class OrderService {
 
     if (!order) return;
 
-    if (order.status !== 'pending_payment') return;
+    if (order.paymentStatus === 'paid') return;
 
     order.status = 'processing';
     order.paymentStatus = 'paid';
