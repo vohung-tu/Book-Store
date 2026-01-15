@@ -24,7 +24,7 @@ export class PaymentSuccessComponent {
     if (this.orderCode) {
       this.orderService.getOrderByCode(this.orderCode).subscribe({
         next: (order) => {
-          this.totalAmount = order.totalPrice; // lấy từ DB
+          this.totalAmount = order.total; // lấy từ DB
         },
         error: (err) => {
           console.error('Lỗi lấy đơn hàng:', err);
