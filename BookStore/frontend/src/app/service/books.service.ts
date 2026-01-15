@@ -56,9 +56,15 @@ export class BooksService {
     );
   }
 
-  getBestSellers(): Observable<BookDetails[]> {
-    return this.http.get<BookDetails[]>(`${this.apiUrl}/best-sellers`);
+  getBestSellers(limit: number = 10): Observable<BookDetails[]> {
+    return this.http.get<BookDetails[]>(
+      `${this.apiUrl}/best-sellers`,
+      {
+        params: { limit: limit.toString() }
+      }
+    );
   }
+
 
   getFeaturedBooks() {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/featured`);

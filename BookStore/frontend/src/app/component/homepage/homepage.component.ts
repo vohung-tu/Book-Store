@@ -209,15 +209,20 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     ].forEach(t => observer.observe(t.nativeElement));
   }
 
-  private loadBestSellers() {
+  loadBestSellers() {
     this.isLoadingBestSeller = true;
-    this.bookService.getBestSellers().subscribe({
-      next: best => {
-        this.bestSellerBooks = (best ?? []).sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0));
+
+    this.bookService.getBestSellers(10).subscribe({
+      next: (best) => {
+        this.bestSellerBooks = (best ?? [])
+          .sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0));
+
         this.isLoadingBestSeller = false;
         this.cdr.detectChanges();
       },
-      error: () => this.isLoadingBestSeller = false
+      error: () => {
+        this.isLoadingBestSeller = false;
+      }
     });
   }
 

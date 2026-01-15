@@ -49,8 +49,11 @@ export class BooksController {
   }
 
   @Get('best-sellers')
-  getBestSellers() {
-    return this.booksService.getBestSellers();
+  getBestSellers(
+    @Query('limit') limit?: string
+  ) {
+    const take = Math.max(1, Number(limit) || 10);
+    return this.booksService.getBestSellers(take);
   }
 
   @Get('featured')

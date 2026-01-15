@@ -436,57 +436,34 @@ export class BooksService {
     }
   }
 
+  // async getBestSellers(limit: number) {
+  //   return this.bookModel
+  //     .find({ sold: { $gt: 0 } })
+  //     .select('title author price coverImage sold slug')
+  //     .sort({ sold: -1 })
+  //     .limit(limit)
+  //     .lean();
+  // }
+
   async getBestSellers(limit = 10) {
-    const soldPipe: PipelineStage[] = [
-      { $unwind: '$products' },
-      { $match: { 'products._id': { $ne: null } } },
-      {
-        $addFields: {
-          productObjId: {
-            $cond: [
-              { $eq: [{ $type: '$products._id' }, 'objectId'] },
-              '$products._id',
-              { $toObjectId: '$products._id' }
-            ]
-          }
-        }
-      },
-      {
-        $group: {
-          _id: '$productObjId',
-          totalSold: { $sum: { $ifNull: ['$products.quantity', 0] } }
-        }
-      },
-      { $match: { totalSold: { $gt: 0 } } }, // ⭐ CỰC KỲ QUAN TRỌNG
-      { $sort: { totalSold: -1 } },
-      { $limit: limit }
-    ];
+    const books = await this.bookModel
+      .find({ sold: { $gt: 0 } }, {
+        title: 1,
+        author: 1,
+        coverImage: 1,
+        price: 1,
+        flashsale_price: 1,
+        discount_percent: 1,
+        categoryName: 1,
+        sold: 1,
+        slug: 1
+      })
+      .sort({ sold: -1 })
+      .limit(limit)
+      .lean();
 
-    const bestSellers = await this.orderModel.aggregate(soldPipe);
-
-    if (!bestSellers.length) return [];
-
-    const soldMap = new Map(
-      bestSellers.map(r => [r._id.toString(), r.totalSold])
-    );
-
-    const books = await this.bookModel.find(
-      { _id: { $in: [...soldMap.keys()] } },
-      { title: 1, author: 1, coverImage: 1, price: 1, flashsale_price: 1, discount_percent: 1 }
-    ).lean();
-
-    let items = books.map(b => ({
-      ...b,
-      sold: soldMap.get(b._id.toString()) ?? 0
-    }));
-
-    try { items = await this.attachAuthorName(items); } catch {}
-
-    return items;
+    return this.attachAuthorName(books);
   }
-
-
-
 // sách mới ra
   async getNewReleases(limit = 10) {
     const today = new Date();
