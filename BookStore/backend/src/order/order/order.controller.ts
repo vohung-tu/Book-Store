@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Patch, Param, NotFoundException, UseGuards, Request } from "@nestjs/common";
+import { Body, Controller, Post, Get, Patch, Param, NotFoundException, UseGuards, Request, Query } from "@nestjs/common";
 import { OrderService } from "./order.service";
 import { BooksService } from "src/books/books.service";
 import { UpdateStatusDto } from "./update-status.dto";
@@ -22,30 +22,23 @@ export class OrderController {
     return this.orderService.findAll(); // gọi tới service
   }
 
+  @Get('admin/lazy')
+  async getOrdersLazy(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+  ) {
+    return this.orderService.findAllLazy({
+      page: Number(page),
+      limit: Number(limit),
+      search,
+    });
+  }
+
   @Get('by-code/:orderCode')
   async getByCode(@Param('orderCode') orderCode: string) {
     return this.orderService.getOrderByCode(orderCode);
   }
-
-  // @Patch(':orderId/confirm-payment')
-  // async confirmPayment(@Param('orderId') orderId: string) {
-  //   const order = await this.orderService.findById(orderId);
-  //   if (!order) throw new NotFoundException('Đơn hàng không tồn tại!');
-
-  //   // Cập nhật tồn kho
-  //   for (const item of order.products) {
-  //     const bookId =
-  //       typeof item.book === 'object' && (item.book as any)._id
-  //         ? (item.book as any)._id.toString()
-  //         : item.book.toString();
-
-  //     await this.booksService.updateStock(bookId, item.quantity);
-  //   }
-
-  //   await this.orderService.updateStatus(orderId, { status: 'processing' });
-
-  //   return { message: 'Thanh toán thành công, đơn hàng chuyển sang chờ xử lý!' };
-  // }
   
   @Post('payos/webhook')
   async handlePayOSWebhook(@Body() payload: any) {

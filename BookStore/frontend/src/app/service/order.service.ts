@@ -24,6 +24,20 @@ export class OrderService {
     return this.http.get(`${this.apiUrl}/by-code/${orderCode}`);
   }
 
+  getOrdersLazy(params: {
+    page: number;
+    limit: number;
+    search?: string;
+  }) {
+    return this.http.get<any>(`${this.apiUrl}/admin/lazy`, {
+      params: {
+        page: params.page,
+        limit: params.limit,
+        search: params.search || ''
+      },
+    });
+  }
+
   confirmPayment(orderId: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${orderId}/confirm-payment`, {});
   }

@@ -98,8 +98,22 @@ export class BooksService {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/halloween`);
   }
 
-  getAllDetailed(): Observable<any[]> {
-    return this.http.get<BookDetails[]>(`${this.apiUrl}/detailed`);
+  getAdminBooks(
+    page = 1,
+    limit = 40,
+    search = ''
+  ) {
+    return this.http.get<any>(`${this.apiUrl}/list`, {
+      params: {
+        page,
+        limit,
+        search
+      }
+    });
+  }
+
+  getAdminDetail(id: string) {
+    return this.http.get<any>(`${this.apiUrl}/admin/${id}`);
   }
 
   getRelatedBooksAI(bookId: string): Observable<BookDetails[]> {
@@ -116,6 +130,10 @@ export class BooksService {
 
   getUserRecommend(userId: string) {
     return this.http.get<BookDetails[]>(`${this.apiUrl}/recommend-user/${userId}`);
+  }
+
+  updateBook(id: string, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, data);
   }
 
 }   

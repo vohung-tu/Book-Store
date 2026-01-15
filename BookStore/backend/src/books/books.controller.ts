@@ -3,6 +3,7 @@ import { BooksService } from './books.service';
 import { Book } from './book.schema';
 import { AiService } from 'src/ai-helpers/ai.service';
 import { AlsRecommendService } from './als-recommend.service';
+import { Types } from 'mongoose';
 
 @Controller('books')
 export class BooksController {
@@ -72,9 +73,13 @@ export class BooksController {
     return this.booksService.getHalloweenBooks();
   }
   
-  @Get('detailed')
-  async findAllDetailed() {
-    return this.booksService.findAllDetailed();
+  @Get('list')
+  async adminList(
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+    @Query('search') search = ''
+  ) {
+    return this.booksService.findAdminList(+page, +limit, search);
   }
 
   @Get("generate-embeddings")
@@ -105,6 +110,15 @@ export class BooksController {
       throw new BadRequestException('ID sách không hợp lệ!');
     }
     return this.booksService.findOne(id);
+  }
+
+  @Get('admin/:id')
+  async findAdminDetail(@Param('id') id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('ID không hợp lệ');
+    }
+
+    return this.booksService.findAdminDetail(id);
   }
 
   @Put(':id')

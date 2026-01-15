@@ -11,17 +11,19 @@
         pInputText
         placeholder="Tìm kiếm đơn hàng..."
         [(ngModel)]="searchText"
-        (input)="filterOrders()"
+        (input)="onSearch()"
       />
     </div>
   </div>
 
   <p-table
-    [value]="filteredOrders"
+    [value]="orders"
+    [lazy]="true"
     [paginator]="true"
     [rows]="10"
-    responsiveLayout="scroll"
-    class="p-datatable-striped"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    (onLazyLoad)="loadOrdersLazy($event)"
   >
     <ng-template pTemplate="header">
       <tr>

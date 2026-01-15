@@ -48,6 +48,64 @@ export class OrderService {
     return (res as any).modifiedCount ?? 0;
   }
 
+  async findAllLazy(params: {
+    page: number;
+    limit: number;
+    search?: string;
+  }) {
+    const { page, limit, search } = params;
+
+    const skip = (page - 1) * limit;
+
+    const filter: any = {};
+
+    if (search) {
+      filter.$or = [
+        { code: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [orders, total] = await Promise.all([
+      this.orderModel
+        .find(filter)
+        .populate('storeBranchId', 'name city region')
+        .populate({
+          path: 'products.book',
+          select: 'category',
+          populate: {
+            path: 'category',
+            select: 'name',
+          },
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      this.orderModel.countDocuments(filter),
+    ]);
+
+    const data = orders.map(order => ({
+      ...order,
+      storeBranch: order.storeBranchId || null,
+      products: order.products.map(prod => ({
+        ...prod,
+        categoryName: (prod.book as any)?.category?.name ?? 'Khác',
+      })),
+    }));
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
+  }
+
+
   async create(createOrderDto: any) {
     if (!Array.isArray(createOrderDto.products)) {
       throw new BadRequestException('Danh sách sản phẩm không hợp lệ!');
@@ -120,28 +178,29 @@ export class OrderService {
 
   async findAll(): Promise<any[]> {
     const orders = await this.orderModel
-    .find()
-    .populate('storeBranchId', 'name city region')
-    .sort({ createdAt: -1 })
-    .lean();
-
-    // Lấy danh sách sách (dạng phân trang)
-    const allBooks = await this.booksService.findAllBooks();
-    const bookItems = allBooks.items ?? [];
+      .find()
+      .populate('storeBranchId', 'name city region')
+      .populate({
+        path: 'products.book',
+        select: 'category',
+        populate: {
+          path: 'category',
+          select: 'name'
+        }
+      })
+      .sort({ createdAt: -1 })
+      .lean();
 
     return orders.map(order => ({
       ...order,
       storeBranch: order.storeBranchId || null,
-      products: order.products.map(prod => {
-        const productId = (prod as any)._id?.toString?.();
-        const book = bookItems.find(b => b._id.toString() === productId);
-        return {
-          ...prod,
-          categoryName: book?.categoryName ?? { name: 'Khác' }
-        };
-      })
+      products: order.products.map(prod => ({
+        ...prod,
+        categoryName: (prod.book as any)?.category?.name ?? 'Khác'
+      }))
     }));
   }
+
 
   async findById(orderId: string): Promise<OrderDocument | null> {
     const order = await this.orderModel

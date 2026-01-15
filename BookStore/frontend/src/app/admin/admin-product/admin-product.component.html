@@ -12,7 +12,7 @@
         pInputText
         placeholder="Tìm kiếm sản phẩm..."
         [(ngModel)]="searchText"
-        (input)="filterProducts()"
+        (input)="onSearch()"
       />
     </div>
     
@@ -46,17 +46,16 @@
     </div>
 
   </div>
-  <div *ngIf="loading" class="table-loading">
-    <i class="pi pi-spin pi-spinner"></i>&nbsp;
-    <span>Đang tải danh sách sản phẩm...</span>
-  </div>
   <p-table
     #table
-    *ngIf="!loading"
-    [value]="filteredProducts"
+    [value]="products"
     [(selection)]="selectedProducts"
+    [lazy]="true"
+    (onLazyLoad)="loadProductsLazy($event)"
     [paginator]="true"
     [rows]="10"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
     [responsiveLayout]="'scroll'"
     [dataKey]="'id'"
     [rowHover]="true"
@@ -81,7 +80,6 @@
           </div>
         </th>
 
-        <th>Tác giả</th>
         <th>Giá gốc</th>
         <th>Giá giảm</th>
         <th>Nhà cung cấp</th>
@@ -93,7 +91,7 @@
     </ng-template>
 
     <!-- BODY -->
-    <ng-template pTemplate="body" let-product let-i="index">
+    <ng-template pTemplate="body" let-product>
       <tr [pSelectableRow]="product" >
         <td>
           <p-tableCheckbox [value]="product"></p-tableCheckbox>
@@ -104,10 +102,6 @@
         </td>
 
         <td>{{ product.title }}</td>
-
-        <td>
-          {{ product.author?.name }}
-        </td>
 
         <td>{{ product.price | dotSeparator }}</td>
 
@@ -216,7 +210,9 @@
 
   </p-sidebar>
 </div>
-<p-dialog [header]="isEditMode ? 'Sửa sản phẩm' : 'Thêm sản phẩm'" [(visible)]="displayAddDialog" [modal]="true" [closable]="true" [style]="{ width: '600px' }">
+<p-dialog 
+ *ngIf="authors?.length && categories?.length && suppliers?.length" 
+[header]="isEditMode ? 'Sửa sản phẩm' : 'Thêm sản phẩm'" [(visible)]="displayAddDialog" [modal]="true" [closable]="true" [style]="{ width: '600px' }">
   <div class="p-fluid">
     <div class="p-field">
       <label>Tên sách <span style="color: red">*</span></label> 
@@ -293,11 +289,15 @@
 
     <div class="p-field">
       <label>Danh mục <span style="color: red">*</span></label>
-      <p-dropdown [options]="categories" optionLabel="label" optionValue="value"
-                  [(ngModel)]="productForm.categoryName" placeholder="Chọn danh mục"
-                  [class.ng-invalid]="submitted && !productForm.categoryName">
+      <p-dropdown
+        [options]="categories"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="productForm.category"
+        placeholder="Chọn danh mục"
+        [class.ng-invalid]="submitted && !productForm.category">
       </p-dropdown>
-      <small class="p-error" *ngIf="submitted && !productForm.categoryName">Vui lòng chọn danh mục.</small>
+      <small class="p-error" *ngIf="submitted && !productForm.category">Vui lòng chọn danh mục.</small>
     </div>
 
     <div class="p-field">

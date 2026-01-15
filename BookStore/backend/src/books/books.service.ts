@@ -293,57 +293,98 @@ export class BooksService {
       title: { $regex: keyword, $options: 'i' }
     }).exec();
   }
-  
-  async findAllDetailed() {
-    const books = await this.bookModel.find().lean();
 
-    return Promise.all(
-      books.map(async (book) => {
-        // ✅ Ép kiểu _id an toàn
-        const rawId: any = book._id;
-        const bookId = Types.ObjectId.isValid(rawId)
-          ? new Types.ObjectId(String(rawId))
-          : null;
+  async findAdminList(page = 1, limit = 20, search = '') {
+    const skip = (page - 1) * limit;
 
-        if (!bookId) {
-          console.warn('⚠️ Bỏ qua sách có ID không hợp lệ:', rawId);
-          return null;
+    const filter: any = {};
+    if (search?.trim()) {
+      const regex = new RegExp(search.trim(), 'i');
+
+      filter.$or = [
+         { title: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+        { categoryName: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      this.bookModel
+        .find(filter)
+        .select(`
+          title 
+          price 
+          flashsale_price
+          coverImage
+          categoryName
+          quantity
+          sold
+        `)
+        .populate('supplierId', '_id name')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      this.bookModel.countDocuments(),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async findAdminDetail(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('ID không hợp lệ');
+    }
+
+    const bookId = new Types.ObjectId(id);
+
+    // 📘 Book chính
+    const book = await this.bookModel
+      .findById(bookId)
+      .populate({
+        path: 'author',
+        select: 'name',
+        match: { _id: { $type: 'objectId' } }
+      })
+      .populate('supplierId', 'name')
+      .lean();
+
+    if (!book) {
+      throw new NotFoundException('Không tìm thấy sách');
+    }
+
+    // ✅ Inventory + Branch (đúng cho HTML)
+    const warehouseStocks = await this.warehouseInventoryModel.aggregate([
+      { $match: { bookId } },
+      {
+        $lookup: {
+          from: 'branches',
+          localField: 'branchId',
+          foreignField: '_id',
+          as: 'branch'
         }
+      },
+      { $unwind: '$branch' },
+      {
+        $project: {
+          _id: 0,
+          name: '$branch.name',
+          region: '$branch.region',
+          quantity: 1
+        }
+      }
+    ]);
 
-        // ✅ Lấy tồn kho kho trung tâm
-        const warehouseStocks = await this.warehouseInventoryModel
-          .find({ bookId })
-          .populate('branchId', 'name region')
-          .lean();
-
-        // ✅ Lấy tồn kho cửa hàng
-        const storeStocks = await this.storeBranchInventoryModel
-          .find({ book: bookId })
-          .populate('storeBranch', 'name city region')
-          .lean();
-
-        // ✅ Tính tổng
-        const totalQty =
-          warehouseStocks.reduce((sum, w) => sum + (w.quantity || 0), 0) +
-          storeStocks.reduce((sum, s) => sum + (s.quantity || 0), 0);
-
-        return {
-          ...book,
-          quantity: totalQty,
-          warehouseStocks: warehouseStocks.map((w: any) => ({
-            name: (w.branchId as any)?.name || 'Không rõ',
-            region: (w.branchId as any)?.region || '',
-            quantity: w.quantity || 0,
-          })),
-          storeStocks: storeStocks.map((s: any) => ({
-            name: (s.storeBranch as any)?.name || 'Không rõ',
-            city: (s.storeBranch as any)?.city || '',
-            region: (s.storeBranch as any)?.region || '',
-            quantity: s.quantity || 0,
-          })),
-        };
-      }),
-    ).then((result) => result.filter(Boolean)); // bỏ null
+    return {
+      ...book,
+      warehouseStocks // ✅ HTML ăn ngay
+    };
   }
 
 

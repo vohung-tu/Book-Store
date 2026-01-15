@@ -34,6 +34,8 @@ export class AdminOrderComponent implements OnInit {
   orders: Order[] = [];
   searchText: string = '';
   filteredOrders: Order[] = [];
+  totalRecords = 0;
+  loading = false;
   statusOptions = [
     { label: 'Chờ xử lý', value: 'pending_payment' },
     { label: 'Đang xử lý', value: 'processing' },
@@ -69,18 +71,38 @@ export class AdminOrderComponent implements OnInit {
     });
   }
 
-  filterOrders() {
-    const query = this.searchText.toLowerCase().trim();
+  loadOrdersLazy(event: any) {
+    this.loading = true;
 
-    if (!query) {
-      this.filteredOrders = [...this.orders];
-      return;
-    }
+    const page = event.first / event.rows + 1; 
+    const limit = event.rows;
 
-    this.filteredOrders = this.orders.filter(order =>
-      order._id.toLowerCase().includes(query) ||
-      (order.name && order.name.toLowerCase().includes(query))
-    );
+    this.orderService.getOrdersLazy({
+      page,
+      limit,
+      search: this.searchText
+    }).subscribe({
+      next: (res) => {
+        this.orders = res.data;
+        this.totalRecords = res.total;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Lỗi',
+          detail: 'Không tải được đơn hàng'
+        });
+      }
+    });
+  }
+
+  onSearch() {
+    this.loadOrdersLazy({
+      first: 0,
+      rows: 10
+    });
   }
 
   onStatusChange(order: Order, newStatus: string) {

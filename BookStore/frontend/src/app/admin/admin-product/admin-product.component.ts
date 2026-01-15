@@ -68,6 +68,7 @@ export class AdminProductComponent {
   submitted = false;
   supplierMap = new Map<string, any>();
   authorMap = new Map<string, any>();
+  totalRecords = 0;
 
   categories: { label: string; value: string }[] = [];
 
@@ -81,6 +82,7 @@ export class AdminProductComponent {
     flashsale_price: 0,
     discount_percent: 0,
     publishedDate: '',
+    category: '',
     categoryName: '',
     quantity: 0,
     images: [] as string[],
@@ -101,9 +103,6 @@ export class AdminProductComponent {
 
   ngOnInit(): void {
     this.loading = true;
-    this.search$
-      .pipe(debounceTime(300))
-      .subscribe(() => this.filterProducts());
 
     // 🔁 Chạy song song 3 API: authors, categories, suppliers
     forkJoin({
@@ -123,7 +122,7 @@ export class AdminProductComponent {
 
         this.categories = categories.map((c: Category) => ({
           label: c.name,
-          value: c.slug
+          value: c._id
         }));
 
         // Sau khi đã có dữ liệu nền → mới fetch sách chi tiết
@@ -192,7 +191,6 @@ export class AdminProductComponent {
   }
   
   toggleExpand(index: number) {
-    console.log('Index:', index);
     this.expandedRows[index] = !this.expandedRows[index];
     console.log(this.expandedRows);
   }
@@ -208,33 +206,27 @@ export class AdminProductComponent {
   fetchProducts(): void {
     this.loading = true;
 
-    this.bookService.getAllDetailed().subscribe({
-      next: (books) => {
+    this.bookService.getAdminBooks(1, 40).subscribe({
+      next: (res) => {
+        const books = res?.items ?? [];
+
         this.products = books.map((book: any) => {
-
-          // ===== AUTHOR =====
-          let authorObj = null;
-
-          if (typeof book.author === 'object' && book.author?._id) {
-            authorObj = this.authorMap.get(book.author?._id || book.author) || null;
-          }
 
           // ===== SUPPLIER =====
           let supplierObj = null;
+          if (book.supplierId) {
+            const supplierId =
+              typeof book.supplierId === 'object'
+                ? book.supplierId._id
+                : book.supplierId;
 
-          if (typeof book.supplierId === 'object' && book.supplierId?._id) {
-            supplierObj = book.supplierId;
-          } else {
-            supplierObj = this.supplierMap.get(book.supplierId) || null;
+            supplierObj = this.supplierMap.get(supplierId) || null;
           }
 
           return {
             ...book,
-            id: book._id,
-            author: authorObj,        
+            id: book._id,          // cho p-table dataKey
             supplierId: supplierObj,
-            warehouseStocks: book.warehouseStocks || [],
-            storeStocks: book.storeStocks || [],
           };
         });
 
@@ -244,14 +236,25 @@ export class AdminProductComponent {
       error: (err) => {
         console.error('Lỗi khi tải sản phẩm:', err);
         this.loading = false;
-      },
+      }
     });
   }
 
-
   openDetails(product: any) {
-    this.selectedProduct = product;
     this.displaySidebar = true;
+    this.selectedProduct = null;
+
+    this.bookService.getAdminDetail(product.id).subscribe({
+      next: (res) => {
+        this.selectedProduct = {
+          ...res,
+          id: res._id
+        };
+      },
+      error: (err) => {
+        console.error('Lỗi khi load chi tiết sách:', err);
+      }
+    });
   }
 
   openAddProductDialog() {
@@ -261,13 +264,11 @@ export class AdminProductComponent {
     this.displayAddDialog = true;
   }
 
-  filterProducts() {
-    const query = this.searchText.toLowerCase();
-    this.filteredProducts = this.products.filter(p =>
-      p.title.toLowerCase().includes(query) ||
-      p.author.name.toLowerCase().includes(query) ||
-      p.categoryName.toLowerCase().includes(query)
-    );
+  onSearch() {
+    this.loadProductsLazy({
+      first: 0,
+      rows: 10,
+    });
   }
 
   deleteSelectedProducts() {
@@ -300,7 +301,7 @@ export class AdminProductComponent {
       this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: 'Giá giảm không được lớn hơn giá gốc' });
       return false;
     }
-    if (!p.categoryName) return false;
+    if (!p.category) return false; 
     if (!p.supplierId) return false;
     if (!p.coverImage) return false;
     return true;
@@ -366,35 +367,51 @@ export class AdminProductComponent {
 
 
   saveProduct() {
-    this.submitted = true; // Kích hoạt tô đỏ trên HTML
+  this.submitted = true;
+  if (!this.validateProduct()) return;
 
-    if (!this.validateProduct()) {
-      this.messageService.add({ 
-        severity: 'warn', 
-        summary: 'Thông báo', 
-        detail: 'Vui lòng điền đầy đủ thông tin bắt buộc (ô có viền đỏ)' 
+  const selectedAuthor = this.authors.find(a => a._id === this.productForm.authorId);
+  const selectedCategory = this.categories.find(c => c.value === this.productForm.category);
+
+  const payload = {
+    title: this.productForm.title,
+    description: this.productForm.description,
+    price: this.productForm.price,
+    discount_percent: this.productForm.discount_percent,
+    flashsale_price: this.productForm.flashsale_price,
+    publishedDate: this.productForm.publishedDate,
+    quantity: this.productForm.quantity,
+
+    category: selectedCategory?.value, // ObjectId
+    categoryName: selectedCategory?.label,
+
+    author: selectedAuthor?._id,
+    supplier: this.productForm.supplierId,
+
+    coverImage: this.productForm.coverImage,
+    images: this.productForm.images
+  };
+
+  console.log('PAYLOAD:', payload);
+
+  const req$ = this.isEditMode
+    ? this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, payload)
+    : this.http.post(`https://book-store-3-svnz.onrender.com/books`, payload);
+
+  req$.subscribe({
+    next: () => this.handleSuccess(this.isEditMode ? 'Cập nhật thành công' : 'Thêm mới thành công'),
+    error: err => {
+      console.error(err);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Lỗi',
+        detail: err.error?.message || 'Không thể lưu sản phẩm'
       });
-      return;
     }
+  });
+}
 
-    const selectedAuthor = this.authors.find(a => a._id === this.productForm.authorId);
-    const payload = {
-      ...this.productForm,
-      author: selectedAuthor ? { _id: selectedAuthor._id, name: selectedAuthor.name } : {}
-    };
 
-    if (this.isEditMode) {
-      this.http.put(`https://book-store-3-svnz.onrender.com/books/${this.editingProduct.id}`, payload).subscribe({
-        next: () => this.handleSuccess('Cập nhật thành công'),
-        error: (err) => console.error('Lỗi cập nhật:', err)
-      });
-    } else {
-      this.http.post(`https://book-store-3-svnz.onrender.com/books`, payload).subscribe({
-        next: () => this.handleSuccess('Thêm mới thành công'),
-        error: (err) => console.error('Lỗi thêm mới:', err)
-      });
-    }
-  }
 
   handleSuccess(message: string) {
     this.messageService.add({ severity: 'success', summary: 'Thành công', detail: message });
@@ -417,6 +434,7 @@ export class AdminProductComponent {
       flashsale_price: 0,
       discount_percent: 0,
       publishedDate: '',
+      category: '',
       categoryName: '',
       quantity: 0,
       images: [] as string[],
@@ -447,16 +465,45 @@ export class AdminProductComponent {
   editProduct(product: any) {
     this.submitted = false;
     this.isEditMode = true;
-    this.editingProduct = { ...product };
-    this.editingProduct.authorId = product.author?._id || '';
-    this.editingProduct.supplierId = (typeof product.supplierId === 'object') 
-                                    ? product.supplierId?._id 
-                                    : product.supplierId;
-    this.editingProduct.price = product.price || 0;
-    this.editingProduct.flashsale_price = product.flashsale_price || 0;
+
+    const categoryId =
+      typeof product.category === 'object'
+        ? product.category._id
+        : product.category || '';
+
+    this.editingProduct = {
+      title: product.title || '',
+      description: product.description || '',
+
+      authorId:
+        typeof product.author === 'object'
+          ? product.author._id
+          : product.author || '',
+
+      category: categoryId,
+
+      supplierId:
+        typeof product.supplierId === 'object'
+          ? product.supplierId._id
+          : product.supplierId || '',
+
+      price: product.price || 0,
+      flashsale_price: product.flashsale_price || product.price || 0,
+      discount_percent: product.discount_percent || 0,
+
+      quantity: product.quantity ?? 0,
+      images: product.images || [],
+      coverImage: product.coverImage || '',
+
+      publishedDate: product.publishedDate
+        ? new Date(product.publishedDate).toISOString().slice(0, 10)
+        : '',
+    };
+
+    console.log('EDIT FORM:', this.editingProduct);
     this.displayAddDialog = true;
   }
-  
+
   deleteProduct(product: any) {
     if (confirm(`Bạn có chắc muốn xoá sản phẩm "${product.title}"?`)) {
       this.http.delete(`https://book-store-3-svnz.onrender.com/books/${product.id}`).subscribe({
@@ -480,6 +527,28 @@ export class AdminProductComponent {
     }
   }
 
+  loadProductsLazy(event: any) {
+    this.loading = true;
+
+    const page = event.first / event.rows + 1;
+    const limit = event.rows;
+
+    this.bookService.getAdminBooks(page, limit, this.searchText).subscribe({
+      next: (res) => {
+        this.products = res.items.map((book: any) => ({
+          ...book,
+          id: book._id
+        }));
+
+        this.totalRecords = res.total;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+  }
+
   resetProductData() {
     this.newProduct = {
       title: '',
@@ -491,6 +560,7 @@ export class AdminProductComponent {
       flashsale_price: 0,
       discount_percent: 0,
       publishedDate: '',
+      category: '',
       categoryName: '',
       quantity: 0,
       images: [],

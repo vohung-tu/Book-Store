@@ -24,7 +24,7 @@
         <th>Email</th>
         <th>SĐT</th>
         <th>Ghi chú</th>
-        <th></th>
+        <th>Thao tác</th>
       </tr>
     </ng-template>
 
@@ -37,8 +37,10 @@
         <td>{{ row.phone }}</td>
         <td>{{ row.note }}</td>
         <td>
-          <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-warning" (click)="openEdit(row)"></button>
-          <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="remove(row)"></button>
+          <div class="btn-table" style="gap: 10px">
+            <button pButton text icon="pi pi-pencil" (click)="openEdit(row)"></button>
+            <button pButton text icon="pi pi-trash" severity="danger" (click)="remove(row)"></button>
+          </div>
         </td>
       </tr>
     </ng-template>
