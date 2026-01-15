@@ -82,7 +82,7 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   private timerSubscription?: Subscription;
   @ViewChild('featuredTrigger', { static: false }) featuredTrigger!: ElementRef;
   @ViewChild('newReleaseTrigger', { static: false }) newReleaseTrigger!: ElementRef;
-  @ViewChild('halloweenTrigger', { static: false }) halloweenTrigger!: ElementRef;
+  // @ViewChild('halloweenTrigger', { static: false }) halloweenTrigger!: ElementRef;
   @ViewChild('incomingTrigger', { static: false }) incomingTrigger!: ElementRef;
   @ViewChild('recommendTrigger', { static: false }) recommendTrigger!: ElementRef;
 
@@ -131,12 +131,12 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
       { breakpoint: '575px', numVisible: 1, numScroll: 1 }
     ];
 
-    this.loadBestSellers();        // ưu tiên
-    this.loadFeaturedBooks();      // 🔥
-    this.loadNewReleaseBooks();    // 🔥
-    this.loadHalloweenSection();   // 🔥
-    this.loadIncomingReleaseBooks(); // 🔥
-    this.loadRecommendedBooks();   // 🔥
+    this.loadBestSellers();  
+    this.loadFeaturedBooks();      
+    this.loadNewReleaseBooks();   
+
+    this.loadIncomingReleaseBooks(); 
+    // this.loadRecommendedBooks(); 
 
     // this.loadRecentViews();
 
@@ -182,9 +182,9 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
           if (entry.target === this.newReleaseTrigger.nativeElement) {
             this.visible.newRelease = true;
           }
-          if (entry.target === this.halloweenTrigger.nativeElement) {
-            this.visible.halloween = true;
-          }
+          // if (entry.target === this.halloweenTrigger.nativeElement) {
+          //   this.visible.halloween = true;
+          // }
           if (entry.target === this.incomingTrigger.nativeElement) {
             this.visible.incoming = true;
           }
@@ -202,7 +202,7 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     [
       this.featuredTrigger,
       this.newReleaseTrigger,
-      this.halloweenTrigger,
+      // this.halloweenTrigger,
       this.incomingTrigger,
       this.recommendTrigger
     ].forEach(t => observer.observe(t.nativeElement));
@@ -286,47 +286,47 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.detectChanges(); // Ép UI cập nhật ngay khi có dữ liệu
   }
 
-  loadRecommendedBooks() {
-    this.bookService.getRecommendedBooks().subscribe({
-      next: (books) => {
-        this.recommendedBooks = books;
-        console.log('📚 Sách gợi ý:', this.recommendedBooks);
-        this.isLoadingRecommended = false;
-      },
-      error: (err) => {
-        console.error('❌ Lỗi tải sách gợi ý:', err);
-      },
-    });
-  }
+  // loadRecommendedBooks() {
+  //   this.bookService.getRecommendedBooks().subscribe({
+  //     next: (books) => {
+  //       this.recommendedBooks = books;
+  //       console.log('📚 Sách gợi ý:', this.recommendedBooks);
+  //       this.isLoadingRecommended = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('❌ Lỗi tải sách gợi ý:', err);
+  //     },
+  //   });
+  // }
 
   viewBook(book: BookDetails) {
     this.router.navigate(['/book', book._id]);
   }
 
-  loadHalloweenSection(): void {
-    // Tránh gọi lại nếu đang load hoặc đã có dữ liệu
-    if (this.halloweenBooks.length > 0 || this.isLoadingHalloween) return;
+  // loadHalloweenSection(): void {
+  //   // Tránh gọi lại nếu đang load hoặc đã có dữ liệu
+  //   if (this.halloweenBooks.length > 0 || this.isLoadingHalloween) return;
 
-    this.isLoadingHalloween = true;
-    this.cdr.detectChanges(); // Hiện Skeleton ngay lập tức
+  //   this.isLoadingHalloween = true;
+  //   this.cdr.detectChanges(); // Hiện Skeleton ngay lập tức
 
-    this.bookService.getHalloweenBooks().pipe(
-      take(1), // Tự động unsubscribe để tối ưu bộ nhớ
-      catchError((err) => {
-        console.error('❌ Lỗi tải sách Halloween:', err);
-        return of([]); // Trả về mảng rỗng nếu lỗi để tắt loading
-      })
-    ).subscribe((books) => {
-      this.halloweenBooks = books || [];
-      this.isLoadingHalloween = false;
+  //   this.bookService.getHalloweenBooks().pipe(
+  //     take(1), // Tự động unsubscribe để tối ưu bộ nhớ
+  //     catchError((err) => {
+  //       console.error('❌ Lỗi tải sách Halloween:', err);
+  //       return of([]); // Trả về mảng rỗng nếu lỗi để tắt loading
+  //     })
+  //   ).subscribe((books) => {
+  //     this.halloweenBooks = books || [];
+  //     this.isLoadingHalloween = false;
       
-      // Ép Angular cập nhật View ngay giây phút này
-      this.cdr.detectChanges(); 
+  //     // Ép Angular cập nhật View ngay giây phút này
+  //     this.cdr.detectChanges(); 
       
-      // Mẹo: Nếu bạn muốn nó "mượt" hơn, có thể dùng setTimeout 0
-      // để đẩy việc render vào vòng lặp sự kiện tiếp theo
-    });
-  }
+  //     // Mẹo: Nếu bạn muốn nó "mượt" hơn, có thể dùng setTimeout 0
+  //     // để đẩy việc render vào vòng lặp sự kiện tiếp theo
+  //   });
+  // }
 
   private loadNewReleaseBooks() {
     if (this.newReleaseBooks.length > 0) return;
