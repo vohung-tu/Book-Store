@@ -53,17 +53,16 @@
         <tbody>
         <tr *ngFor="let g of items.controls; let i = index" [formGroup]="$any(g)">
             <td>
-            <p-dropdown
-                formControlName="bookId"
-                [options]="books"
-                optionLabel="title"
-                optionValue="_id"
-                [filter]="true"
-                placeholder="Chọn sách"
-                (onChange)="updatePrice(i)">
-                <ng-template pTemplate="item" let-opt>
-                {{ opt.title }}
-                </ng-template>
+           <p-dropdown
+              formControlName="bookId"
+              [options]="books"
+              optionLabel="title"
+              optionValue="_id"
+              [filter]="true"
+              placeholder="Chọn sách"
+              filterPlaceholder="Gõ tên sách..."
+              (onFilter)="searchBooks($event.filter)"
+              (onChange)="updatePrice(i)">
             </p-dropdown>
             </td>
             <td>

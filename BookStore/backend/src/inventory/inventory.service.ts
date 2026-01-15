@@ -55,8 +55,13 @@ export class InventoryService {
   // =====================================
   // 📥 TẠO PHIẾU NHẬP KHO
   // =====================================
-   async createImport(dto: CreateImportDto & { branchId?: string }, userId: string): Promise<any> {
-    if (!dto.lines?.length) throw new BadRequestException('Danh sách sản phẩm rỗng!');
+  async createImport(
+    dto: CreateImportDto & { branchId?: string },
+    userId: string,
+  ): Promise<any> {
+    if (!dto.lines?.length) {
+      throw new BadRequestException('Danh sách sản phẩm rỗng!');
+    }
 
     const session = await this.connection.startSession();
     session.startTransaction();
@@ -65,18 +70,22 @@ export class InventoryService {
       const date = new Date(dto.date);
       const code = await this.generateCode('NK', date, session);
 
-      // 🔍 Tìm chi nhánh (nếu có)
+      // 🔍 Xác định chi nhánh nhập kho
       const branch = dto.branchId
         ? await this.branchModel.findById(dto.branchId).session(session)
-        : await this.branchModel.findOne({ name: 'Kho Hồ Chí Minh' }).session(session);
+        : await this.branchModel
+            .findOne({ name: 'Kho Hồ Chí Minh' })
+            .session(session);
 
-      if (!branch) throw new NotFoundException('Không tìm thấy chi nhánh nhập kho');
+      if (!branch) {
+        throw new NotFoundException('Không tìm thấy chi nhánh nhập kho');
+      }
 
       const receipt = new this.receiptModel({
         code,
         type: 'import',
         date,
-        branchId: branch._id, 
+        branchId: branch._id,
         supplierName: dto.supplierName ?? '',
         reason: dto.reason ?? '',
         createdBy: new Types.ObjectId(userId),
@@ -90,16 +99,28 @@ export class InventoryService {
       const detailIds: Types.ObjectId[] = [];
 
       for (const line of dto.lines) {
-        const book = await this.bookModel.findById(line.bookId).session(session);
-        if (!book) throw new NotFoundException(`Không tìm thấy sách: ${line.bookId}`);
+        // 🔍 Kiểm tra sách tồn tại
+        const book = await this.bookModel
+          .findById(line.bookId)
+          .session(session);
 
-        // ✅ Cập nhật tồn kho tổng (trên bảng Book)
-        const newStock = (book.stockQuantity ?? 0) + line.quantity;
-        book.stockQuantity = newStock;
-        book.quantity = newStock;
-        await book.save({ session });
+        if (!book) {
+          throw new NotFoundException(`Không tìm thấy sách: ${line.bookId}`);
+        }
 
-        // ✅ Cập nhật tồn kho chi nhánh được chọn
+        // ✅ CẬP NHẬT TỒN KHO TỔNG (Book) — KHÔNG save()
+        await this.bookModel.updateOne(
+          { _id: book._id },
+          {
+            $inc: {
+              stockQuantity: line.quantity,
+              quantity: line.quantity,
+            },
+          },
+          { session },
+        );
+
+        // ✅ CẬP NHẬT TỒN KHO THEO CHI NHÁNH
         await this.inventoryModel.updateOne(
           { bookId: book._id, branchId: branch._id },
           { $inc: { quantity: line.quantity } },
@@ -107,6 +128,7 @@ export class InventoryService {
         );
 
         const subtotal = (line.unitPrice ?? 0) * line.quantity;
+
         const detail = new this.detailModel({
           receiptId: receipt._id,
           bookId: book._id,
@@ -114,6 +136,7 @@ export class InventoryService {
           unitPrice: line.unitPrice ?? 0,
           subtotal,
         });
+
         await detail.save({ session });
 
         detailIds.push(detail._id as Types.ObjectId);
@@ -124,15 +147,18 @@ export class InventoryService {
       receipt.totalQuantity = totalQty;
       receipt.totalAmount = totalAmount;
       receipt.details = detailIds;
-      await receipt.save({ session });
 
+      await receipt.save({ session });
       await session.commitTransaction();
 
       return await this.receiptModel
         .findById(receipt._id)
         .populate({
           path: 'details',
-          populate: { path: 'bookId', select: 'title stockQuantity quantity' },
+          populate: {
+            path: 'bookId',
+            select: 'title stockQuantity quantity',
+          },
         })
         .lean();
     } catch (e) {

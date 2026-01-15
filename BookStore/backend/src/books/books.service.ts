@@ -168,6 +168,13 @@ export class BooksService {
     return matchedBooks.length ? matchedBooks : await this.bookModel.aggregate([{ $sample: { size: 5 } }]);
   }
 
+  async findLiteByCode(code: string) {
+    return this.bookModel
+      .findOne({ code }) // hoặc isbn / sku
+      .select('_id title price stockQuantity')
+      .lean();
+  }
+
   async getHalloweenBooks(): Promise<Book[]> {
     const regex = /halloween/i;
 
@@ -398,6 +405,21 @@ export class BooksService {
     };
   }
 
+  async findForTransfer(search = '', limit = 20) {
+    const filter: any = {};
+
+    if (search?.trim()) {
+      filter.title = { $regex: search.trim(), $options: 'i' };
+    }
+
+    return this.bookModel
+      .find(filter)
+      .select('title price flashsale_price')
+      .sort({ title: 1 })
+      .limit(limit)
+      .lean();
+  }
+
 
   async updateStock(bookId: string, quantitySold: number): Promise<void> {
     const res = await this.bookModel.updateOne(
@@ -417,47 +439,53 @@ export class BooksService {
   async getBestSellers(limit = 10) {
     const soldPipe: PipelineStage[] = [
       { $unwind: '$products' },
-      // lọc record không có products._id (tránh null ngay từ đầu)
       { $match: { 'products._id': { $ne: null } } },
       {
-        $group: {
-          _id: '$products._id',
-          totalSold: { $sum: { $ifNull: ['$products.quantity', 0] } },
-        },
+        $addFields: {
+          productObjId: {
+            $cond: [
+              { $eq: [{ $type: '$products._id' }, 'objectId'] },
+              '$products._id',
+              { $toObjectId: '$products._id' }
+            ]
+          }
+        }
       },
+      {
+        $group: {
+          _id: '$productObjId',
+          totalSold: { $sum: { $ifNull: ['$products.quantity', 0] } }
+        }
+      },
+      { $match: { totalSold: { $gt: 0 } } }, // ⭐ CỰC KỲ QUAN TRỌNG
       { $sort: { totalSold: -1 } },
-      { $limit: limit },
+      { $limit: limit }
     ];
 
-    const bestSellers = await this.orderModel.aggregate<{ _id: any; totalSold: number }>(soldPipe);
+    const bestSellers = await this.orderModel.aggregate(soldPipe);
 
-    // Map an toàn (chỉ set khi có _id)
-    const soldMap = new Map<string, number>();
-    for (const r of bestSellers ?? []) {
-      const key = idStr(r?._id);
-      if (key) soldMap.set(key, Number(r.totalSold) || 0);
-    }
+    if (!bestSellers.length) return [];
 
-    // Chuẩn bị danh sách id để find
-    const idKeys = Array.from(soldMap.keys());
-    const inIds = toObjectIds(idKeys).length ? toObjectIds(idKeys) : idKeys;
+    const soldMap = new Map(
+      bestSellers.map(r => [r._id.toString(), r.totalSold])
+    );
 
-    let books = await this.bookModel.find(
-      { _id: { $in: inIds } },
-      { title: 1, author: 1, coverImage: 1, price: 1, flashsale_price: 1, discount_percent: 1, sold: 1 }
+    const books = await this.bookModel.find(
+      { _id: { $in: [...soldMap.keys()] } },
+      { title: 1, author: 1, coverImage: 1, price: 1, flashsale_price: 1, discount_percent: 1 }
     ).lean();
 
-    // gắn sold (không .toString() trực tiếp)
-    let items = (books ?? []).map((b: any) => {
-      const key = idStr(b?._id);
-      const computedSold = key ? soldMap.get(key) ?? 0 : 0;
-      return { ...b, sold: b?.sold != null ? Number(b.sold) : computedSold };
-    });
+    let items = books.map(b => ({
+      ...b,
+      sold: soldMap.get(b._id.toString()) ?? 0
+    }));
 
     try { items = await this.attachAuthorName(items); } catch {}
 
     return items;
   }
+
+
 
 // sách mới ra
   async getNewReleases(limit = 10) {

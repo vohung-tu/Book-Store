@@ -10,6 +10,7 @@ import { DotSeparatorPipe } from '../../pipes/dot-separator.pipe';
 import { Order, Product } from '../../model/order.model';
 import { Category } from '../../model/books-details.model';
 import { CategoryService } from '../../service/category.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -54,20 +55,65 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadUsers();
-    this.loadReviews();
-
-    this.categoryService.getCategories().subscribe((cats: Category[]) => {
-      this.categoryMap = new Map(cats.map(c => [c._id, c]));
-      this.loadOrders();
-    });
-
+    /** Chart options dùng chung */
     this.chartOptions = {
       responsive: true,
       plugins: { legend: { display: false } },
       scales: { y: { beginAtZero: true } }
     };
+
+    /**
+     * 1️⃣ Load USERS + REVIEWS + CATEGORIES song song
+     * (3 API này không phụ thuộc nhau)
+     */
+    forkJoin({
+      users: this.authService.getUsers(),
+      reviews: this.reviewService.getAllReviews(),
+      categories: this.categoryService.getCategories()
+    }).subscribe({
+      next: ({ users, reviews, categories }) => {
+        /** USERS */
+        this.totalUsers = users.length;
+        this.buildUserGrowthChart(users);
+
+        /** REVIEWS */
+        this.totalComments = reviews.length;
+
+        /** CATEGORIES */
+        this.categoryMap = new Map(categories.map(c => [c._id, c]));
+
+        /**
+         * 2️⃣ Sau khi có category → mới load ORDERS
+         */
+        // this.loadOrders();
+      },
+      error: err => {
+        console.error('Dashboard init error', err);
+      }
+    });
   }
+
+  private buildUserGrowthChart(users: any[]) {
+  const monthlyCounts: Record<string, number> = {};
+
+  users.forEach(u => {
+    if (!u.createdAt) return;
+    const month = new Date(u.createdAt).toLocaleString('default', { month: 'short' });
+    monthlyCounts[month] = (monthlyCounts[month] || 0) + 1;
+  });
+
+  this.userGrowthChartData = {
+    labels: Object.keys(monthlyCounts),
+    datasets: [
+      {
+        label: 'Người dùng mới',
+        data: Object.values(monthlyCounts),
+        backgroundColor: 'rgba(116, 201, 11, 0.7)',
+        borderRadius: 6
+      }
+    ]
+  };
+}
 
   /** === Load orders & calculate charts === */
   loadOrders() {
@@ -145,7 +191,6 @@ export class AdminDashboardComponent implements OnInit {
               ? rawCategory
               : rawCategory?.name || 'Khác';
 
-          console.log('📦', product.title, '| catId:', catId, '| catName:', catName);
 
 
           categoryRevenue[catName] =

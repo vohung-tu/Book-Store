@@ -52,4 +52,38 @@ export class BookLiteService {
       catchError(() => of([]))
     );
   }
+  searchForTransfer(search = '') {
+    return this.http.get<BookLite[]>(
+      `https://book-store-3-svnz.onrender.com/books/lite/transfer`,
+      { params: { search } }
+    );
+  }
+
+   findByCode(code: string): Observable<BookLite | null> {
+    if (!code) return of(null);
+
+    const url = `https://book-store-3-svnz.onrender.com/books/lite/by-code/${encodeURIComponent(code)}`;
+
+    return this.http.get<any>(url).pipe(
+      map((res) => {
+        // BE có thể trả: object | { data } | { item }
+        const b =
+          res?.data ??
+          res?.item ??
+          (Array.isArray(res) ? res[0] : res);
+
+        if (!b) return null;
+
+        return {
+          _id: b._id,
+          title: b.title,
+          code: b.code,
+          stockQuantity: (b.stockQuantity ?? b.quantity ?? 0) as number,
+          price: b.price,
+          flashsale_price: b.flashsale_price,
+        } as BookLite;
+      }),
+      catchError(() => of(null))
+    );
+  }
 }

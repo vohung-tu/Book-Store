@@ -74,6 +74,7 @@ export class InventoryFormComponent implements OnInit {
   ngOnInit() {
     this.bookApi.getAllLite().subscribe(list => this.books = list);
     this.addLine();
+    this.searchBooks('');
     this.http.get<any[]>('https://book-store-3-svnz.onrender.com/inventory/branches').subscribe({
       next: res => this.branches = res,
       error: err => console.error('Lỗi tải chi nhánh:', err)
@@ -96,6 +97,12 @@ export class InventoryFormComponent implements OnInit {
     this.storeBranchService.list().subscribe({
       next: (res) => (this.storeBranches = res),
       error: (err) => console.error('❌ Lỗi tải chi nhánh cửa hàng:', err),
+    });
+  }
+
+  searchBooks(term = '') {
+    this.bookApi.searchForTransfer(term).subscribe(res => {
+      this.books = res || [];
     });
   }
 

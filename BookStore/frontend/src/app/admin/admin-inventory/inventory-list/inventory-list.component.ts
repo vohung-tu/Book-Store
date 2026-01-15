@@ -116,16 +116,20 @@ export class InventoryListComponent implements OnInit {
           .pipe(
             map((result) =>
               Object.fromEntries(
-                Object.entries(result).map(([id, stocks]) => [id, (stocks as any[]) ?? []])
-              ) as Record<string, { branchName: string; quantity: number }[]>
+                Object.entries(result).map(([id, stocks]) => [
+                  id,
+                  (stocks as any[]).map(s => ({
+                    branchName: s.branchName || s.branchId?.name || 'Không rõ',
+                    quantity: s.quantity ?? 0
+                  }))
+                ])
+              )
             )
           )
           .subscribe({
             next: (data) => {
               this.branchStocks = data;
-
-              // 👇 Thêm log này để xem dữ liệu tồn kho thực tế
-              console.log('📦 Dữ liệu tồn kho chi tiết:', this.branchStocks);
+              console.log('📦 Tồn kho đã map:', this.branchStocks);
             },
             error: (err) => console.error('❌ Lỗi tải tồn kho:', err),
           });

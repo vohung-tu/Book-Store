@@ -75,16 +75,15 @@ export class StoreTransferComponent implements OnInit {
 
   ngOnInit(): void {
     this.addLine();
-    this.loadBooks();
+    this.searchBooks();
     this.loadWarehouses();
     this.loadStoreBranches();
     this.loadTransfers();
   }
 
-  loadBooks() {
-    this.bookApi.getAllLite().subscribe({
-      next: (res) => (this.books = res || []),
-      error: () => this.toastError('Không tải được danh sách sách')
+  searchBooks(term = '') {
+    this.bookApi.searchForTransfer(term).subscribe(res => {
+      this.books = res || [];
     });
   }
 

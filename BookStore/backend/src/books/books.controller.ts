@@ -162,4 +162,16 @@ export class BooksController {
     return { summary_ai: book.summary_ai || 'Chưa có tóm tắt' };
   }
 
+  @Get('lite/transfer')
+  findForTransfer(
+    @Query('search') search = ''
+  ) {
+    return this.booksService.findForTransfer(search);
+  }
+
+  @Get('lite/by-code/:code')
+  findLiteByCode(@Param('code') code: string) {
+    return this.booksService.findLiteByCode(code);
+  }
+
 }

@@ -108,19 +108,15 @@
                   [options]="books"
                   optionLabel="title"
                   optionValue="_id"
-                  [filter]="true" filterBy="title"
+                  [filter]="true"
+                  filterPlaceholder="Gõ tên sách..."
+                  (onFilter)="searchBooks($event.filter)"
                   [showClear]="true"
                   placeholder="Chọn sách"
 
-                  [appendTo]="'body'"            
-                  [style]="{ width: '100%' }"   
-                  [panelStyle]="{ minWidth: '100%', maxHeight: '320px' }"
-                  [autoZIndex]="true" [baseZIndex]="1000"
-                  [virtualScroll]="true" [virtualScrollItemSize]="36"
-                >
-                  <ng-template let-opt pTemplate="item">
-                    {{ opt.title }} <small class="inv-muted">(tồn: {{ opt.stockQuantity }})</small>
-                  </ng-template>
+                  [appendTo]="'body'"
+                  [style]="{ width: '100%' }"
+                  [panelStyle]="{ maxHeight: '320px' }">
                 </p-dropdown>
               </td>
 

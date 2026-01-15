@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
+import { map, Observable } from "rxjs";
 import { CreateExportDto, CreateImportDto, InventoryReceipt, Paginated } from "../model/inventory.model";
 
 @Injectable({ providedIn: 'root' })
@@ -39,10 +39,28 @@ export class InventoryService {
   }
 
   getBranchStock(bookId: string) {
-    return this.http.get<{ branchName: string; quantity: number }[]>(
-      `${this.base}/book/${bookId}/branches`
-    );
+    return this.http
+      .get<any[]>(`${this.base}/book/${bookId}/branches`)
+      .pipe(
+        map((res) =>
+          (res || []).map((r) => {
+
+            return {
+              branchName:
+                r.branchName ||
+                r.branch?.name ||
+                r.name ||  
+                r.branchId?.name ||
+                r.warehouse?.name ||
+                r.warehouseName ||
+                '❌ Không xác định',
+              quantity: r.quantity ?? 0,
+            };
+          })
+        )
+      );
   }
+
 
   getBranchStockByBook(bookId: string): Observable<{ branchName: string; quantity: number }[]> {
     return this.http.get<{ branchName: string; quantity: number }[]>(
