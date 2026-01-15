@@ -98,22 +98,7 @@
 
     <!-- Phương thức thanh toán -->
     <div class="payment-method">
-      <h3>Vận chuyển</h3>
-      <div class="shipping-option">
-        <p-radiobutton 
-          name="shipping" 
-          value="other_provinces" 
-          [(ngModel)]="shipping.selected" 
-          inputId="otherProvinces">
-        </p-radiobutton>
-      
-        <label for="otherProvinces" class="shipping-label">
-          Các tỉnh thành (2-4 ngày)
-        </label>
-      
-        <span class="shipping-price">25.000 VND</span>
-      </div>
-      
+
       <h3>Thanh toán</h3>
       <div class="flex-1 flex-wrap gap-4">
 
@@ -177,7 +162,12 @@
 
       <div class="line">
         <strong>Phí vận chuyển:</strong>
-        <p>{{ shippingFee | dotSeparator }} đ</p>
+        <p>
+          {{ shippingFee | dotSeparator }} đ
+          <span *ngIf="shippingInfo?.deliveryTime" class="delivery-time">
+            ({{ shippingInfo?.deliveryTime }})
+          </span>
+        </p>
       </div>
 
       <p-divider></p-divider>

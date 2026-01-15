@@ -11,6 +11,12 @@ export class CartService {
   private API_URL = 'https://book-store-3-svnz.onrender.com/cart';
   private cartSubject = new BehaviorSubject<BookDetails[]>([]);
   cart$ = this.cartSubject.asObservable();
+  private shippingInfo$ = new BehaviorSubject<{
+    address: string;
+    region: string;
+    fee: number;
+    deliveryTime: string;
+  } | null>(null);
 
   constructor(
     private authService: AuthService,
@@ -21,6 +27,23 @@ export class CartService {
     } else {
       this.cartSubject.next(this.getLocalCart());
     }
+  }
+
+  setShipping(info: {
+    address: string;
+    region: string;
+    fee: number;
+    deliveryTime: string;
+  }) {
+    this.shippingInfo$.next(info);
+  }
+
+  getShipping() {
+    return this.shippingInfo$.asObservable();
+  }
+
+  getCurrentShipping() {
+    return this.shippingInfo$.value;
   }
 
   /** fetch từ server và next vào subject */

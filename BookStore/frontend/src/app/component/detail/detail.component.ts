@@ -173,9 +173,18 @@ export class DetailComponent implements OnInit {
   onSelectAddress(address: Address) {
     this.selectedAddress = address;
 
-    const region = this.detectRegion(address.value);
-    this.updateShippingInfo(region);
+    // ✅ CHỈ GỌI 1 HÀM
+    this.updateShippingInfo(address.value);
+
+    // ✅ LƯU SANG CART SERVICE (để checkout dùng)
+    this.cartService.setShipping({
+      address: address.value,
+      region: this.detectRegion(address.value),
+      fee: this.shippingFee,
+      deliveryTime: this.deliveryTime
+    });
   }
+
 
   openSubImagesGallery(startIndex: number = 0) {
     if (!this.books?.images?.length) return;
@@ -820,23 +829,95 @@ export class DetailComponent implements OnInit {
     this.addingNew = false;
   }
 
+  isHCMInnerCity(address: string): boolean {
+    const lower = address.toLowerCase();
+
+    const innerDistricts = [
+      'quận 1', 'quận 2', 'quận 3', 'quận 4', 'quận 5',
+      'quận 6', 'quận 7', 'quận 8', 'quận 9', 'quận 10',
+      'quận 11', 'quận 12',
+      'bình thạnh', 'phú nhuận',
+      'tân bình', 'tân phú', 'gò vấp',
+      'thủ đức'
+    ];
+
+    return (
+      lower.includes('hồ chí minh') ||
+      lower.includes('tp.hcm') ||
+      lower.includes('sài gòn')
+    ) && innerDistricts.some(d => lower.includes(d));
+  }
+
   detectRegion(address: string): 'Miền Bắc' | 'Miền Trung' | 'Miền Nam' {
     const lower = address.toLowerCase();
-    if (lower.includes('hồ chí minh') || lower.includes('cần thơ') || lower.includes('nam')) return 'Miền Nam';
-    if (lower.includes('hà nội') || lower.includes('bắc')) return 'Miền Bắc';
+
+    // === MIỀN NAM ===
+    const southKeywords = [
+      'hồ chí minh', 'tp.hcm', 'sài gòn',
+      'cần thơ', 'đồng nai', 'bình dương',
+      'vũng tàu', 'long an', 'tiền giang'
+    ];
+
+    // === MIỀN BẮC ===
+    const northKeywords = [
+      'hà nội', 'hải phòng', 'quảng ninh',
+      'bắc ninh', 'bắc giang', 'nam định',
+      'thái bình', 'hải dương', 'hà giang'
+    ];
+
+    // === MIỀN TRUNG & TÂY NGUYÊN ===
+    const centralKeywords = [
+      'đà nẵng', 'huế', 'quảng nam', 'quảng ngãi',
+      'bình định', 'phú yên',
+      'nha trang', 'khánh hòa',
+      'gia lai', 'đắk lắk', 'đắk nông',
+      'kon tum', 'lâm đồng'
+    ];
+
+    if (southKeywords.some(k => lower.includes(k))) return 'Miền Nam';
+    if (northKeywords.some(k => lower.includes(k))) return 'Miền Bắc';
+    if (centralKeywords.some(k => lower.includes(k))) return 'Miền Trung';
+
+    // Mặc định an toàn
     return 'Miền Trung';
   }
 
-  updateShippingInfo(region: string) {
-    if (region === 'Miền Nam') this.shippingFee = 0;
-    else this.shippingFee = 20000;
+
+  updateShippingInfo(address: string) {
+    const region = this.detectRegion(address);
+
+    // === PHÍ SHIP ===
+    if (this.isHCMInnerCity(address)) {
+      this.shippingFee = 0;
+    } else if (region === 'Miền Nam') {
+      this.shippingFee = 10000;
+    } else if (region === 'Miền Trung') {
+      this.shippingFee = 20000;
+    } else {
+      this.shippingFee = 30000; // Miền Bắc
+    }
+
+    // === THỜI GIAN GIAO ===
+    const deliveryDaysMap = {
+      'Miền Nam': 1,
+      'Miền Trung': 2,
+      'Miền Bắc': 3
+    };
 
     const today = new Date();
     const deliveryDate = new Date(today);
-    deliveryDate.setDate(today.getDate() + 2);
+    deliveryDate.setDate(today.getDate() + deliveryDaysMap[region]);
 
-    const weekday = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'][deliveryDate.getDay()];
-    const dateStr = deliveryDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+    const weekdays = [
+      'Chủ nhật', 'Thứ hai', 'Thứ ba',
+      'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'
+    ];
+
+    const weekday = weekdays[deliveryDate.getDay()];
+    const dateStr = deliveryDate.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit'
+    });
 
     this.deliveryTime = `Giao từ 18h - 20h, ngày ${dateStr} (${weekday})`;
   }

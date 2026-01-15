@@ -93,6 +93,15 @@ export class CheckoutComponent implements OnInit {
   vnpayValue: string = '';
   appliedCoupons: Coupon[] = []; 
   isProcessingPayOS = false;
+  shippingInfo: {
+    fee: number;
+    address: string;
+    region: string;
+    deliveryTime: string;
+  } | null = null;
+
+  deliveryTime = '';
+  shippingFee = 0;
 
   orderInfo: {
     name: string;
@@ -119,11 +128,7 @@ export class CheckoutComponent implements OnInit {
   qrPayosCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('qrVnpayCanvas') qrVnpayCanvas!: ElementRef<HTMLCanvasElement>;
 
-  shipping = {
-    selected: 'other_provinces',  // This will hold the selected shipping method
-  };
   selectedCountryCode: string = "+84"; // Mặc định Việt Nam
-  shippingFee = 25000;
   countries: any;
 
   constructor(
@@ -164,6 +169,16 @@ export class CheckoutComponent implements OnInit {
         this.selectedBranch = JSON.parse(savedBranch);
         this.orderInfo.storeBranch = this.selectedBranch;
         console.log(' Đã load chi nhánh từ localStorage:', this.selectedBranch);
+      }
+      const savedShipping = localStorage.getItem('shipping');
+
+      if (savedShipping) {
+        this.shippingInfo = JSON.parse(savedShipping);
+
+        this.shippingFee = this.shippingInfo?.fee ?? 0;
+
+        // Nếu muốn hiển thị
+        console.log('🚚 Shipping loaded:', this.shippingInfo);
       }
     });
   
@@ -315,7 +330,7 @@ export class CheckoutComponent implements OnInit {
       email: this.orderInfo.email,
       phone: this.orderInfo.phone,
       address: this.orderInfo.address,
-      total: this.finalAmount + this.shippingFee,
+      total: this.finalPayAmount,
       discount: this.totalDiscount,
       coupons: this.appliedCoupons.map(c => ({
         code: c.code,
@@ -324,7 +339,12 @@ export class CheckoutComponent implements OnInit {
       })),
       orderDate: new Date(),
       paymentMethod: this.orderInfo.payment,
-      note: this.orderInfo.note
+      note: this.orderInfo.note,
+      shipping: this.shippingInfo ? {
+        fee: this.shippingInfo.fee,
+        region: this.shippingInfo.region,
+        deliveryTime: this.shippingInfo.deliveryTime
+      } : null,
     };
 
     console.log("🧾 Sending orderData:", orderData);
@@ -349,6 +369,98 @@ export class CheckoutComponent implements OnInit {
         alert("Tạo đơn hàng thất bại, vui lòng thử lại!");
       }
     });
+  }
+
+  isHCMInnerCity(address: string): boolean {
+    const lower = address.toLowerCase();
+
+    const innerDistricts = [
+      'quận 1', 'quận 2', 'quận 3', 'quận 4', 'quận 5',
+      'quận 6', 'quận 7', 'quận 8', 'quận 9', 'quận 10',
+      'quận 11', 'quận 12',
+      'bình thạnh', 'phú nhuận',
+      'tân bình', 'tân phú', 'gò vấp',
+      'thủ đức'
+    ];
+
+    return (
+      lower.includes('hồ chí minh') ||
+      lower.includes('tp.hcm') ||
+      lower.includes('sài gòn')
+    ) && innerDistricts.some(d => lower.includes(d));
+  }
+
+  detectRegion(address: string): 'Miền Bắc' | 'Miền Trung' | 'Miền Nam' {
+    const lower = address.toLowerCase();
+
+    // === MIỀN NAM ===
+    const southKeywords = [
+      'hồ chí minh', 'tp.hcm', 'sài gòn',
+      'cần thơ', 'đồng nai', 'bình dương',
+      'vũng tàu', 'long an', 'tiền giang'
+    ];
+
+    // === MIỀN BẮC ===
+    const northKeywords = [
+      'hà nội', 'hải phòng', 'quảng ninh',
+      'bắc ninh', 'bắc giang', 'nam định',
+      'thái bình', 'hải dương', 'hà giang'
+    ];
+
+    // === MIỀN TRUNG & TÂY NGUYÊN ===
+    const centralKeywords = [
+      'đà nẵng', 'huế', 'quảng nam', 'quảng ngãi',
+      'bình định', 'phú yên',
+      'nha trang', 'khánh hòa',
+      'gia lai', 'đắk lắk', 'đắk nông',
+      'kon tum', 'lâm đồng'
+    ];
+
+    if (southKeywords.some(k => lower.includes(k))) return 'Miền Nam';
+    if (northKeywords.some(k => lower.includes(k))) return 'Miền Bắc';
+    if (centralKeywords.some(k => lower.includes(k))) return 'Miền Trung';
+
+    // Mặc định an toàn
+    return 'Miền Trung';
+  }
+
+  updateShippingInfo(address: string) {
+    const region = this.detectRegion(address);
+
+    // === PHÍ SHIP ===
+    if (this.isHCMInnerCity(address)) {
+      this.shippingFee = 0;
+    } else if (region === 'Miền Nam') {
+      this.shippingFee = 10000;
+    } else if (region === 'Miền Trung') {
+      this.shippingFee = 20000;
+    } else {
+      this.shippingFee = 30000; // Miền Bắc
+    }
+
+    // === THỜI GIAN GIAO ===
+    const deliveryDaysMap = {
+      'Miền Nam': 1,
+      'Miền Trung': 2,
+      'Miền Bắc': 3
+    };
+
+    const today = new Date();
+    const deliveryDate = new Date(today);
+    deliveryDate.setDate(today.getDate() + deliveryDaysMap[region]);
+
+    const weekdays = [
+      'Chủ nhật', 'Thứ hai', 'Thứ ba',
+      'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'
+    ];
+
+    const weekday = weekdays[deliveryDate.getDay()];
+    const dateStr = deliveryDate.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit'
+    });
+
+    this.deliveryTime = `Giao từ 18h - 20h, ngày ${dateStr} (${weekday})`;
   }
 
   payWithPayOS() {
@@ -411,31 +523,43 @@ export class CheckoutComponent implements OnInit {
     if (!this.userInfo) return;
 
     const selectedValue = event.value;
-    const selected = this.userInfo.address.find((a: any) => a.value === selectedValue);
+    const selected = this.userInfo.address.find(
+      (a: any) => a.value === selectedValue
+    );
 
     if (selected) {
       this.orderInfo.name = selected.fullName ?? '';
       this.orderInfo.phone = String(selected.phoneNumber);
 
-      // Tách lấy phần địa chỉ trước dấu ',' đầu tiên
+      // Chỉ dùng cho HIỂN THỊ
       const addressPart = selected.value.split(',')[0].trim();
       this.orderInfo.address = addressPart;
 
-      // Xử lý phần tỉnh thành, quận huyện, phường xã để hiển thị dropdown
       const parts = selected.value.split(',').map(p => p.trim());
 
       const cityName = parts.find(p => p.toLowerCase().includes('thành phố') || p.toLowerCase().includes('tp')) || '';
       const districtName = parts.find(p => p.toLowerCase().includes('quận') || p.toLowerCase().includes('huyện')) || '';
       const wardName = parts.find(p => p.toLowerCase().includes('phường') || p.toLowerCase().includes('xã')) || '';
 
-      this.selectedCity = this.cities.find(c => cityName && c.Name.toLowerCase() === cityName.toLowerCase()) || undefined;
+      this.selectedCity = this.cities.find(
+        c => cityName && c.Name.toLowerCase() === cityName.toLowerCase()
+      );
       this.onCityChange();
 
-      this.selectedDistrict = this.districts.find(d => districtName && d.Name.toLowerCase() === districtName.toLowerCase()) || undefined;
+      this.selectedDistrict = this.districts.find(
+        d => districtName && d.Name.toLowerCase() === districtName.toLowerCase()
+      );
       this.onDistrictChange();
 
-      this.selectedWard = this.wards.find(w => wardName && w.Name.toLowerCase() === wardName.toLowerCase()) || undefined;
-    } else if (selectedValue === 'other') {
+      this.selectedWard = this.wards.find(
+        w => wardName && w.Name.toLowerCase() === wardName.toLowerCase()
+      );
+
+      // 🔥 FIX QUAN TRỌNG
+      this.updateShippingInfo(selected.value);
+    }
+
+    else if (selectedValue === 'other') {
       this.orderInfo.name = this.userInfo.full_name || '';
       this.orderInfo.phone = String(this.userInfo.phone_number || '');
       this.orderInfo.address = '';
@@ -446,8 +570,12 @@ export class CheckoutComponent implements OnInit {
 
       this.districts = [];
       this.wards = [];
+
+      this.shippingFee = 0;
+      this.shippingInfo = null;
     }
   }
+
 
    // Hàm xử lý thay đổi khi người dùng nhập địa chỉ
   onAddressInput() {
