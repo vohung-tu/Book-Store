@@ -284,18 +284,23 @@ export class DetailComponent implements OnInit {
 
 
   orderFromStore(store: any) {
-  if (!this.book) return;
+    if (!this.book) return;
 
-  localStorage.setItem('selectedBranch', JSON.stringify(store));
+    // Lưu chi nhánh được chọn
+    localStorage.setItem('selectedBranch', JSON.stringify(store));
 
-  // ✅ Thêm sản phẩm hiện tại vào giỏ hàng kèm thông tin chi nhánh
-  this.cartService.addToCart({
-    ...this.book,
-    selectedStore: store, // để biết cửa hàng nào
-    quantity: 1
-  }).subscribe({
-    next: () => {
+    const cartItem = {
+      ...this.book,
+      selectedStore: store,
+      quantity: 1
+    };
+
+    // ===== GUEST =====
+    if (!this.authService.isLoggedIn()) {
+      this.cartService.addToLocalCart(cartItem);
+
       this.showStoreDialog = false;
+
       this.messageService.add({
         severity: 'success',
         summary: 'Đặt hàng thành công',
@@ -304,22 +309,44 @@ export class DetailComponent implements OnInit {
         life: 2000
       });
 
-      // ✅ Chuyển hướng sang trang giỏ hàng
       setTimeout(() => {
         window.scrollTo(0, 0);
         this.router.navigate(['/cart']);
       }, 800);
-    },
-    error: (err) => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Lỗi',
-        detail: err?.error?.message || 'Không thể thêm vào giỏ hàng.',
-        key: 'tr'
-      });
+
+      return;
     }
-  });
-}
+
+    // ===== USER =====
+    this.cartService.addToCart(cartItem).subscribe({
+      next: () => {
+        this.showStoreDialog = false;
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Đặt hàng thành công',
+          detail: `Sách đã được thêm vào giỏ hàng từ chi nhánh ${store.name}`,
+          key: 'tr',
+          life: 2000
+        });
+
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          this.router.navigate(['/cart']);
+        }, 800);
+      },
+      error: (err) => {
+        console.error('Order from store failed:', err);
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Lỗi',
+          detail: err?.error?.message || 'Không thể thêm vào giỏ hàng.',
+          key: 'tr'
+        });
+      }
+    });
+  }
 
 
   selectBranch(branchName: string) {
@@ -685,6 +712,21 @@ export class DetailComponent implements OnInit {
   addToCart(): void {
     if (!this.book) return;
 
+    // ===== GUEST =====
+    if (!this.authService.isLoggedIn()) {
+      this.cartService.addToLocalCart(this.book);
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Thêm thành công',
+        detail: 'Đã thêm vào giỏ hàng!',
+        key: 'tr'
+      });
+
+      return;
+    }
+
+    // ===== USER =====
     this.cartService.addToCart(this.book).subscribe({
       next: () => {
         this.messageService.add({
@@ -695,15 +737,18 @@ export class DetailComponent implements OnInit {
         });
       },
       error: (err) => {
+        console.error('Add to cart failed:', err);
+
         this.messageService.add({
           severity: 'error',
-          summary: 'Thêm thất bại',
-          detail: err?.error?.message || 'Vui lòng đăng nhập hoặc thử lại.',
+          summary: 'Lỗi',
+          detail: err?.error?.message || 'Không thể thêm sản phẩm',
           key: 'tr'
         });
       }
     });
   }
+
 
 
   toggleFavorite(book: BookDetails) {

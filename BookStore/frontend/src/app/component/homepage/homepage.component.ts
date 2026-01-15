@@ -78,13 +78,14 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
     recommend: false
   };
 
+  private alsLoaded = false;
   private observer?: IntersectionObserver;
   private timerSubscription?: Subscription;
   @ViewChild('featuredTrigger', { static: false }) featuredTrigger!: ElementRef;
   @ViewChild('newReleaseTrigger', { static: false }) newReleaseTrigger!: ElementRef;
   // @ViewChild('halloweenTrigger', { static: false }) halloweenTrigger!: ElementRef;
   @ViewChild('incomingTrigger', { static: false }) incomingTrigger!: ElementRef;
-  @ViewChild('recommendTrigger', { static: false }) recommendTrigger!: ElementRef;
+  // @ViewChild('recommendTrigger', { static: false }) recommendTrigger!: ElementRef;
 
   constructor(
     private bookService: BooksService,
@@ -188,9 +189,9 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
           if (entry.target === this.incomingTrigger.nativeElement) {
             this.visible.incoming = true;
           }
-          if (entry.target === this.recommendTrigger.nativeElement) {
-            this.visible.recommend = true;
-          }
+          // if (entry.target === this.recommendTrigger.nativeElement) {
+          //   this.visible.recommend = true;
+          // }
 
           observer.unobserve(entry.target);
           this.cdr.detectChanges();
@@ -204,7 +205,7 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.newReleaseTrigger,
       // this.halloweenTrigger,
       this.incomingTrigger,
-      this.recommendTrigger
+      // this.recommendTrigger
     ].forEach(t => observer.observe(t.nativeElement));
   }
 
