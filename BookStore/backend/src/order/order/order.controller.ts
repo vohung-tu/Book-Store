@@ -46,6 +46,17 @@ export class OrderController {
     return { received: true };
   }
   
+  @Get('payos-status/:payosOrderCode')
+  async getByPayosCode(@Param('payosOrderCode') payosOrderCode: string) {
+    // Lưu ý: payosOrderCode trong DB có thể đang lưu kiểu Number 
+    // tùy vào cách bạn map dữ liệu lúc tạo payment.
+    const order = await this.orderService.getOrderByPayosCode(payosOrderCode);
+    if (!order) {
+      throw new NotFoundException('Không tìm thấy đơn hàng với mã PayOS này');
+    }
+    return order;
+  }
+  
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: string,

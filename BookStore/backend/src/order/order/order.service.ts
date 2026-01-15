@@ -180,6 +180,11 @@ export class OrderService {
     return saved;
   }
 
+  async getOrderByPayosCode(payosOrderCode: string) {
+    return this.orderModel.findOne({ 
+      payosOrderCode: Number(payosOrderCode) 
+    }).lean();
+  }
 
   async findAll(): Promise<any[]> {
     const orders = await this.orderModel
@@ -314,12 +319,14 @@ export class OrderService {
   }
 
   async markOrderPaidByPayOS(data: any) {
+    const payosCode = data.orderCode || data; 
+
     const order = await this.orderModel.findOne({
       payosOrderCode: data.orderCode,
     });
 
     if (!order) {
-      console.warn("❌ Không tìm thấy order PayOS:", data.orderCode);
+      console.warn("❌ Không tìm thấy order PayOS:", payosCode);
       return;
     }
 

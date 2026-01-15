@@ -46,6 +46,10 @@ export class OrderService {
     return this.http.patch(`${this.apiUrl}/${orderId}/status`, { status });
   }
 
+  getOrderByPayosCode(payosOrderCode: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/payos-status/${payosOrderCode}`);
+  }
+
   cancelOrder(orderId: string, reason: string): Observable<any> {
     const token = localStorage.getItem('token');
     

@@ -59,12 +59,20 @@ export class PayOSService {
    * PayOS redirect người dùng về đây sau thanh toán (không đảm bảo trạng thái)
    */
   async handleReturn(query: any) {
+    // query thường chứa: orderCode, status...
+    const { orderCode, status } = query;
+
+    if (status === 'PAID') {
+      // Gọi OrderService để cập nhật trạng thái ngay lập tức thay vì đợi Webhook
+      await this.orderService.markOrderPaidByPayOS({ orderCode: Number(orderCode) });
+    }
+
     return {
       message: 'PayOS return URL OK',
-      query,
+      orderCode,
+      status
     };
   }
-
   /**
    * Webhook từ PayOS báo trạng thái thanh toán
    * → Đây mới là trạng thái "chính xác"

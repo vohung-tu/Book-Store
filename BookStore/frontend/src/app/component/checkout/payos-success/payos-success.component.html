@@ -1,22 +1,27 @@
 <div class="success-container">
   <div class="success-card">
-    <div class="icon-wrap">
+    <div class="icon-wrap success">
       <div class="checkmark"></div>
     </div>
 
     <h2>Thanh toán thành công!</h2>
 
     <p class="message">
-      Cảm ơn bạn đã thanh toán. Đơn hàng của bạn đã được xác nhận.
+      Cảm ơn bạn đã thanh toán. Đơn hàng của bạn đã được xác nhận và đang được chuyển sang bộ phận xử lý.
     </p>
 
     <div class="order-info" *ngIf="orderCode">
-      <p><strong>Mã đơn hàng:</strong> {{ orderCode }}</p>
-      <p><strong>Tổng tiền:</strong> {{ totalAmount | currency:'VND':'' }}₫</p>
+      <p><strong>Mã đơn hàng PayOS:</strong> {{ orderCode }}</p>
+      <p>
+        <strong>Trạng thái:</strong> 
+        <span class="status-badge processing">
+          Đang xử lý
+        </span>
+      </p>
     </div>
 
-    <button class="btn-view-order" routerLink="/user-info/user-order">
+    <a class="btn-view-order" routerLink="/user-info/user-order">
       Xem đơn hàng của tôi
-    </button>
+    </a>
   </div>
-</div>
+</div>  
