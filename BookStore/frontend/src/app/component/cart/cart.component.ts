@@ -42,9 +42,7 @@ import { ProductItemComponent } from '../product-item/product-item.component';
     DividerModule,
     Toast,
     DialogModule,
-    CarouselModule,
-    ProductItemComponent,
-    
+    CarouselModule,    
   ],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.scss'],

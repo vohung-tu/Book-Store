@@ -3,12 +3,13 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { catchError, of, Subscription, timeout, timer } from 'rxjs';
+import { BehaviorSubject, catchError, filter, map, of, retry, Subscription, switchMap, take, timeout, timer } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { CarouselModule } from 'primeng/carousel';
 import { TabsModule } from 'primeng/tabs';
@@ -24,7 +25,6 @@ import { AuthorService } from '../../service/author.service';
 import { ReviewService } from '../../service/review.service';
 import { CategoryService } from '../../service/category.service';
 import { ProductItemComponent } from '../product-item/product-item.component';
-import { ChatbotComponent } from '../chatbot/chatbot.component';
 
 @Component({
   selector: 'app-homepage',
@@ -58,28 +58,33 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoadingIncoming = false;
   isLoadingReference = false;
   isLoadingRecommended = true;
-  isLoadingHalloween = true;
+  isLoadingHalloween = false;
   bestSellerBooks: BookDetails[] = [];
   responsiveOptions: any[] | undefined;
   trackById = (_: number, c: { _id:string }) => c._id;
-  blogPosts = [ { date: '23/03/2025', author: 'Pam Blog', title: 'Yuval Noah Harari: Chúng ta cần giáo dục con trẻ như thế nào để thành công vào năm 2050?', summary: 'Yuval Noah Harari là tác giả người Israel được biết đến nhiều qua các cuốn sách...', }, { date: '21/04/2024', author: 'Pam Blog', title: '6 tựa sách hay về Trung Quốc đương đại khuyến đọc bởi tạp chí SupChina', summary: 'Trung Quốc đã đi một chặng đường dài kể từ những ngày đen tối của cách mạng văn hóa...', }, { date: '15/02/2025', author: 'Pam Blog', title: 'Một số thuật ngữ sách ngoại văn bạn nên biết', summary: '1. Movie tie-in edition là thuật ngữ dùng để chỉ một cuốn sách mà thì...', }, { date: '15/02/2025', author: 'Pam Blog', title: 'Một số thuật ngữ sách ngoại văn bạn nên biết', summary: '1. Movie tie-in edition là thuật ngữ dùng để chỉ một cuốn sách mà thì...', }, ];
   recommendedBooks: BookDetails[] = [];
   halloweenBooks: BookDetails[] = [];
-  alsSuggestions: any[] = [];
+  alsSuggestions: BookDetails[] = [];
   isLoadingAls = false;
   recentViewedIds: string[] = [];
   recentViewedBooks: BookDetails[] = [];
   isLoadingRecentViews = true;
   referenceCarouselKey = 0;
+  visible = {
+    featured: false,
+    newRelease: false,
+    halloween: false,
+    incoming: false,
+    recommend: false
+  };
 
   private observer?: IntersectionObserver;
   private timerSubscription?: Subscription;
-
-  // 🔑 Các section để lazy load
   @ViewChild('featuredTrigger', { static: false }) featuredTrigger!: ElementRef;
   @ViewChild('newReleaseTrigger', { static: false }) newReleaseTrigger!: ElementRef;
+  @ViewChild('halloweenTrigger', { static: false }) halloweenTrigger!: ElementRef;
   @ViewChild('incomingTrigger', { static: false }) incomingTrigger!: ElementRef;
-  @ViewChild('referenceTrigger', { static: false }) referenceTrigger!: ElementRef;
+  @ViewChild('recommendTrigger', { static: false }) recommendTrigger!: ElementRef;
 
   constructor(
     private bookService: BooksService,
@@ -126,27 +131,18 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
       { breakpoint: '575px', numVisible: 1, numScroll: 1 }
     ];
 
-    this.isLoadingBestSeller = true;
-    this.bookService.getBestSellers().subscribe({
-      next: best => {
-        this.bestSellerBooks = (best ?? [])
-          .sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0));
-        this.isLoadingBestSeller = false;
+    this.loadBestSellers();        // ưu tiên
+    this.loadFeaturedBooks();      // 🔥
+    this.loadNewReleaseBooks();    // 🔥
+    this.loadHalloweenSection();   // 🔥
+    this.loadIncomingReleaseBooks(); // 🔥
+    this.loadRecommendedBooks();   // 🔥
 
-        // ⭐ Gọi ALS sau khi bestseller đã load
-        this.loadAlsSuggestions();
-      },
-      error: () => {
-        this.isLoadingBestSeller = false;
+    // this.loadRecentViews();
 
-        // fallback ALS luôn
-        this.loadAlsSuggestions();
-      }
-    });
-    this.loadRecentViews();
-
-    this.loadHalloweenSection();
-    this.loadRecommendedBooks();
+    setTimeout(() => {
+      this.loadAlsSuggestions();
+    }, 1200);
   }
 
   loadRecentViews() {
@@ -170,136 +166,124 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.setupLazyObservers();
-    this.timerSubscription = timer(2000).subscribe(() => {
-      this.loadFeaturedBooks();
-      this.loadNewReleaseBooks();
-      this.loadIncomingReleaseBooks();
-      this.loadReferenceBooks();
-      this.cdr.markForCheck();
-    });
+    this.setupVisibilityObserver();
   }
 
   /** IntersectionObserver cho các section */
-  private setupLazyObservers() {
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            if (entry.target === this.featuredTrigger?.nativeElement) {
-              this.loadFeaturedBooks();
-              this.observer?.unobserve(entry.target);
-            }
-            if (entry.target === this.newReleaseTrigger?.nativeElement) {
-              this.loadNewReleaseBooks();
-              this.observer?.unobserve(entry.target);
-            }
-            if (entry.target === this.incomingTrigger?.nativeElement) {
-              this.loadIncomingReleaseBooks();
-              this.observer?.unobserve(entry.target);
-            }
-            if (entry.target === this.referenceTrigger?.nativeElement) {
-              this.loadReferenceBooks();
-              this.observer?.unobserve(entry.target);
-            }
+  private setupVisibilityObserver() {
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+
+          if (entry.target === this.featuredTrigger.nativeElement) {
+            this.visible.featured = true;
           }
+          if (entry.target === this.newReleaseTrigger.nativeElement) {
+            this.visible.newRelease = true;
+          }
+          if (entry.target === this.halloweenTrigger.nativeElement) {
+            this.visible.halloween = true;
+          }
+          if (entry.target === this.incomingTrigger.nativeElement) {
+            this.visible.incoming = true;
+          }
+          if (entry.target === this.recommendTrigger.nativeElement) {
+            this.visible.recommend = true;
+          }
+
+          observer.unobserve(entry.target);
+          this.cdr.detectChanges();
         });
       },
-      { threshold: 0.15 }
+      { rootMargin: '200px' }
     );
 
-    if (this.featuredTrigger)
-      this.observer.observe(this.featuredTrigger.nativeElement);
-    if (this.newReleaseTrigger)
-      this.observer.observe(this.newReleaseTrigger.nativeElement);
-    if (this.incomingTrigger)
-      this.observer.observe(this.incomingTrigger.nativeElement);
-    if (this.referenceTrigger)
-      this.observer.observe(this.referenceTrigger.nativeElement);
+    [
+      this.featuredTrigger,
+      this.newReleaseTrigger,
+      this.halloweenTrigger,
+      this.incomingTrigger,
+      this.recommendTrigger
+    ].forEach(t => observer.observe(t.nativeElement));
+  }
+
+  private loadBestSellers() {
+    this.isLoadingBestSeller = true;
+    this.bookService.getBestSellers().subscribe({
+      next: best => {
+        this.bestSellerBooks = (best ?? []).sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0));
+        this.isLoadingBestSeller = false;
+        this.cdr.detectChanges();
+      },
+      error: () => this.isLoadingBestSeller = false
+    });
   }
 
   /** Lazy load từng phần */
   private loadFeaturedBooks() {
-    if (this.featuredBooks.length > 0) return;
+    if (this.featuredBooks.length > 0 || this.isLoadingFeatured) return;
     this.isLoadingFeatured = true;
 
-    this.bookService.getFeaturedBooks().subscribe((books) => {
-      const ids = books.map((b) => b._id);
-      this.reviewService.getReviewsBulk(ids).subscribe((reviewsMap) => {
-        books.forEach((book) => {
-          book.reviews = reviewsMap[book._id] ?? [];
-        });
-
-        this.featuredBooks = books.filter((book) => {
-          const avg = (book.reviews?.length ?? 0) > 0
-            ? book.reviews!.reduce((s, r) => s + r.rating, 0) / book.reviews!.length
+    this.bookService.getFeaturedBooks().pipe(
+      switchMap(books => {
+        if (!books?.length) return of([]);
+        const ids = books.map(b => b._id);
+        return this.reviewService.getReviewsBulk(ids).pipe(
+          map(reviewsMap => books.map(book => ({
+            ...book,
+            reviews: reviewsMap[book._id] ?? []
+          })))
+        );
+      })
+    ).subscribe({
+      next: (booksWithReviews) => {
+        this.featuredBooks = booksWithReviews.filter(book => {
+          const avg = book.reviews.length > 0
+            ? book.reviews.reduce((s, r) => s + r.rating, 0) / book.reviews.length
             : 0;
           return avg >= 4;
         });
-
         this.isLoadingFeatured = false;
-        this.cdr.markForCheck();
-      });
+        this.cdr.detectChanges();
+      },
+      error: () => this.isLoadingFeatured = false
     });
   }
 
   // sản phẩm bạn đã quan tâm
   async loadAlsSuggestions() {
     this.isLoadingAls = true;
-
     const user = JSON.parse(localStorage.getItem("user") || "null");
     const lastViewed = localStorage.getItem("lastViewedBookId");
 
-    // 1️⃣ Nếu user đăng nhập → gợi ý theo user
+    // CHIẾN THUẬT: Quyết định nguồn dữ liệu ngay lập tức
     if (user?._id) {
+      // Ưu tiên 1: Theo User
       this.bookService.getUserRecommend(user._id).subscribe({
-        next: res => {
-          this.alsSuggestions = res ?? [];
-          this.isLoadingAls = false;
-        },
-        error: err => {
-          console.error("ALS User Recommend Error:", err);
-          this.isLoadingAls = false;
-        }
+        next: res => this.finishAls(res),
+        error: () => this.finishAls([])
       });
-      return;
-    }
-
-    // 2️⃣ Nếu user chưa login nhưng có lastViewed → gợi ý theo sách vừa xem
-    if (lastViewed) {
+    } else if (lastViewed) {
+      // Ưu tiên 2: Theo sản phẩm xem gần nhất
       this.bookService.getRelatedAls(lastViewed).subscribe({
-        next: res => {
-          this.alsSuggestions = res ?? [];
-          this.isLoadingAls = false;
-        },
-        error: err => {
-          console.error("ALS Item Recommend Error:", err);
-          this.isLoadingAls = false;
-        }
+        next: res => this.finishAls(res),
+        error: () => this.finishAls([])
       });
-      return;
-    }
-
-    // 3️⃣ Fallback bestseller → lấy sách 1 → ALS
-    if (this.bestSellerBooks.length > 0) {
-      const firstId = this.bestSellerBooks[0]._id;
-
-      this.bookService.getRelatedAls(firstId).subscribe({
-        next: res => {
-          this.alsSuggestions = res ?? [];
-          this.isLoadingAls = false;
-        },
-        error: err => {
-          console.error("Fallback ALS Error:", err);
-          this.isLoadingAls = false;
-        }
+    } else {
+      // Ưu tiên 3: Nếu là khách mới, lấy ngay gợi ý chung (không đợi BestSellers load xong)
+      // Giả sử bạn truyền null hoặc 1 ID mặc định để lấy gợi ý chung
+      this.bookService.getRelatedAls('').subscribe({
+        next: res => this.finishAls(res),
+        error: () => this.finishAls([])
       });
-
-      return;
     }
+  }
 
-    // 4️⃣ Chờ bestseller load xong rồi gọi lại
-    setTimeout(() => this.loadAlsSuggestions(), 300);
+  private finishAls(res: any) {
+    this.alsSuggestions = res ?? [];
+    this.isLoadingAls = false;
+    this.cdr.detectChanges(); // Ép UI cập nhật ngay khi có dữ liệu
   }
 
   loadRecommendedBooks() {
@@ -320,17 +304,27 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadHalloweenSection(): void {
+    // Tránh gọi lại nếu đang load hoặc đã có dữ liệu
+    if (this.halloweenBooks.length > 0 || this.isLoadingHalloween) return;
+
     this.isLoadingHalloween = true;
-    this.bookService.getHalloweenBooks().subscribe({
-      next: (books) => {
-        this.halloweenBooks = books || [];
-        this.isLoadingHalloween = false;
-        console.log('🎃 Sách Halloween:', this.halloweenBooks);
-      },
-      error: (err) => {
+    this.cdr.detectChanges(); // Hiện Skeleton ngay lập tức
+
+    this.bookService.getHalloweenBooks().pipe(
+      take(1), // Tự động unsubscribe để tối ưu bộ nhớ
+      catchError((err) => {
         console.error('❌ Lỗi tải sách Halloween:', err);
-        this.isLoadingHalloween = false;
-      },
+        return of([]); // Trả về mảng rỗng nếu lỗi để tắt loading
+      })
+    ).subscribe((books) => {
+      this.halloweenBooks = books || [];
+      this.isLoadingHalloween = false;
+      
+      // Ép Angular cập nhật View ngay giây phút này
+      this.cdr.detectChanges(); 
+      
+      // Mẹo: Nếu bạn muốn nó "mượt" hơn, có thể dùng setTimeout 0
+      // để đẩy việc render vào vòng lặp sự kiện tiếp theo
     });
   }
 
@@ -346,38 +340,44 @@ export class HomepageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadIncomingReleaseBooks() {
-    if (this.incommingReleaseBooks.length > 0) return;
+    if (this.incommingReleaseBooks.length > 0 || this.isLoadingIncoming) return;
     this.isLoadingIncoming = true;
 
     this.bookService.getIncomingReleases().pipe(
-      timeout(3000),
-      catchError(() => of([] as BookDetails[]))
+      timeout(4000), // Tăng lên 8 giây cho an toàn
+      retry(2),      // Thử lại 2 lần trước khi bỏ cuộc
+      catchError((err) => {
+        console.error('Lỗi load sách sắp ra mắt:', err);
+        return of([] as BookDetails[]);
+      })
     ).subscribe((books) => {
-      this.incommingReleaseBooks = books ?? [];
+      this.incommingReleaseBooks = books || [];
       this.isLoadingIncoming = false;
-      this.cdr.markForCheck();
+      
+      // Sử dụng detectChanges thay vì markForCheck để ép UI cập nhật ngay lập tức
+      this.cdr.detectChanges(); 
     });
   }
 
-  private referenceLoaded = false;
+  // private referenceLoaded = false;
 
-  private loadReferenceBooks(): void {
-    if (this.referenceLoaded) return;
+  // private loadReferenceBooks(): void {
+  //   if (this.referenceLoaded) return;
 
-    this.referenceLoaded = true;
-    this.isLoadingReference = true;
+  //   this.referenceLoaded = true;
+  //   this.isLoadingReference = true;
 
-    this.bookService.getReferenceBooks()
-      .pipe(
-        timeout(5000),
-        catchError(() => of({ sachThamKhao: [], sachTrongNuoc: [] }))
-      )
-      .subscribe(res => {
-        this.sachThamKhao = res.sachThamKhao ?? [];
-        this.sachTrongNuoc = res.sachTrongNuoc ?? [];
-        this.isLoadingReference = false;
-      });
-  }
+  //   this.bookService.getReferenceBooks()
+  //     .pipe(
+  //       timeout(5000),
+  //       catchError(() => of({ sachThamKhao: [], sachTrongNuoc: [] }))
+  //     )
+  //     .subscribe(res => {
+  //       this.sachThamKhao = res.sachThamKhao ?? [];
+  //       this.sachTrongNuoc = res.sachTrongNuoc ?? [];
+  //       this.isLoadingReference = false;
+  //     });
+  // }
   setFavicon(iconUrl: string) {
     const link: HTMLLinkElement | null = document.querySelector(
       "link[rel*='icon']"

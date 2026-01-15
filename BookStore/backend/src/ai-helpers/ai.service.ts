@@ -141,8 +141,7 @@ export class AiService {
         "content": "2–3 câu mô tả nội dung chính",
         "highlights": ["ý 1", "ý 2", "ý 3"],
         "audience": "Đối tượng độc giả phù hợp",
-        "why_read": "vì sao bạn nên đọc",
-        "author": "tác giả của bộ truyện, nếu không cụ thể thì không cần hiển thị"
+        "why_read": "vì sao bạn nên đọc"
       }
 
       DỮ LIỆU ĐẦU VÀO:

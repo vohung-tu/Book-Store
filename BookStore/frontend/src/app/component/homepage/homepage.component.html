@@ -33,43 +33,6 @@
     </div>
   </div>
 
-  <!-- Sản phẩm bạn quan tâm  -->
-
-  <div class="als-suggestion-section" *ngIf="isLoadingAls || alsSuggestions?.length">
-
-    <div class="als-title">
-      <h1>
-        <i class="pi pi-eye"></i> Sản phẩm bạn quan tâm
-      </h1>
-    </div>
-
-    <div class="als-body">
-      <!-- Skeleton loading -->
-      <div *ngIf="isLoadingAls" class="skeleton-container">
-        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
-      </div>
-
-      <!-- Carousel ALS -->
-      <p-carousel 
-        *ngIf="!isLoadingAls && alsSuggestions.length > 0"
-        [value]="alsSuggestions"
-        [numVisible]="5"
-        [numScroll]="5"
-        [circular]="false"
-        [responsiveOptions]="responsiveOptions">
-        <ng-template let-book pTemplate="item">
-          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
-        </ng-template>
-      </p-carousel>
-
-      <!-- no items -->
-      <p *ngIf="!isLoadingAls && alsSuggestions.length === 0">
-        Chưa có dữ liệu đề xuất.
-      </p>
-
-    </div>
-  </div>
-
   <!-- flashsale bán chạy -->
 
   <div class="container-flashsale">
@@ -108,109 +71,158 @@
   </div>
 
   <p-divider class="custom-divider"></p-divider>
+<div class="new-release-books" #newReleaseTrigger>
+    <div class="new-release-title">
+      <h1>Sách mới ra</h1>
+    </div>
 
+    <div class="new-release-body">
+
+      <ng-container *ngIf="visible.newRelease; else skeletonNewRelease">
+
+        <div *ngIf="isLoadingNewRelease" class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+
+        <p-carousel
+          *ngIf="!isLoadingNewRelease && newReleaseBooks.length > 0"
+          [value]="newReleaseBooks"
+          [numVisible]="5"
+          [numScroll]="5"
+          [circular]="false"
+          [responsiveOptions]="responsiveOptions">
+
+          <ng-template let-book pTemplate="item">
+            <app-product-item
+              [book]="book"
+              (showToast)="handleToast($event)">
+            </app-product-item>
+          </ng-template>
+
+        </p-carousel>
+
+      </ng-container>
+
+      <ng-template #skeletonNewRelease>
+        <div class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+      </ng-template>
+
+    </div>
+  </div>
+  
+  <p-divider class="custom-divider"></p-divider>
   <div class="featured-books" #featuredTrigger>
     <div class="featured-title">
       <h1>Tủ sách nổi bật</h1>
     </div> 
     <div class="featured-body">
-
-      <div *ngIf="isLoadingFeatured" class="skeleton-container">
-        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
-      </div>
-
-      <p-carousel *ngIf="!isLoadingFeatured && featuredBooks.length > 0"
-                  [value]="featuredBooks" [numVisible]="5" [numScroll]="5"
-                  [circular]="false" [responsiveOptions]="responsiveOptions">
-        <ng-template let-book pTemplate="item">
-          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
-        </ng-template>
-      </p-carousel>
-
+      <ng-container *ngIf="visible.featured; else skeletonFeatured">
+        <div *ngIf="isLoadingFeatured" class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+  
+        <p-carousel *ngIf="!isLoadingFeatured && featuredBooks.length > 0"
+                    [value]="featuredBooks" [numVisible]="5" [numScroll]="5"
+                    [circular]="false" [responsiveOptions]="responsiveOptions">
+          <ng-template let-book pTemplate="item">
+            <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
+          </ng-template>
+        </p-carousel>
+      </ng-container>
+      <ng-template #skeletonFeatured>
+        <div class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+      </ng-template>
     </div>
   </div>
   
-  <p-divider class="custom-divider"></p-divider>
-  
-  <div class="new-release-books" #newReleaseTrigger>
-    <div class="new-release-title">
-      <h1>Sách mới ra</h1>
-    </div> 
-    <div class="new-release-body">
-
-      <div *ngIf="isLoadingNewRelease" class="skeleton-container">
-        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
-      </div>
-
-      <p-carousel *ngIf="!isLoadingNewRelease && newReleaseBooks.length > 0"
-                  [value]="newReleaseBooks" [numVisible]="5" [numScroll]="5"
-                  [circular]="false" [responsiveOptions]="responsiveOptions">
-        <ng-template let-book pTemplate="item">
-          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
-        </ng-template>
-      </p-carousel>
-
-    </div>
-  </div>
-  
-  <!-- <p-divider class="custom-divider"></p-divider> -->
-
-  <!-- Lễ hội ma quái -->
-  <div class="holiday-halloween-section" *ngIf="halloweenBooks?.length">
-
-    <div class="section-body">
-      <p-carousel 
-        [value]="halloweenBooks" 
-        [numVisible]="5" 
-        [numScroll]="5" 
-        [circular]="false" 
-        [responsiveOptions]="responsiveOptions"
-        styleClass="halloween-carousel"
-      >
-        <ng-template let-book pTemplate="item">
-          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
-        </ng-template>
-      </p-carousel>
-    </div>
-  </div>
-
   <p-divider class="custom-divider"></p-divider>
 
   <div class="incomming-release-books" #incomingTrigger>
     <div class="incomming-release-title">
       <h1>Sách sắp ra mắt</h1>
-    </div> 
+    </div>
+
     <div class="incomming-release-body">
 
-      <!-- ✅ Skeleton watermark khi đang load -->
-      <div *ngIf="isLoadingIncoming" class="skeleton-container">
-        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
-      </div>
+      <ng-container *ngIf="visible.incoming; else skeletonIncoming">
 
-      <!-- ✅ Carousel khi có data -->
-      <p-carousel 
-        *ngIf="!isLoadingIncoming && incommingReleaseBooks.length > 0"
-        [value]="incommingReleaseBooks"
-        [numVisible]="5"
-        [numScroll]="5"
-        [circular]="false"
-        [responsiveOptions]="responsiveOptions">
-        <ng-template let-book pTemplate="item">
-          <app-product-item 
-            [book]="book"
-            [isUpcomingRelease]="true"
-            (showToast)="handleToast($event)">
-          </app-product-item>
-        </ng-template>
-      </p-carousel>
+        <div *ngIf="isLoadingIncoming" class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
 
-      <!-- Trường hợp không có sách -->
-      <p *ngIf="!isLoadingIncoming && incommingReleaseBooks.length === 0">
-        Hiện chưa có sách sắp phát hành.
-      </p>
+        <p-carousel
+          *ngIf="!isLoadingIncoming && incommingReleaseBooks.length > 0"
+          [value]="incommingReleaseBooks"
+          [numVisible]="5"
+          [numScroll]="5"
+          [circular]="false"
+          [responsiveOptions]="responsiveOptions">
+
+          <ng-template let-book pTemplate="item">
+            <app-product-item
+              [book]="book"
+              [isUpcomingRelease]="true"
+              (showToast)="handleToast($event)">
+            </app-product-item>
+          </ng-template>
+
+        </p-carousel>
+
+      </ng-container>
+
+      <ng-template #skeletonIncoming>
+        <div class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+      </ng-template>
+
     </div>
   </div>
-  
+
+  <p-divider class="custom-divider"></p-divider>
+
+  <!-- Lễ hội ma quái -->
+  <div class="holiday-halloween-section" #halloweenTrigger>
+    <div class="section-body">
+
+      <ng-container *ngIf="visible.halloween; else skeletonHalloween">
+
+        <div *ngIf="isLoadingHalloween" class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+
+        <p-carousel
+          *ngIf="!isLoadingHalloween && halloweenBooks.length > 0"
+          [value]="halloweenBooks"
+          [numVisible]="5"
+          [numScroll]="5"
+          [circular]="false"
+          [responsiveOptions]="responsiveOptions"
+          styleClass="halloween-carousel">
+
+          <ng-template let-book pTemplate="item">
+            <app-product-item
+              [book]="book"
+              (showToast)="handleToast($event)">
+            </app-product-item>
+          </ng-template>
+
+        </p-carousel>
+
+      </ng-container>
+
+      <ng-template #skeletonHalloween>
+        <div class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+      </ng-template>
+
+    </div>
+  </div>
   <p-divider class="custom-divider"></p-divider>
 
     <!-- BẠN VỪA XEM  -->
@@ -239,9 +251,9 @@
         </ng-template>
       </p-carousel>
     </div>
-  </div> -->
+  </div>  -->
 
-  <!-- <p-divider class="custom-divider"></p-divider> -->
+  <p-divider class="custom-divider"></p-divider>
 
 
   <!--  Có thể bạn sẽ thích -->
@@ -251,33 +263,82 @@
     </div>
 
     <div class="ai-recommendation-body">
-      <div *ngIf="isLoadingRecommended" class="skeleton-container">
-        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
-      </div>
 
-      <p-carousel 
-        *ngIf="!isLoadingRecommended && recommendedBooks.length > 0"
-        [value]="recommendedBooks"
-        [numVisible]="5"
-        [numScroll]="5"
-        [circular]="false"
-        [responsiveOptions]="responsiveOptions">
-        <ng-template let-book pTemplate="item">
-          <app-product-item 
-            [book]="book"
-            (showToast)="handleToast($event)">
-          </app-product-item>
-        </ng-template>
-      </p-carousel>
+      <ng-container *ngIf="visible.recommend; else skeletonRecommend">
 
-      <p *ngIf="!isLoadingRecommended && recommendedBooks.length === 0">
-        Hiện chưa có gợi ý nào cho bạn.
-      </p>
+        <div *ngIf="isLoadingRecommended" class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+
+        <p-carousel
+          *ngIf="!isLoadingRecommended && recommendedBooks.length > 0"
+          [value]="recommendedBooks"
+          [numVisible]="5"
+          [numScroll]="5"
+          [circular]="false"
+          [responsiveOptions]="responsiveOptions">
+
+          <ng-template let-book pTemplate="item">
+            <app-product-item
+              [book]="book"
+              (showToast)="handleToast($event)">
+            </app-product-item>
+          </ng-template>
+
+        </p-carousel>
+
+      </ng-container>
+
+      <ng-template #skeletonRecommend>
+        <div class="skeleton-container">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+        </div>
+      </ng-template>
+
     </div>
   </div>
 
 
   <p-divider class="custom-divider"></p-divider>
+
+  <!-- Sản phẩm bạn quan tâm  -->
+
+  <div class="als-suggestion-section" *ngIf="isLoadingAls || alsSuggestions?.length">
+    <div class="als-title">
+      <h1>
+        <i class="pi pi-eye"></i> Sản phẩm bạn quan tâm
+      </h1>
+    </div>
+
+    <div class="als-body">
+      <!-- Skeleton loading -->
+      <div *ngIf="isLoadingAls" class="skeleton-container">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5]"></div>
+      </div>
+
+      <!-- Carousel ALS -->
+      <p-carousel 
+        *ngIf="!isLoadingAls && alsSuggestions.length > 0"
+        [value]="alsSuggestions"
+        [numVisible]="5"
+        [numScroll]="5"
+        [circular]="false"
+        [responsiveOptions]="responsiveOptions">
+        <ng-template let-book pTemplate="item">
+          <app-product-item [book]="book" (showToast)="handleToast($event)"></app-product-item>
+        </ng-template>
+      </p-carousel>
+
+      <!-- no items -->
+      <p *ngIf="!isLoadingAls && alsSuggestions.length === 0">
+        Chưa có dữ liệu đề xuất.
+      </p>
+
+    </div>
+  </div>
+
+  <p-divider class="custom-divider"></p-divider>
+
 <!-- 
   <div class="newest-col">
 

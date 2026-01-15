@@ -33,9 +33,19 @@ export class BooksController {
   }
 
   @Get('search')
-  async searchBooks(@Query('keyword') keyword: string): Promise<Book[]> {
-    if (!keyword) throw new BadRequestException('Keyword is required');
-    return this.booksService.searchBooks(keyword);
+  async searchBooks(
+    @Query('keyword') keyword: string,
+    @Query('limit') limit = '24'
+  ): Promise<Book[]> {
+
+    if (!keyword?.trim()) {
+      return [];
+    }
+
+    return this.booksService.searchBooks(
+      keyword.trim(),
+      Number(limit)
+    );
   }
 
   @Get('best-sellers')

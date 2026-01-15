@@ -44,18 +44,16 @@ export class SearchPageComponent implements OnInit{
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.keyword = params['keyword'] || '';
+      if (!this.keyword.trim()) return;
 
       this.isLoading = true;
       this.startTime = performance.now();
 
-      this.bookService.getBooks().subscribe({
+      this.bookService.searchBooks(this.keyword).subscribe({
         next: (res) => {
-          this.products = res;
-          this.applyFilter();
+          this.filteredProducts = res;
         },
-        error: () => {
-          this.isLoading = false;
-        },
+        error: () => this.isLoading = false,
         complete: () => {
           this.loadTime = Math.round(performance.now() - this.startTime);
           this.isLoading = false;

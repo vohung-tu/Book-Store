@@ -288,10 +288,21 @@ export class BooksService {
     return result;
   }
 
-  async searchBooks(keyword: string): Promise<Book[]> {
-    return this.bookModel.find({
-      title: { $regex: keyword, $options: 'i' }
-    }).exec();
+  async searchBooks(keyword: string, limit = 24) {
+    return this.bookModel.find(
+      { title: { $regex: keyword, $options: 'i' } },
+      {
+        title: 1,
+        author: 1,
+        coverImage: 1,
+        price: 1,
+        flashsale_price: 1,
+        discount_percent: 1,
+        categoryName: 1
+      }
+    )
+    .limit(limit)
+    .lean();
   }
 
   async findAdminList(page = 1, limit = 20, search = '') {

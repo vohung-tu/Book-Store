@@ -50,17 +50,10 @@ export class BooksService {
   }
 
   searchBooks(keyword: string): Observable<BookDetails[]> {
-    const url = `${this.apiUrl}/search?keyword=${encodeURIComponent(keyword)}`;
-    return this.http
-      .get<BookDetails[]>(url)
-      .pipe(
-        map(books =>
-          books.map(book => ({
-            ...book,
-            id: book._id
-          }))
-        )
-      );
+    return this.http.get<BookDetails[]>(
+      `${this.apiUrl}/search`,
+      { params: { keyword } }
+    );
   }
 
   getBestSellers(): Observable<BookDetails[]> {

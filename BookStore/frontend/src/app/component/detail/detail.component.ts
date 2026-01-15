@@ -338,17 +338,19 @@ export class DetailComponent implements OnInit {
   }
 
   toggleSummary() {
+    if (!this.book || !this.book._id) {
+      console.warn('⚠️ Book chưa load xong');
+      return;
+    }
+
     if (this.showSummary) {
-      // Thu gọn
       this.showSummary = false;
       return;
     }
 
-    // Mở rộng
     this.showSummary = true;
-
-    // ✅ Luôn gọi AI tạo mới, không cache, không lấy từ DB
     this.loadingSummary = true;
+
     this.bookService.generateSummary(this.book._id).subscribe({
       next: (res) => {
         this.summary = res.summary_ai || '';
@@ -435,20 +437,9 @@ export class DetailComponent implements OnInit {
       `;
     }
 
-    // ===== TÁC GIẢ =====
-    if (data.author) {
-      html += `
-        <div class="summary-section">
-          <h4>Tác giả</h4>
-          <p>${escape(data.author)}</p>
-        </div>
-      `;
-    }
-
-
-
     return html;
   }
+
   // Tải thông tin tác giả
   private loadAuthorDetails(authorId: string): void {
 

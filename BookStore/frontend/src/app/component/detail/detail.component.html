@@ -240,12 +240,13 @@
     <div class="book-detail-2">
       <h3>Mô tả sản phẩm</h3>
       <p class="detailed-description" [innerHTML]="books.description || 'Không có mô tả chi tiết.'"></p>
-      <div class="book-summary">
+      <div class="book-summary" *ngIf="book">
         <button 
-          pButton 
-          label="Xem thêm tóm tắt AI" 
-          icon="pi pi-sparkles" 
+          pButton
+          label="Xem thêm tóm tắt AI"
+          icon="pi pi-sparkles"
           (click)="toggleSummary()"
+          [disabled]="!book || loadingSummary"
           class="ai-summary-btn">
         </button>
 
